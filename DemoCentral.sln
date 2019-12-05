@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29418.71
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DemoCentral", "DemoCentral\DemoCentral.csproj", "{59F48160-CEFA-4DC4-8935-079E2A2E4598}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RabbitTransfer", "..\RabbitTransfer\RabbitTransfer.csproj", "{2757892D-3670-4E8B-8DAF-38D4FDAA38A5}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{59F48160-CEFA-4DC4-8935-079E2A2E4598}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{59F48160-CEFA-4DC4-8935-079E2A2E4598}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{59F48160-CEFA-4DC4-8935-079E2A2E4598}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{59F48160-CEFA-4DC4-8935-079E2A2E4598}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2757892D-3670-4E8B-8DAF-38D4FDAA38A5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2757892D-3670-4E8B-8DAF-38D4FDAA38A5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2757892D-3670-4E8B-8DAF-38D4FDAA38A5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2757892D-3670-4E8B-8DAF-38D4FDAA38A5}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {031A474D-4B92-4BC1-B4C7-F76E6E64562E}
+	EndGlobalSection
+EndGlobal
