@@ -1,0 +1,3 @@
+[submodule "rabbitmqcluster"]
+	path = rabbitmqcluster
+	url = git@gitlab.com:mentorgg/engine/rabbitmqcluster.git
