@@ -43,7 +43,7 @@ namespace DemoCentral.RabbitCommunication
                         DownloadPath = downloadUrl,
                     };
 
-                    this.SendNewDemo(resendModel.matchId, Encoding.UTF8.GetBytes(resendModel.ToJSON()));
+                    this.SendNewDemo(resendModel.matchId, resendModel.ToJSON());
                 }
             }
         }

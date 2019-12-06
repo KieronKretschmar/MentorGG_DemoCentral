@@ -25,7 +25,7 @@ namespace DemoCentral.RabbitCommunication
             updateDBEntryFromFileWorkerResponse(response);
         }
 
-        public new Task<DFW2DCModel> SendNewDemo(byte[] demo, long matchId, CancellationToken token = default(CancellationToken))
+        public new Task<DFW2DCModel> SendNewDemo(long matchId, string demo, CancellationToken token = default(CancellationToken))
         {
             QueueTracker.UpdateQueueStatus(matchId, "DFW", true);
             return base.SendNewDemo(matchId, demo, token);

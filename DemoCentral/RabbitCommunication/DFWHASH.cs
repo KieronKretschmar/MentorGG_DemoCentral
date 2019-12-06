@@ -28,14 +28,16 @@ namespace DemoCentral.RabbitCommunication
             return false;
         }
 
-        protected override byte[] OnMessageReceived(long matchId, byte[] response)
+        protected override string OnMessageReceived(long matchId, string response)
         {
-            string hash = Encoding.UTF8.GetString(response);
-            bool res = DoDuplicateCheck(hash);
+            string hash = response;
+            bool knownHash = DoDuplicateCheck(hash);
 
-            Console.WriteLine("Got Hash request for demo#" + matchId);
-
-            return Encoding.UTF8.GetBytes(res.ToString());
+            var res = new HashTransferModel();
+            res.isDuplicate = knownHash;
+            res.matchId = matchId;
+            
+            return res.ToJSON();
         }
     }
 }
