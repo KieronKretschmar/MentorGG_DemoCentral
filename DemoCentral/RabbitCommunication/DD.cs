@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using RabbitTransfer;
+
 
 namespace DemoCentral.RabbitCommunication
 {
@@ -14,11 +16,37 @@ namespace DemoCentral.RabbitCommunication
 
         public override void HandleReplyQueue(long matchId, DD_DC_Model response)
         {
-            DemoCentralDBInterface.UpdateDownloadStatus(response.matchId, response.Success);
+            DemoCentralDBInterface.UpdateDownloadStatus(matchId, response.Success);
             if (response.Success)
             {
-                DemoCentralDBInterface.AddFilePath(response.matchId, response.zippedFilePath);
+                DemoCentralDBInterface.AddFilePath(matchId, response.zippedFilePath);
+
+                QueueTracker.UpdateQueueStatus(matchId, "DD", false);
+
+                //TODO send to DFW
+            }
+            else
+            {
+                var downloadUrl = DemoCentralDBInterface.SetDownloadRetryingAndGetDownloadPath(matchId);
+                int attempts = QueueTracker.IncrementRetry(matchId);
+
+                if (attempts >= 3)
+                {
+                    DemoCentralDBInterface.RemoveDemo(matchId);
+                    QueueTracker.RemoveDemoFromQueue(matchId);
+                }
+                else
+                {
+                    var resendModel = new DC_DD_Model
+                    {
+                        matchId = matchId,
+                        DownloadPath = downloadUrl,
+                    };
+
+                    this.SendNewDemo(resendModel.matchId, Encoding.UTF8.GetBytes(resendModel.ToJSON()));
+                }
             }
         }
     }
 }
+

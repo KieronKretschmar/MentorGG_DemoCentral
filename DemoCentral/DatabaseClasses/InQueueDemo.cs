@@ -11,6 +11,7 @@ namespace DemoCentral.DatabaseClasses
         public byte UploadType { get; set; }
         public byte Source { get; set; }
         public DateTime InsertDate { get; set; }
+        public bool DDQUEUE { get; set; }
         public bool DFWQUEUE { get; set; }
         public bool SOQUEUE { get; set; }
         public int Retries { get; set; }

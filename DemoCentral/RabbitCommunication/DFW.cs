@@ -28,7 +28,7 @@ namespace DemoCentral.RabbitCommunication
         public new Task<DFW2DCModel> SendNewDemo(byte[] demo, long matchId, CancellationToken token = default(CancellationToken))
         {
             QueueTracker.UpdateQueueStatus(matchId, "DFW", true);
-            return base.SendNewDemo(demo, matchId, token);
+            return base.SendNewDemo(matchId, demo, token);
         }
 
         
@@ -37,29 +37,9 @@ namespace DemoCentral.RabbitCommunication
             using (var context = new democentralContext())
             {
                 Demo demo = context.Demo.Where(x => x.MatchId == response.matchId).Single();
-                if (!response.Downloaded)
+                if (!response.Unzipped)
                 {
-                    demo.FileStatus = (byte)FileStatus.DOWNLOADFAILED;
-                    int attempts = QueueTracker.IncrementRetry(demo.MatchId);
-                    if (attempts >= 3)
-                    {
-                        context.Demo.Remove(demo);
-                        QueueTracker.RemoveDemoFromQueue(demo.MatchId);
-                    }
-                    else
-                    {
-                        var resendModel = new DC2DFWModel
-                        {
-                            matchId = demo.MatchId,
-                            DownloadUrl = demo.DownloadUrl,
-                            MatchDate = demo.MatchDate,
-                            Event = demo.Event,
-                            FramesPerSecond = response.FramesPerSecond,
-                            Source = Enum.GetName(typeof(Source), demo.Source)
-                        };
-
-                        SendNewDemo(Encoding.UTF8.GetBytes(resendModel.ToJSON()), resendModel.matchId);
-                    }
+                    demo.FileStatus = (byte)FileStatus.UNZIPFAILED;
                 }
                 else if (response.DuplicateChecked && response.IsDuplicate)
                 {

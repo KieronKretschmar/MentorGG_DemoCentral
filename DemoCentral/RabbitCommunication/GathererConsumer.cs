@@ -41,7 +41,7 @@ namespace DemoCentral.RabbitCommunication
             //TODO handle duplicate entry, currently not inserted into db and forgotten afterwards
             if (DemoCentralDBInterface.CreateNewDemoEntryFromGatherer(responseModel))
             {
-                new DD().SendNewDemo(forwardModel, matchId);
+                new DD().SendNewDemo(matchId, forwardModel);
             }
         }
     }

@@ -13,6 +13,7 @@ namespace DemoCentral.Enumerals
         DOWNLOADFAILED = 30,
         ANALYZERFAILED = 31,
         UNZIPFAILED =32,
+        RETRYING = 33,
         REMOVED = 40
     }
 }
