@@ -108,7 +108,7 @@ namespace DemoCentral
                 Console.WriteLine("New DemoEntry created");
                 context.SaveChanges();
 
-                QueueTracker.Add(model.matchId, model.MatchDate, model.Source, model.UploaderId);
+                InQueueDBInterface.Add(model.matchId, model.MatchDate, model.Source, model.UploaderId);
 
                 return true;
             }

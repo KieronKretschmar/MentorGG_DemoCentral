@@ -1,3 +1,0 @@
-[submodule "rabbitmqcluster"]
-	path = DemoCentral/rabbitmqcluster
-	url = git@gitlab.com:mentorgg/engine/rabbitmqcluster.git

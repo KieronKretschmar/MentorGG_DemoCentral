@@ -27,7 +27,7 @@ namespace DemoCentral.RabbitCommunication
 
         public new Task<DFW2DCModel> SendNewDemo(long matchId, string demo, CancellationToken token = default(CancellationToken))
         {
-            QueueTracker.UpdateQueueStatus(matchId, "DFW", true);
+            InQueueDBInterface.UpdateQueueStatus(matchId, "DFW", true);
             return base.SendNewDemo(matchId, demo, token);
         }
 
@@ -55,7 +55,7 @@ namespace DemoCentral.RabbitCommunication
                     demo.FilePath = response.zippedFilePath;
                     demo.FileName = Path.GetFileName(response.zippedFilePath);
 
-                    QueueTracker.UpdateQueueStatus(response.matchId, "DFW", false);
+                    InQueueDBInterface.UpdateQueueStatus(response.matchId, "DFW", false);
                 }
 
                 Console.WriteLine("DemoEntry updated");

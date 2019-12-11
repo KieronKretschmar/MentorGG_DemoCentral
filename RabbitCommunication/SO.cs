@@ -39,7 +39,7 @@ namespace DemoCentral.RabbitCommunication
             //if response is JSON, deserialize into object like this
             var responseModel = JsonConvert.DeserializeObject<AnalyzerTransferModel>(response);
 
-            QueueTracker.UpdateQueueStatus(matchId, "SO", responseModel.Success);
+            InQueueDBInterface.UpdateQueueStatus(matchId, "SO", responseModel.Success);
         }
     }
 }

@@ -7,9 +7,9 @@ using System.Collections.Generic;
 
 namespace DemoCentral
 {
-    public class QueueTracker
+    public class InQueueDBInterface
     {
-        public QueueTracker()
+        public InQueueDBInterface()
         {
         }
 

@@ -21,19 +21,19 @@ namespace DemoCentral.RabbitCommunication
             {
                 DemoCentralDBInterface.AddFilePath(matchId, response.zippedFilePath);
 
-                QueueTracker.UpdateQueueStatus(matchId, "DD", false);
+                InQueueDBInterface.UpdateQueueStatus(matchId, "DD", false);
 
                 //TODO send to DFW
             }
             else
             {
                 var downloadUrl = DemoCentralDBInterface.SetDownloadRetryingAndGetDownloadPath(matchId);
-                int attempts = QueueTracker.IncrementRetry(matchId);
+                int attempts = InQueueDBInterface.IncrementRetry(matchId);
 
                 if (attempts >= 3)
                 {
                     DemoCentralDBInterface.RemoveDemo(matchId);
-                    QueueTracker.RemoveDemoFromQueue(matchId);
+                    InQueueDBInterface.RemoveDemoFromQueue(matchId);
                 }
                 else
                 {

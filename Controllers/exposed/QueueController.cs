@@ -18,14 +18,14 @@ namespace DemoCentral.Controllers.exposed
         // GET /api/exposed/queue/playermatches/1
         public int QueuePosition(long matchId)
         {
-            return QueueTracker.GetQueuePosition(matchId);
+            return InQueueDBInterface.GetQueuePosition(matchId);
         }
 
         [HttpGet("[action]/{playerId}")]
         // GET /api/exposed/queue/playermatches/1
         public int PlayerMatches(long playerId)
         {
-            return QueueTracker.GetPlayerMatchesInQueue(playerId).Count;
+            return InQueueDBInterface.GetPlayerMatchesInQueue(playerId).Count;
         }
     }
 
