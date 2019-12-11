@@ -20,7 +20,7 @@ namespace DemoCentral.RabbitCommunication
         {
             //TODO optimize sql
             //This query is called for every demo thats downloaded, so optimizing it is going to be super worth.
-            using (var context = new democentralContext())
+            using (var context = new DemoCentralContext())
             {
                 var demo = context.Demo.Where(x => x.Md5hash.Equals(hash)).SingleOrDefault();
                 if (demo != null) return true;

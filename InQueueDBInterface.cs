@@ -7,115 +7,113 @@ using System.Collections.Generic;
 
 namespace DemoCentral
 {
-    public class InQueueDBInterface
+    public interface IInQueueDBInterface
     {
-        public InQueueDBInterface()
+        void Add(long matchId, DateTime matchDate, byte source, long uploaderID);
+        List<InQueueDemo> GetPlayerMatchesInQueue(long playerId);
+        int GetQueuePosition(long matchId);
+        int GetTotalQueueLength();
+        int IncrementRetry(long matchId);
+        void RemoveDemoFromQueue(long matchId);
+        void UpdateQueueStatus(long matchId, string QueueName, bool inQueue);
+    }
+
+    public class InQueueDBInterface : IInQueueDBInterface
+    {
+        private readonly DemoCentralContext _context;
+
+        public InQueueDBInterface(DemoCentralContext context)
         {
+            _context = context;
         }
 
-        public static void Add(long matchId, DateTime matchDate, byte source, long uploaderID)
+        public void Add(long matchId, DateTime matchDate, byte source, long uploaderID)
         {
-            using (var context = new democentralContext())
-            {
-                context.InQueueDemo.Add(new InQueueDemo
-                {
-                    MatchId = matchId,
-                    MatchDate = matchDate,
-                    Source = source,
-                    UploaderId = uploaderID,
-                    InsertDate = DateTime.Now,
-                    DFWQUEUE = false,
-                    SOQUEUE = false
-                });
 
-                context.SaveChanges();
-            }
+            _context.InQueueDemo.Add(new InQueueDemo
+            {
+                MatchId = matchId,
+                MatchDate = matchDate,
+                Source = source,
+                UploaderId = uploaderID,
+                InsertDate = DateTime.Now,
+                DFWQUEUE = false,
+                SOQUEUE = false
+            });
+
+            _context.SaveChanges();
+
         }
 
-        public static void UpdateQueueStatus(long matchId, string QueueName, bool inQueue)
+        public void UpdateQueueStatus(long matchId, string QueueName, bool inQueue)
         {
-
-            using (var context = new democentralContext())
+            var demo = _context.InQueueDemo.Where(x => x.MatchId == matchId).Single();
+            //TODO make queue name enum
+            switch (QueueName)
             {
-                var demo = context.InQueueDemo.Where(x => x.MatchId == matchId).Single();
-                //TODO make queue name enum
-                switch (QueueName)
-                {
-                    case "DFW":
-                    case "DemoFileWorker":
-                        demo.DFWQUEUE = inQueue;
-                        break;
-                    case "SO":
-                    case "SituationsOperator":
-                        demo.SOQUEUE = inQueue;
-                        break;
-                    default:
-                        throw new Exception("Unknown queue");
-                }
-
-
-                //TODO implement better queue check, like names list etc
-                List<bool> queueStates = new List<bool> { demo.DFWQUEUE, demo.SOQUEUE };
-                if (!queueStates.Contains(true))
-                {
-                    context.InQueueDemo.Remove(demo);
-                }
-
-                context.SaveChanges();
+                case "DFW":
+                case "DemoFileWorker":
+                    demo.DFWQUEUE = inQueue;
+                    break;
+                case "SO":
+                case "SituationsOperator":
+                    demo.SOQUEUE = inQueue;
+                    break;
+                default:
+                    throw new Exception("Unknown queue");
             }
+
+
+            //TODO implement better queue check, like names list etc
+            List<bool> queueStates = new List<bool> { demo.DFWQUEUE, demo.SOQUEUE };
+            if (!queueStates.Contains(true))
+            {
+                _context.InQueueDemo.Remove(demo);
+            }
+
+            _context.SaveChanges();
+
         }
 
-        public static List<InQueueDemo> GetPlayerMatchesInQueue(long playerId)
+        public List<InQueueDemo> GetPlayerMatchesInQueue(long playerId)
         {
-            using (var context = new democentralContext())
-            {
-                return context.InQueueDemo.Where(x => x.UploaderId == playerId).ToList();
-            }
+
+            return _context.InQueueDemo.Where(x => x.UploaderId == playerId).ToList();
         }
 
-        public static int GetTotalQueueLength()
+        public int GetTotalQueueLength()
         {
-            using (var context = new democentralContext())
-            {
-                return context.InQueueDemo.Count();
-            }
+            return _context.InQueueDemo.Count();
         }
 
-        public static void RemoveDemoFromQueue(long matchId)
+        public void RemoveDemoFromQueue(long matchId)
         {
-            using (var context = new democentralContext())
-            {
-                var demo = context.InQueueDemo.Find(matchId);
-                if (demo == null) throw new KeyNotFoundException("Demo not in Queue");
-                
-                context.InQueueDemo.Remove(demo);
-            }
+            var demo = _context.InQueueDemo.Find(matchId);
+            if (demo == null)
+                throw new KeyNotFoundException("Demo not in Queue");
+
+            _context.InQueueDemo.Remove(demo);
         }
 
-        public static int GetQueuePosition(long matchId)
+        public int GetQueuePosition(long matchId)
         {
-            using (var context = new democentralContext())
-            {
-                var demo = context.InQueueDemo.Find(matchId);
+            var demo = _context.InQueueDemo.Find(matchId);
 
-                //Closest match in predefined exceptions
-                if (demo == null) throw new KeyNotFoundException("Demo not in Queue");
+            //Closest match in predefined exceptions
+            if (demo == null)
+                throw new KeyNotFoundException("Demo not in Queue");
 
-                //TODO possible optimization by keeping track of row in db
-                return context.InQueueDemo.Select(x => x.InsertDate).Where(x => x < demo.InsertDate).Count();
-            }
+            //TODO possible optimization by keeping track of row in db
+            return _context.InQueueDemo.Select(x => x.InsertDate).Where(x => x < demo.InsertDate).Count();
         }
 
-        public static int IncrementRetry(long matchId)
+        public int IncrementRetry(long matchId)
         {
-            using (var context = new democentralContext())
-            {
-                var demo = context.InQueueDemo.Where(x => x.MatchId == matchId).Single();
-                var attempts = demo.Retries++;
+            var demo = _context.InQueueDemo.Where(x => x.MatchId == matchId).Single();
+            var attempts = demo.Retries++;
 
-                context.SaveChanges();
-                return attempts;
-            }
+            _context.SaveChanges();
+            return attempts;
         }
     }
 }

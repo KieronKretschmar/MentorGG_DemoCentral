@@ -34,7 +34,7 @@ namespace DemoCentral.RabbitCommunication
         
         private void updateDBEntryFromFileWorkerResponse(DFW2DCModel response)
         {
-            using (var context = new democentralContext())
+            using (var context = new DemoCentralContext())
             {
                 Demo demo = context.Demo.Where(x => x.MatchId == response.matchId).Single();
                 if (!response.Unzipped)

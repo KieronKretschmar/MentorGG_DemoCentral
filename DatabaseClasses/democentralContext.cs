@@ -6,13 +6,13 @@ using Pomelo.EntityFrameworkCore.MySql;
 
 namespace DemoCentral.DatabaseClasses
 {
-    public partial class democentralContext : DbContext
+    public partial class DemoCentralContext : DbContext
     {
-        public democentralContext()
+        public DemoCentralContext()
         {
         }
 
-        public democentralContext(DbContextOptions<democentralContext> options)
+        public DemoCentralContext(DbContextOptions<DemoCentralContext> options)
             : base(options)
         {
         }
@@ -20,15 +20,6 @@ namespace DemoCentral.DatabaseClasses
         public virtual DbSet<Demo> Demo { get; set; }
         public virtual DbSet<InQueueDemo> InQueueDemo { get; set; }
         public virtual DbSet<Migrationhistory> MigrationHistory { get; set; }
-
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            if (!optionsBuilder.IsConfigured)
-            {
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. See http://go.microsoft.com/fwlink/?LinkId=723263 for guidance on storing connection strings.
-                optionsBuilder.UseMySql("server=localhost;userid=democentraluser;password=XyZ123??;database=democentral;");
-            }
-        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

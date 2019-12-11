@@ -18,6 +18,4 @@ namespace DemoCentral.Controllers.exposed
             return MatchHistoryModel.FromRecentMatches(playerId, recentMatches, offset);
         }
     }
-
-
 }

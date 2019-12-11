@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace DemoCentral.Migrations
 {
-    [DbContext(typeof(democentralContext))]
+    [DbContext(typeof(DemoCentralContext))]
     [Migration("20191129110431_rename_demoId")]
     partial class rename_demoId
     {

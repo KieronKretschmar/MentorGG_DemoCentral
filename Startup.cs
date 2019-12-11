@@ -39,6 +39,7 @@ namespace DemoCentral
             services.AddControllers();
 
             services.AddSingleton<IDemoCentralDBInterface, DemoCentralDBInterface>();
+            services.AddSingleton<IInQueueDBInterface, InQueueDBInterface>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

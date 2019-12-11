@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace DemoCentral.Migrations
 {
-    [DbContext(typeof(democentralContext))]
+    [DbContext(typeof(DemoCentralContext))]
     partial class democentralContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)

@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace DemoCentral.Migrations
 {
-    [DbContext(typeof(democentralContext))]
+    [DbContext(typeof(DemoCentralContext))]
     [Migration("20191206105126_Download_Queue_Column")]
     partial class Download_Queue_Column
     {

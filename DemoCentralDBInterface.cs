@@ -6,12 +6,39 @@ using System.Linq;
 
 namespace DemoCentral
 {
-    public class DemoCentralDBInterface
+    public interface IDemoCentralDBInterface
     {
-        public static List<long> GetRecentMatchIds(long playerId, int recentMatches, int offset = 0)
+        void AddFilePath(long matchId, string zippedFilePath);
+        bool CreateNewDemoEntryFromGatherer(GathererTransferModel model);
+        List<Demo> GetRecentMatches(long playerId, int recentMatches, int offset = 0);
+        List<long> GetRecentMatchIds(long playerId, int recentMatches, int offset = 0);
+        string SetDownloadRetryingAndGetDownloadPath(long matchId);
+        void UpdateDownloadStatus(long matchId, bool success);
+        void UpdateUploadStatus(long matchId, bool success);
+    }
+
+    public class DemoCentralDBInterface : IDemoCentralDBInterface
+    {
+        private readonly DemoCentralContext _context;
+        private readonly InQueueDBInterface _inQueueDBInterface;
+
+        public DemoCentralDBInterface(DemoCentralContext context, InQueueDBInterface inQueueDBInterface)
+        {
+            _context = context;
+            _inQueueDBInterface = inQueueDBInterface;
+        }
+
+        public void UpdateHash(long matchId, string hash)
+        {
+            var demo = _context.Demo.Where(x => x.MatchId == matchId).Single();
+            demo.Md5hash = hash;
+            _context.SaveChanges();
+        }
+
+        public List<long> GetRecentMatchIds(long playerId, int recentMatches, int offset = 0)
         {
             List<long> recentMatchesId;
-            using (var context = new democentralContext())
+            using (var context = new DemoCentralContext())
             {
                 var res = context.Demo.Where(x => x.UploaderId == playerId).Take(recentMatches + offset).ToList();
 
@@ -22,96 +49,89 @@ namespace DemoCentral
             return recentMatchesId;
         }
 
-        public static void AddFilePath(long matchId, string zippedFilePath)
+        public void AddFilePath(long matchId, string zippedFilePath)
         {
-            using (var context = new democentralContext())
-            {
-                context.Demo.Where(x => x.MatchId == matchId).Single().FilePath = zippedFilePath;
-                context.SaveChanges();
-            }
+            _context.Demo.Where(x => x.MatchId == matchId).Single().FilePath = zippedFilePath;
+            _context.SaveChanges();
+
         }
 
-        internal static void RemoveDemo(long matchId)
+        internal void RemoveDemo(long matchId)
         {
             throw new NotImplementedException();
         }
 
-        public static void UpdateUploadStatus(long matchId, bool success)
+        public void UpdateUploadStatus(long matchId, bool success)
         {
-            using (var context = new democentralContext())
-            {
-                context.Demo.Where(x => x.MatchId == matchId).Single().UploadStatus = success ? (byte)UploadStatus.FINISHED : (byte)UploadStatus.FAILED;
-                context.SaveChanges();
-            }
+
+            _context.Demo.Where(x => x.MatchId == matchId).Single().UploadStatus = success ? (byte) UploadStatus.FINISHED : (byte) UploadStatus.FAILED;
+            _context.SaveChanges();
+
         }
 
-        public static void UpdateDownloadStatus(long matchId, bool success)
+        public void UpdateDownloadStatus(long matchId, bool success)
         {
-            using (var context = new democentralContext())
-            {
-                context.Demo.Where(x => x.MatchId == matchId).Single().FileStatus = success ? (byte)FileStatus.DOWNLOADED : (byte)FileStatus.DOWNLOADFAILED;
-                context.SaveChanges();
-            }
+            _context.Demo.Where(x => x.MatchId == matchId).Single().FileStatus = success ? (byte) FileStatus.DOWNLOADED : (byte) FileStatus.DOWNLOADFAILED;
+            _context.SaveChanges();
+
         }
 
-        public static List<Demo> GetRecentMatches(long playerId, int recentMatches, int offset = 0)
+        public List<Demo> GetRecentMatches(long playerId, int recentMatches, int offset = 0)
         {
-            List<Demo> recentMatchesId;
-            using (var context = new democentralContext())
-            {
-                var res = context.Demo.Where(x => x.UploaderId == playerId).Take(recentMatches + offset).ToList();
-                res.RemoveRange(0, offset);
-
-                recentMatchesId = res;
-            }
+            var recentMatchesId = _context.Demo.Where(x => x.UploaderId == playerId).Take(recentMatches + offset).ToList();
+            recentMatchesId.RemoveRange(0, offset);
 
             return recentMatchesId;
         }
 
-        public static string SetDownloadRetryingAndGetDownloadPath(long matchId)
+        public string SetDownloadRetryingAndGetDownloadPath(long matchId)
         {
             string downloadUrl;
 
-            using (var context = new democentralContext())
-            {
-                var demo = context.Demo.Where(x => x.MatchId == matchId).Single();
+            var demo = _context.Demo.Where(x => x.MatchId == matchId).Single();
 
-                demo.FileStatus = (byte)FileStatus.RETRYING;
-                downloadUrl = demo.DownloadUrl;
-                context.SaveChanges();
-            }
+            demo.FileStatus = (byte) FileStatus.RETRYING;
+            downloadUrl = demo.DownloadUrl;
+            _context.SaveChanges();
+
 
 
             return downloadUrl;
         }
 
-        public static bool CreateNewDemoEntryFromGatherer(GathererTransferModel model)
+        public bool IsDuplicateHash(string hash)
         {
-            using (var context = new democentralContext())
+            var demo = _context.Demo.Where(x => x.Md5hash == hash).SingleOrDefault();
+
+            return !(demo == null);
+        }
+
+
+        public bool CreateNewDemoEntryFromGatherer(GathererTransferModel model)
+        {
+            //checkdownloadurl
+            var demo = _context.Demo.Where(x => x.DownloadUrl.Equals(model.DownloadUrl)).SingleOrDefault();
+            if (demo != null)
+                return false;
+
+            _context.Demo.Add(new Demo
             {
-                //checkdownloadurl
-                var demo = context.Demo.Where(x => x.DownloadUrl.Equals(model.DownloadUrl)).SingleOrDefault();
-                if (demo != null) return false;
+                DownloadUrl = model.DownloadUrl,
+                FileStatus = (byte) FileStatus.NEW,
+                UploadDate = DateTime.Now,
+                UploadType = model.UploadType,
+                MatchDate = model.MatchDate,
+                Source = model.Source,
+                DemoAnalyzerVersion = "",
+                UploaderId = model.UploaderId,
+            });
 
-                context.Demo.Add(new Demo
-                {
-                    DownloadUrl = model.DownloadUrl,
-                    FileStatus = (byte)FileStatus.NEW,
-                    UploadDate = DateTime.Now,
-                    UploadType = model.UploadType,
-                    MatchDate = model.MatchDate,
-                    Source = model.Source,
-                    DemoAnalyzerVersion = "",
-                    UploaderId = model.UploaderId,
-                });
+            _context.SaveChanges();
 
-                Console.WriteLine("New DemoEntry created");
-                context.SaveChanges();
+            _inQueueDBInterface.Add(model.matchId, model.MatchDate, model.Source, model.UploaderId);
 
-                InQueueDBInterface.Add(model.matchId, model.MatchDate, model.Source, model.UploaderId);
+            return true;
 
-                return true;
-            }
         }
     }
 
