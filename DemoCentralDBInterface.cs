@@ -53,12 +53,13 @@ namespace DemoCentral
         {
             _context.Demo.Where(x => x.MatchId == matchId).Single().FilePath = zippedFilePath;
             _context.SaveChanges();
-
         }
 
         internal void RemoveDemo(long matchId)
         {
-            throw new NotImplementedException();
+            var demo = _context.Demo.Where(x => x.MatchId == matchId).Single();
+            _context.Demo.Remove(demo);
+            _context.SaveChanges();
         }
 
         public void UpdateUploadStatus(long matchId, bool success)
