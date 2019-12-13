@@ -16,7 +16,7 @@ using Pomelo.EntityFrameworkCore.MySql;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-
+using DemoCentral.RabbitCommunication;
 
 
 namespace DemoCentral
@@ -35,8 +35,13 @@ namespace DemoCentral
         {
             services.AddDbContext<DemoCentralContext>(options =>
                 options.UseMySql(Configuration.GetConnectionString("DemoCentralDB")));
-            //TODO make background service
             services.AddControllers();
+
+            //TODO GetConnection and Initalize properly
+            services.AddHostedService<MatchDBI>();
+            services.AddHostedService<DemoFileWorker>();
+            services.AddHostedService<Gatherer>();
+            services.AddHostedService<SituationsOperator>();
 
             services.AddSingleton<IDemoCentralDBInterface, DemoCentralDBInterface>();
             services.AddSingleton<IInQueueDBInterface, InQueueDBInterface>();

@@ -9,7 +9,7 @@ namespace DemoCentral
     public interface IDemoCentralDBInterface
     {
         void AddFilePath(long matchId, string zippedFilePath);
-        bool CreateNewDemoEntryFromGatherer(GathererTransferModel model);
+        bool TryCreateNewDemoEntryFromGatherer(long matchId, GathererTransferModel model);
         List<Demo> GetRecentMatches(long playerId, int recentMatches, int offset = 0);
         List<long> GetRecentMatchIds(long playerId, int recentMatches, int offset = 0);
         string SetDownloadRetryingAndGetDownloadPath(long matchId);
@@ -47,6 +47,13 @@ namespace DemoCentral
             }
 
             return recentMatchesId;
+        }
+
+        internal void SetFileStatusZipped(long matchId, bool success)
+        {
+            var demo = _context.Demo.Where(x => x.MatchId == matchId).Single();
+            demo.FileStatus = success ? (byte) FileStatus.UNZIPPED : (byte) FileStatus.UNZIPFAILED;
+            _context.SaveChanges();
         }
 
         public void AddFilePath(long matchId, string zippedFilePath)
@@ -91,7 +98,7 @@ namespace DemoCentral
 
             var demo = _context.Demo.Where(x => x.MatchId == matchId).Single();
 
-            demo.FileStatus = (byte) FileStatus.RETRYING;
+            demo.FileStatus = (byte) FileStatus.DOWNLOAD_RETRYING;
             downloadUrl = demo.DownloadUrl;
             _context.SaveChanges();
 
@@ -108,7 +115,7 @@ namespace DemoCentral
         }
 
 
-        public bool CreateNewDemoEntryFromGatherer(GathererTransferModel model)
+        public bool TryCreateNewDemoEntryFromGatherer(long matchId, GathererTransferModel model)
         {
             //checkdownloadurl
             var demo = _context.Demo.Where(x => x.DownloadUrl.Equals(model.DownloadUrl)).SingleOrDefault();
@@ -129,10 +136,9 @@ namespace DemoCentral
 
             _context.SaveChanges();
 
-            _inQueueDBInterface.Add(model.matchId, model.MatchDate, model.Source, model.UploaderId);
+            _inQueueDBInterface.Add(matchId, model.MatchDate, model.Source, model.UploaderId);
 
             return true;
-
         }
     }
 
