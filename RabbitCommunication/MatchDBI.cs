@@ -13,7 +13,6 @@ namespace DemoCentral.RabbitCommunication
             _dbInterface = dbInterface;
         }
 
-
         protected override void HandleMessage(IBasicProperties properties, AnalyzerTransferModel model)
         {
             long matchId = long.Parse(properties.CorrelationId);

@@ -38,6 +38,12 @@ namespace DemoCentral
                 options.UseMySql(Configuration.GetConnectionString("DemoCentralDB")));
             services.AddControllers();
 
+            //TODO GetConnection and Initalize properly
+            services.AddHostedService<MatchDBI>();
+            services.AddHostedService<DemoFileWorker>();
+            services.AddHostedService<Gatherer>();
+            services.AddHostedService<SituationsOperator>();
+
             services.AddSingleton<IDemoCentralDBInterface, DemoCentralDBInterface>();
             services.AddSingleton<IInQueueDBInterface, InQueueDBInterface>();
 
