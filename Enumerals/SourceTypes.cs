@@ -6,12 +6,12 @@ namespace DemoCentral.Enumerals
 {
         public enum Source
         {
-            Valve,
-            Faceit,
-            Esea,
-            Cevo,
-            Manualupload,
-            Scrimmage,
-            Unknown,
+            VALVE,
+            FACEIT,
+            ESEA,
+            CEVO,
+            MANUALUPLOAD,
+            SCRIMMAGE,
+            UNKNOWN,
         };
 }
