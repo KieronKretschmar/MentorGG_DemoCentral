@@ -1,39 +1,23 @@
-﻿using Newtonsoft.Json;
-using RabbitMQ.Client;
-using RabbitMQ.Client.Events;
-using RabbitTransfer;
-using System.Text;
+﻿using RabbitMQ.Client;
+using RabbitTransfer.Consumer;
+using RabbitTransfer.Interfaces;
 
 namespace DemoCentral.RabbitCommunication
 {
-    public class MatchDBI
+    public class MatchDBI : Consumer<AnalyzerTransferModel>
     {
-        public string QUEUE_NAME => "MatchDBI_DC";
+        private readonly IDemoCentralDBInterface _dbInterface;
 
-        public MatchDBI()
+        public MatchDBI(IQueueConnection queueConnection, IDemoCentralDBInterface dbInterface) : base(queueConnection)
         {
-            using (var connection = RabbitInitializer.GetNewConnection())
-            using (var channel = connection.CreateModel())
-            {
-                channel.QueueDeclare(queue: QUEUE_NAME, durable: false, exclusive: false, autoDelete: false);
-
-                var consumer = new EventingBasicConsumer(channel);
-                consumer.Received += (model, ea) =>
-                {
-                    long matchId = long.Parse(ea.BasicProperties.CorrelationId);
-                    var body = ea.Body;
-                    var message = Encoding.UTF8.GetString(body);
-                    HandleReceive(matchId, message);
-                };
-                channel.BasicConsume(queue: QUEUE_NAME, autoAck: true, consumer: consumer);
-
-            }
+            _dbInterface = dbInterface;
         }
 
-        public void HandleReceive(long matchId, string response)
+
+        protected override void HandleMessage(IBasicProperties properties, AnalyzerTransferModel model)
         {
-            AnalyzerTransferModel responseModel = JsonConvert.DeserializeObject<AnalyzerTransferModel>(response);
-            DemoCentralDBInterface.UpdateUploadStatus(matchId, responseModel.Success);
+            long matchId = long.Parse(properties.CorrelationId);
+            _dbInterface.UpdateUploadStatus(matchId, model.Success);
         }
     }
 }
