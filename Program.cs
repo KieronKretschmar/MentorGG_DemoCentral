@@ -14,25 +14,7 @@ namespace DemoCentral
     {
         public static void Main(string[] args)
         {
-            var host = CreateHostBuilder(args).Build();
-
-            //INIT
-            InitializeRabbitCommunication();
-
-            host.Run();
-        }
-
-        private static void InitializeRabbitCommunication()
-        {
-            //TODO make pretty
-            //TODO check with garbage collection
-            RabbitInitializer.SetUpRPC();
-            new RabbitCommunication.DD();
-            new RabbitCommunication.SO();
-            new RabbitCommunication.MatchDBI();
-            new RabbitCommunication.GathererConsumer();
-            new RabbitCommunication.DFW();
-            new RabbitCommunication.DFWHASH();
+            CreateHostBuilder(args).Build().Run();
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>

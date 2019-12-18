@@ -1,4 +1,5 @@
 using System;
+using RabbitTransfer.Helpers;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -16,7 +17,7 @@ using Pomelo.EntityFrameworkCore.MySql;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-
+using DemoCentral.RabbitCommunication;
 
 
 namespace DemoCentral
@@ -35,11 +36,53 @@ namespace DemoCentral
         {
             services.AddDbContext<DemoCentralContext>(options =>
                 options.UseMySql(Configuration.GetConnectionString("DemoCentralDB")));
-            //TODO make background service
             services.AddControllers();
 
             services.AddSingleton<IDemoCentralDBInterface, DemoCentralDBInterface>();
             services.AddSingleton<IInQueueDBInterface, InQueueDBInterface>();
+
+            var AMQP_URI = Configuration.GetValue<string>("AMQP_URI");
+
+            var AMQP_DEMODOWNLOADER = Configuration.GetValue<string>("AMQP_DEMODOWNLOADER");
+            var AMQP_DEMODOWNLOADER_REPLY = Configuration.GetValue<string>("AMQP_DEMODOWNLOADER_REPLY");
+            var demo_downloader_rpc_queue = new RPCQueueConnections(AMQP_URI, AMQP_DEMODOWNLOADER_REPLY, AMQP_DEMODOWNLOADER);
+
+            var AMQP_DEMOFILEWORKER = Configuration.GetValue<string>("AMQP_DEMOFILEWORKER");
+            var AMQP_DEMOFILEWORKER_REPLY = Configuration.GetValue<string>("AMQP_DEMOFILEWORKER_REPLY");
+            var demo_fileworker_rpc_queue = new RPCQueueConnections(AMQP_URI, AMQP_DEMOFILEWORKER_REPLY, AMQP_DEMOFILEWORKER);
+
+            var AMQP_GATHERER = Configuration.GetValue<string>("AMQP_GATHERER");
+            var gatherer_queue = new QueueConnection(AMQP_URI, AMQP_GATHERER);
+
+            var AMQP_SITUATIONSOPERATOR = Configuration.GetValue<string>("AMQP_SITUATIONSOPERATOR");
+            var so_queue = new QueueConnection(AMQP_URI, AMQP_SITUATIONSOPERATOR);
+
+            var AMQP_MATCHDBI = Configuration.GetValue<string>("AMQP_MATCHDBI");
+            var matchDBI_queue = new QueueConnection(AMQP_URI, AMQP_MATCHDBI);
+
+
+            //TODO GetConnection and Initalize properly
+            services.AddHostedService<MatchDBI>(services =>
+            {
+                return new MatchDBI(matchDBI_queue, services.GetRequiredService<IDemoCentralDBInterface>());
+            });
+
+            services.AddHostedService<DemoFileWorker>(services =>
+            {
+                return new DemoFileWorker(demo_fileworker_rpc_queue, services);
+            });
+            services.AddHostedService<Gatherer>(services =>
+            {
+                return new Gatherer(gatherer_queue, services.GetRequiredService<IDemoCentralDBInterface>());
+            });
+            services.AddHostedService<SituationsOperator>(services =>
+            {
+                return new SituationsOperator(so_queue, services.GetRequiredService<IInQueueDBInterface>());
+            });
+            services.AddHostedService<DemoDownloader>(services =>
+            {
+                return new DemoDownloader(demo_downloader_rpc_queue, services);
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
