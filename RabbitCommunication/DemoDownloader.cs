@@ -47,7 +47,7 @@ namespace DemoCentral.RabbitCommunication
 
                 if (attempts >= 3)
                 {
-                    _demoCentralDBInterface.RemoveDemo(matchId);
+                    _demoCentralDBInterface.SetFileStatusDownloaded(matchId, false);
                     _inQueueDBInterface.RemoveDemoFromQueue(matchId);
                 }
                 else
