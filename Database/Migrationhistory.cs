@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace DemoCentral.DatabaseClasses
+namespace DataBase.DatabaseClasses
 {
     public partial class Migrationhistory
     {

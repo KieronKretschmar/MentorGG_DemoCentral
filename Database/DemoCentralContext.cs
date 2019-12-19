@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Pomelo.EntityFrameworkCore.MySql;
 
-namespace DemoCentral.DatabaseClasses
+namespace DataBase.DatabaseClasses
 {
     public partial class DemoCentralContext : DbContext
     {

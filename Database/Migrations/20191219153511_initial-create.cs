@@ -2,9 +2,9 @@
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace DemoCentral.Migrations
+namespace Database.Migrations
 {
-    public partial class rename_demoId : Migration
+    public partial class initialcreate : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -13,7 +13,7 @@ namespace DemoCentral.Migrations
 
             migrationBuilder.CreateTable(
                 name: "__efmigrationhistory",
-                schema: "democentral",
+                schema: null,
                 columns: table => new
                 {
                     MigrationId = table.Column<string>(unicode: false, maxLength: 150, nullable: false),
@@ -28,7 +28,7 @@ namespace DemoCentral.Migrations
 
             migrationBuilder.CreateTable(
                 name: "Demo",
-                schema: "democentral",
+                schema: null,
                 columns: table => new
                 {
                     MatchId = table.Column<int>(type: "int(11)", nullable: false),
@@ -54,7 +54,7 @@ namespace DemoCentral.Migrations
 
             migrationBuilder.CreateTable(
                 name: "InQueue",
-                schema: "democentral",
+                schema: null,
                 columns: table => new
                 {
                     MatchId = table.Column<long>(nullable: false)
@@ -64,6 +64,7 @@ namespace DemoCentral.Migrations
                     UploadType = table.Column<byte>(type: "tinyint(3) unsigned", nullable: false),
                     Source = table.Column<byte>(type: "tinyint(3) unsigned", nullable: false),
                     InsertDate = table.Column<DateTime>(nullable: false),
+                    DDQUEUE = table.Column<bool>(nullable: false),
                     DFWQUEUE = table.Column<short>(nullable: false),
                     SOQUEUE = table.Column<short>(nullable: false),
                     Retries = table.Column<int>(nullable: false)
@@ -74,19 +75,19 @@ namespace DemoCentral.Migrations
                 });
 
             migrationBuilder.InsertData(
-                schema: "democentral",
+                schema: null,
                 table: "Demo",
                 columns: new[] { "MatchId", "DemoAnalyzerStatus", "DemoAnalyzerVersion", "DownloadUrl", "Event", "FileName", "FilePath", "FileStatus", "MatchDate", "MD5Hash", "Source", "UploadDate", "UploadStatus", "UploadType", "UploaderId" },
                 values: new object[] { 1, (byte)0, "", null, null, null, null, (byte)0, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, (byte)1, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), (byte)0, (byte)0, 1L });
 
             migrationBuilder.InsertData(
-                schema: "democentral",
+                schema: null,
                 table: "Demo",
                 columns: new[] { "MatchId", "DemoAnalyzerStatus", "DemoAnalyzerVersion", "DownloadUrl", "Event", "FileName", "FilePath", "FileStatus", "MatchDate", "MD5Hash", "Source", "UploadDate", "UploadStatus", "UploadType", "UploaderId" },
                 values: new object[] { 2, (byte)0, "", null, null, null, null, (byte)0, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, (byte)1, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), (byte)0, (byte)0, 2L });
 
             migrationBuilder.InsertData(
-                schema: "democentral",
+                schema: null,
                 table: "Demo",
                 columns: new[] { "MatchId", "DemoAnalyzerStatus", "DemoAnalyzerVersion", "DownloadUrl", "Event", "FileName", "FilePath", "FileStatus", "MatchDate", "MD5Hash", "Source", "UploadDate", "UploadStatus", "UploadType", "UploaderId" },
                 values: new object[] { 3, (byte)0, "", null, null, null, null, (byte)0, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, (byte)2, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), (byte)0, (byte)0, 3L });
@@ -96,15 +97,15 @@ namespace DemoCentral.Migrations
         {
             migrationBuilder.DropTable(
                 name: "__efmigrationhistory",
-                schema: "democentral");
+                schema: null);
 
             migrationBuilder.DropTable(
                 name: "Demo",
-                schema: "democentral");
+                schema: null);
 
             migrationBuilder.DropTable(
                 name: "InQueue",
-                schema: "democentral");
+                schema: null);
         }
     }
 }
