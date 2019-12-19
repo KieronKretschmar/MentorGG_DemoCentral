@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using DemoCentral.Enumerals;
+using RabbitTransfer.Enums;
 using DataBase.DatabaseClasses;
 using System.Collections.Generic;
 
@@ -9,7 +10,7 @@ namespace DemoCentral
 {
     public interface IInQueueDBInterface
     {
-        void Add(long matchId, DateTime matchDate, byte source, long uploaderID);
+        void Add(long matchId, DateTime matchDate, Source source, long uploaderID);
         List<InQueueDemo> GetPlayerMatchesInQueue(long playerId);
         int GetQueuePosition(long matchId);
         int GetTotalQueueLength();
@@ -27,14 +28,14 @@ namespace DemoCentral
             _context = context;
         }
 
-        public void Add(long matchId, DateTime matchDate, byte source, long uploaderID)
+        public void Add(long matchId, DateTime matchDate, Source source, long uploaderID)
         {
 
             _context.InQueueDemo.Add(new InQueueDemo
             {
                 MatchId = matchId,
                 MatchDate = matchDate,
-                Source = source,
+                Source = (byte) source,
                 UploaderId = uploaderID,
                 InsertDate = DateTime.Now,
                 DFWQUEUE = false,

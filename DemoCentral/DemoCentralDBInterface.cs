@@ -1,9 +1,10 @@
 ﻿using DataBase.DatabaseClasses;
-using DemoCentral.Enumerals;
+using RabbitTransfer.Enums;
 using RabbitTransfer.TransferModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using DemoCentral.Enumerals;
 
 namespace DemoCentral
 {
@@ -43,7 +44,7 @@ namespace DemoCentral
             var model = new DC2DFWModel
             {
                 Event = demo.Event,
-                Source = Enum.GetName(typeof(Source), demo.Source),
+                Source = (Source) demo.Source,
                 MatchDate = demo.MatchDate,
                 ZippedFilePath = demo.FilePath
             };
@@ -146,9 +147,9 @@ namespace DemoCentral
                 DownloadUrl = model.DownloadUrl,
                 FileStatus = (byte) FileStatus.NEW,
                 UploadDate = DateTime.Now,
-                UploadType = model.UploadType,
+                UploadType = (byte) model.UploadType,
                 MatchDate = model.MatchDate,
-                Source = model.Source,
+                Source = (byte) model.Source,
                 DemoAnalyzerVersion = "",
                 UploaderId = model.UploaderId,
             });

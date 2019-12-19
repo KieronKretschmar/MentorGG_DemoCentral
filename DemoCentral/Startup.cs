@@ -17,7 +17,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using DemoCentral.RabbitCommunication;
-
+using RabbitTransfer.Queues;
 
 namespace DemoCentral
 {
@@ -60,7 +60,6 @@ namespace DemoCentral
             var matchDBI_queue = new QueueConnection(AMQP_URI, AMQP_MATCHDBI);
 
 
-            //TODO GetConnection and Initalize properly
             services.AddHostedService<MatchDBI>(services =>
             {
                 return new MatchDBI(matchDBI_queue, services.GetRequiredService<IDemoCentralDBInterface>());
