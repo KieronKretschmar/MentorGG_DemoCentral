@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Pomelo.EntityFrameworkCore.MySql;
+using RabbitTransfer.Enums;
 
 namespace DataBase.DatabaseClasses
 {
@@ -31,8 +32,8 @@ namespace DataBase.DatabaseClasses
                 entity.ToTable("InQueue", "democentral");
 
                 entity.Property(e => e.UploaderId).HasColumnType("bigint(20)");
-                entity.Property(e => e.Source).HasColumnType("tinyint(3) unsigned");
-                entity.Property(e => e.UploadType).HasColumnType("tinyint(3) unsigned");
+                entity.Property(e => e.Source).HasColumnType("tinyint(3) unsigned").HasConversion(new EnumToNumberConverter<Source,byte>());
+                entity.Property(e => e.UploadType).HasColumnType("tinyint(3) unsigned").HasConversion(new EnumToNumberConverter<UploadType, byte>());
 
                 entity.Property(e => e.DFWQUEUE).HasConversion(new BoolToZeroOneConverter<short>());
                 entity.Property(e => e.SOQUEUE).HasConversion(new BoolToZeroOneConverter<short>());
@@ -63,9 +64,10 @@ namespace DataBase.DatabaseClasses
                     .HasColumnName("MD5Hash")
                     .HasColumnType("longtext");
 
-                entity.Property(e => e.Source).HasColumnType("tinyint(3) unsigned");
+                entity.Property(e => e.Source).HasColumnType("tinyint(3) unsigned").HasConversion(new EnumToNumberConverter<Source, byte>());
 
-                entity.Property(e => e.UploadType).HasColumnType("tinyint(3) unsigned");
+                entity.Property(e => e.UploadType).HasColumnType("tinyint(3) unsigned").HasConversion(new EnumToNumberConverter<UploadType, byte>());
+
 
                 entity.Property(e => e.UploaderId).HasColumnType("bigint(20)");
             });
