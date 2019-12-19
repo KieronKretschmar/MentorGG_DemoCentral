@@ -79,7 +79,7 @@ namespace DemoCentral
             });
             services.AddHostedService<Gatherer>(services =>
             {
-                return new Gatherer(gatherer_queue, services.GetRequiredService<IDemoCentralDBInterface>());
+                return new Gatherer(gatherer_queue, services.GetRequiredService<IDemoCentralDBInterface>(), services.GetRequiredService<DemoDownloader>());
             });
             services.AddHostedService<SituationsOperator>(services =>
             {
