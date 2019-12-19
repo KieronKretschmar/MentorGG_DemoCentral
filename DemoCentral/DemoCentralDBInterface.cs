@@ -1,5 +1,6 @@
 ﻿using DataBase.DatabaseClasses;
 using DemoCentral.Enumerals;
+using RabbitTransfer.TransferModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;

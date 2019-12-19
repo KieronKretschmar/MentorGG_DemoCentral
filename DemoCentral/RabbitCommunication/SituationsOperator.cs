@@ -1,6 +1,7 @@
 ﻿using RabbitMQ.Client;
 using RabbitTransfer.Consumer;
 using RabbitTransfer.Interfaces;
+using RabbitTransfer.TransferModels;
 
 namespace DemoCentral.RabbitCommunication
 {
@@ -17,7 +18,7 @@ namespace DemoCentral.RabbitCommunication
             _inQueueDBInterface = inQueueDBInterface;
         }
 
-        protected override void HandleMessage(IBasicProperties properties, AnalyzerTransferModel model)
+        public override void HandleMessage(IBasicProperties properties, AnalyzerTransferModel model)
         {
             long matchId = long.Parse(properties.CorrelationId);
             _inQueueDBInterface.UpdateQueueStatus(matchId, "SO", model.Success);

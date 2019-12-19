@@ -4,27 +4,27 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using RabbitMQ.Client;
-using RabbitTransfer.Producer;
+using RabbitTransfer.RPC;
+using RabbitTransfer.TransferModels;
 using RabbitTransfer.Interfaces;
-using RabbitTransfer.Consumer;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace DemoCentral.RabbitCommunication
 {
-    public class DemoDownloader : RPCProducer<DC_DD_Model, DD_DC_Model>
+    public class DemoDownloader : RPCClient<DC_DD_Model, DD_DC_Model>
     {
         private readonly DemoCentralDBInterface _demoCentralDBInterface;
         private readonly InQueueDBInterface _inQueueDBInterface;
         private readonly DemoFileWorker _demoFileWorker;
 
-        public DemoDownloader(IQueueReplyQueueConnection queueConnection, IServiceProvider serviceProvider, bool persistantMessageSending = true) : base(queueConnection, persistantMessageSending)
+        public DemoDownloader(IRPCQueueConnections queueConnection, IServiceProvider serviceProvider, bool persistantMessageSending = true) : base(queueConnection, persistantMessageSending)
         {
             _demoCentralDBInterface = serviceProvider.GetService<DemoCentralDBInterface>();
             _inQueueDBInterface = serviceProvider.GetService<InQueueDBInterface>();
             _demoFileWorker = serviceProvider.GetRequiredService<DemoFileWorker>();
         }
 
-        public override void HandleReply(IBasicProperties properties, DD_DC_Model consumeModel)
+        public override void HandleMessage(IBasicProperties properties, DD_DC_Model consumeModel)
         {
             long matchId = long.Parse(properties.CorrelationId);
 
