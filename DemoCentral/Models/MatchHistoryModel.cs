@@ -10,10 +10,9 @@ namespace DemoCentral.Models
     {
         List<MatchHistoryEntry> Entries { get; set; }
 
-        public static MatchHistoryModel FromRecentMatches(long playerId, int recentMatches,int offset)
+        public static MatchHistoryModel FromRecentMatches(long playerId, int recentMatches,int offset, IDemoCentralDBInterface dBInterface)
         {
-            List<DataBase.DatabaseClasses.Demo> matches = null;
-            //DemoCentralDBInterface.GetRecentMatches(playerId,recentMatches,offset);
+            var matches = dBInterface.GetRecentMatches(playerId,recentMatches,offset);
             List<MatchHistoryEntry> matchHistoryEntries = new List<MatchHistoryEntry>();
             foreach (var match in matches)
             {
