@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Pomelo.EntityFrameworkCore.MySql;
 using RabbitTransfer.Enums;
+using DataBase.Enumerals;
 
 namespace DataBase.DatabaseClasses
 {
@@ -50,7 +51,7 @@ namespace DataBase.DatabaseClasses
 
                 entity.Property(e => e.MatchId).HasColumnType("int(11)").ValueGeneratedOnAdd();
 
-                entity.Property(e => e.DemoAnalyzerStatus).HasColumnType("tinyint(3) unsigned");
+                entity.Property(e => e.DemoAnalyzerStatus).HasColumnType("tinyint(3) unsigned").HasConversion(new EnumToNumberConverter<DemoAnalyzerStatus, byte>());
 
                 entity.Property(e => e.DownloadUrl).HasColumnType("longtext");
 
@@ -58,7 +59,7 @@ namespace DataBase.DatabaseClasses
 
                 entity.Property(e => e.FilePath).HasColumnType("longtext");
 
-                entity.Property(e => e.FileStatus).HasColumnType("tinyint(3) unsigned");
+                entity.Property(e => e.FileStatus).HasColumnType("tinyint(3) unsigned").HasConversion(new EnumToNumberConverter<FileStatus, byte>());
 
                 entity.Property(e => e.Md5hash)
                     .HasColumnName("MD5Hash")

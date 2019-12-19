@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using DataBase.Enumerals;
 
 namespace DemoCentral.Models
 {
@@ -20,7 +21,7 @@ namespace DemoCentral.Models
                 {
                     MatchId = match.MatchId,
                     MatchDate = match.MatchDate,
-                    Success = match.DemoAnalyzerStatus == (byte) Enumerals.DemoAnalyzerStatus.Finished
+                    Success = match.DemoAnalyzerStatus == (byte) DemoAnalyzerStatus.Finished
                 });
             }
 
