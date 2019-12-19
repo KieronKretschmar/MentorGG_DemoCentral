@@ -146,7 +146,7 @@ namespace DemoCentral
             {
                 DownloadUrl = model.DownloadUrl,
                 FileStatus = (byte) FileStatus.NEW,
-                UploadDate = DateTime.Now,
+                UploadDate = DateTime.UtcNow,
                 UploadType = (byte) model.UploadType,
                 MatchDate = model.MatchDate,
                 Source = (byte) model.Source,
