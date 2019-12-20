@@ -47,7 +47,7 @@ namespace DemoCentral
 
         public void UpdateQueueStatus(long matchId, string QueueName, bool inQueue)
         {
-            var demo = GetDemoById(matchId);
+            InQueueDemo demo = GetDemoById(matchId);
             //TODO make queue name enum
             switch (QueueName)
             {
@@ -58,6 +58,10 @@ namespace DemoCentral
                 case "SO":
                 case "SituationsOperator":
                     demo.SOQUEUE = inQueue;
+                    break;
+                case "DD":
+                case "DemoDownloader":
+                    demo.DDQUEUE = inQueue;
                     break;
                 default:
                     throw new Exception("Unknown queue");

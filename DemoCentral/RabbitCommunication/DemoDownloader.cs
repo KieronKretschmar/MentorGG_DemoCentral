@@ -26,7 +26,10 @@ namespace DemoCentral.RabbitCommunication
 
         public new void PublishMessage(string correlationId, DC_DD_Model produceModel)
         {
-            _demoCentralDBInterface.SetFileStatusDownloading(long.Parse(correlationId));
+            long matchId = long.Parse(correlationId);
+            _demoCentralDBInterface.SetFileStatusDownloading(matchId);
+            _inQueueDBInterface.UpdateQueueStatus(matchId, "DD", true);
+        
             base.PublishMessage(correlationId, produceModel);
         }
 
@@ -35,10 +38,10 @@ namespace DemoCentral.RabbitCommunication
             long matchId = long.Parse(properties.CorrelationId);
 
             _demoCentralDBInterface.SetFileStatusDownloaded(matchId, consumeModel.Success);
+
             if (consumeModel.Success)
             {
                 _demoCentralDBInterface.AddFilePath(matchId, consumeModel.DemoUrl);
-                _demoCentralDBInterface.SetFileStatusDownloaded(matchId, true);
 
                 _inQueueDBInterface.UpdateQueueStatus(matchId, "DD", false);
 
@@ -53,7 +56,6 @@ namespace DemoCentral.RabbitCommunication
 
                 if (attempts >= 3)
                 {
-                    _demoCentralDBInterface.SetFileStatusDownloaded(matchId, false);
                     _inQueueDBInterface.RemoveDemoFromQueue(matchId);
                 }
                 else

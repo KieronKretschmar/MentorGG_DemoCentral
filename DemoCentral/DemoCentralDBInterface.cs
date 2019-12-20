@@ -28,6 +28,13 @@ namespace DemoCentral
         private readonly DemoCentralContext _context;
         private readonly IInQueueDBInterface _inQueueDBInterface;
 
+        internal void SetFileStatusDownloading(long matchId)
+        {
+            var demo = GetDemoById(matchId);
+            demo.FileStatus = (byte) FileStatus.DOWNLOADING;
+            _context.SaveChanges();
+        }
+
         public DemoCentralDBInterface(DemoCentralContext context, IInQueueDBInterface inQueueDBInterface)
         {
             _context = context;

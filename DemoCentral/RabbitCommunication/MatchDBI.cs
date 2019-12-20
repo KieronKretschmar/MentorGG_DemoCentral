@@ -17,7 +17,7 @@ namespace DemoCentral.RabbitCommunication
         public override void HandleMessage(IBasicProperties properties, AnalyzerTransferModel model)
         {
             long matchId = long.Parse(properties.CorrelationId);
-            _dbInterface.UpdateUploadStatus(matchId, model.Success);
+            _dbInterface.SetUploadStatus(matchId, model.Success);
         }
     }
 }
