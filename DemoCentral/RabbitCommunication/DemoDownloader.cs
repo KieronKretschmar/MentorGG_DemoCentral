@@ -24,6 +24,12 @@ namespace DemoCentral.RabbitCommunication
             _demoFileWorker = serviceProvider.GetRequiredService<DemoFileWorker>();
         }
 
+        public new void PublishMessage(string correlationId, DC_DD_Model produceModel)
+        {
+            _demoCentralDBInterface.SetFileStatusDownloading(long.Parse(correlationId));
+            base.PublishMessage(correlationId, produceModel);
+        }
+
         public override void HandleMessage(IBasicProperties properties, DD_DC_Model consumeModel)
         {
             long matchId = long.Parse(properties.CorrelationId);
