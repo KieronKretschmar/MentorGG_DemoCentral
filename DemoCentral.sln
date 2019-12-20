@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Database", "Database\Databa
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RabbitTransfer", "RabbitCommunicationLib\RabbitTransfer.csproj", "{88D2B09C-58CB-4309-960E-AEFB756D5427}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DemoCentralTest", "DemoCentralTest\DemoCentralTest.csproj", "{CC0F7FD2-C194-4CCB-9063-DA81D1BD4E64}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DemoCentralTests", "DemoCentralTest\DemoCentralTests.csproj", "{CC0F7FD2-C194-4CCB-9063-DA81D1BD4E64}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
