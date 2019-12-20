@@ -36,7 +36,7 @@ namespace DemoCentral
                 MatchDate = matchDate,
                 Source = (byte) source,
                 UploaderId = uploaderID,
-                InsertDate = DateTime.Now,
+                InsertDate = DateTime.UtcNow,
                 DFWQUEUE = false,
                 SOQUEUE = false
             });
