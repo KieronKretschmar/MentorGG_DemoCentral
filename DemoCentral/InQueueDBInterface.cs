@@ -47,7 +47,7 @@ namespace DemoCentral
 
         public void UpdateQueueStatus(long matchId, string QueueName, bool inQueue)
         {
-            var demo = _context.InQueueDemo.Where(x => x.MatchId == matchId).Single();
+            var demo = GetDemoById(matchId);
             //TODO make queue name enum
             switch (QueueName)
             {
@@ -77,7 +77,6 @@ namespace DemoCentral
 
         public List<InQueueDemo> GetPlayerMatchesInQueue(long playerId)
         {
-
             return _context.InQueueDemo.Where(x => x.UploaderId == playerId).ToList();
         }
 
@@ -88,20 +87,16 @@ namespace DemoCentral
 
         public void RemoveDemoFromQueue(long matchId)
         {
-            var demo = _context.InQueueDemo.Find(matchId);
-            if (demo == null)
-                throw new KeyNotFoundException("Demo not in Queue");
+            var demo = GetDemoById(matchId);
 
             _context.InQueueDemo.Remove(demo);
+
+            _context.SaveChanges();
         }
 
         public int GetQueuePosition(long matchId)
         {
-            var demo = _context.InQueueDemo.Find(matchId);
-
-            //Closest match in predefined exceptions
-            if (demo == null)
-                throw new KeyNotFoundException("Demo not in Queue");
+            var demo = GetDemoById(matchId);
 
             //TODO possible optimization by keeping track of row in db
             return _context.InQueueDemo.Select(x => x.InsertDate).Where(x => x < demo.InsertDate).Count();
@@ -109,11 +104,17 @@ namespace DemoCentral
 
         public int IncrementRetry(long matchId)
         {
-            var demo = _context.InQueueDemo.Where(x => x.MatchId == matchId).Single();
+            var demo = GetDemoById(matchId);
             var attempts = demo.Retries++;
 
             _context.SaveChanges();
             return attempts;
+        }
+
+
+        private InQueueDemo GetDemoById(long matchId)
+        {
+            return  _context.InQueueDemo.Where(x => x.MatchId == matchId).Single();
         }
     }
 }
