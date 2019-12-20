@@ -30,7 +30,7 @@ namespace DemoCentral.Controllers.exposed
 
         [HttpGet("[action]/{playerId}")]
         // GET /api/exposed/queue/playermatches/1
-        public int PlayerMatches(long playerId)
+        public int NumberPlayerMatches(long playerId)
         {
             return _dbInterface.GetPlayerMatchesInQueue(playerId).Count;
         }
