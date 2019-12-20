@@ -51,7 +51,6 @@ namespace DemoCentral.RabbitCommunication
             }
             else
             {
-                var downloadUrl = _demoCentralDBInterface.SetDownloadRetryingAndGetDownloadPath(matchId);
                 int attempts = _inQueueDBInterface.IncrementRetry(matchId);
 
                 if (attempts >= 3)
@@ -60,6 +59,8 @@ namespace DemoCentral.RabbitCommunication
                 }
                 else
                 {
+                    var downloadUrl = _demoCentralDBInterface.SetDownloadRetryingAndGetDownloadPath(matchId);
+
                     var resendModel = new DC_DD_Model
                     {
                         DownloadUrl = downloadUrl,
