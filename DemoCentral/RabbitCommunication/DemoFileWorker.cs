@@ -20,25 +20,25 @@ namespace DemoCentral.RabbitCommunication
 
         public new void PublishMessage(string correlationId, DC2DFWModel model)
         {
-            _inQueueDBInterface.UpdateQueueStatus(long.Parse(correlationId), "DFW", true);
+            long matchId = long.Parse(correlationId);
+            _inQueueDBInterface.UpdateQueueStatus(matchId, "DFW", true);
             base.PublishMessage(correlationId, model);
         }
 
         private void updateDBEntryFromFileWorkerResponse(long matchId, DFW2DCModel response)
         {
-
             if (!response.Unzipped)
             {
                 _demoDBInterface.SetFileStatusZipped(matchId, false);
+                _inQueueDBInterface.RemoveDemoFromQueue(matchId);
             }
             else if (response.DuplicateChecked && response.IsDuplicate)
             {
                 //TODO Put in extra table if same match uploaded by different persons
                 _demoDBInterface.RemoveDemo(matchId);
             }
-            else if (response.UploadedToDb)
+            else if (response.Success)
             {
-
                 _demoDBInterface.AddFilePath(matchId, response.zippedFilePath);
 
                 _demoDBInterface.SetFileStatusZipped(matchId, true);
