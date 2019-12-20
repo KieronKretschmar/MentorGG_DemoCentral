@@ -114,7 +114,7 @@ namespace DemoCentral
 
         private InQueueDemo GetDemoById(long matchId)
         {
-            return  _context.InQueueDemo.Where(x => x.MatchId == matchId).Single();
+            return _context.InQueueDemo.Where(x => x.MatchId == matchId).Single();
         }
     }
 }

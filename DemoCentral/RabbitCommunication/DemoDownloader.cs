@@ -28,7 +28,7 @@ namespace DemoCentral.RabbitCommunication
         {
             long matchId = long.Parse(properties.CorrelationId);
 
-            _demoCentralDBInterface.UpdateDownloadStatus(matchId, consumeModel.Success);
+            _demoCentralDBInterface.SetFileStatusDownloaded(matchId, consumeModel.Success);
             if (consumeModel.Success)
             {
                 _demoCentralDBInterface.AddFilePath(matchId, consumeModel.DemoUrl);

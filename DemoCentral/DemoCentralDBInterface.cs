@@ -11,12 +11,16 @@ namespace DemoCentral
     public interface IDemoCentralDBInterface
     {
         void AddFilePath(long matchId, string zippedFilePath);
-        bool TryCreateNewDemoEntryFromGatherer(long matchId, GathererTransferModel model);
+        DC2DFWModel CreateDemoFileWorkerModel(long matchId);
         List<Demo> GetRecentMatches(long playerId, int recentMatches, int offset = 0);
         List<long> GetRecentMatchIds(long playerId, int recentMatches, int offset = 0);
+        bool IsDuplicateHash(string hash);
         string SetDownloadRetryingAndGetDownloadPath(long matchId);
-        void UpdateDownloadStatus(long matchId, bool success);
-        void UpdateUploadStatus(long matchId, bool success);
+        void SetFileStatusDownloaded(long matchId, bool success);
+        void SetFileStatusZipped(long matchId, bool success);
+        void SetUploadStatus(long matchId, bool success);
+        bool TryCreateNewDemoEntryFromGatherer(long matchId, GathererTransferModel model);
+        void UpdateHash(long matchId, string hash);
     }
 
     public class DemoCentralDBInterface : IDemoCentralDBInterface
@@ -54,7 +58,7 @@ namespace DemoCentral
 
         public List<long> GetRecentMatchIds(long playerId, int recentMatches, int offset = 0)
         {
-            List<long> recentMatchesId = _context.Demo.Where(x => x.UploaderId == playerId).Select(x=>x.MatchId).Take(recentMatches + offset).ToList();
+            List<long> recentMatchesId = _context.Demo.Where(x => x.UploaderId == playerId).Select(x => x.MatchId).Take(recentMatches + offset).ToList();
             recentMatchesId.RemoveRange(0, offset);
 
             return recentMatchesId;
@@ -88,18 +92,10 @@ namespace DemoCentral
             _context.SaveChanges();
         }
 
-        public void UpdateUploadStatus(long matchId, bool success)
+        public void SetUploadStatus(long matchId, bool success)
         {
             var demo = GetDemoById(matchId);
             demo.UploadStatus = success ? (byte) UploadStatus.FINISHED : (byte) UploadStatus.FAILED;
-            _context.SaveChanges();
-
-        }
-
-        public void UpdateDownloadStatus(long matchId, bool success)
-        {
-            var demo = GetDemoById(matchId);
-            demo.FileStatus = success ? (byte) FileStatus.DOWNLOADED : (byte) FileStatus.DOWNLOADFAILED;
             _context.SaveChanges();
 
         }
