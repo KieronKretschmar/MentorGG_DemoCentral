@@ -27,16 +27,15 @@ namespace DemoCentral
             _context = context;
         }
 
-        public void Add(long matchId, DateTime matchDate, Source source, long uploaderID)
+        public void Add(long matchId, DateTime matchDate, Source source, long uploaderId)
         {
 
             _context.InQueueDemo.Add(new InQueueDemo
             {
                 MatchId = matchId,
                 MatchDate = matchDate,
-                Source = (byte) source,
-                UploaderId = uploaderID,
                 InsertDate = DateTime.UtcNow,
+                UploaderId = uploaderId,
                 DFWQUEUE = false,
                 SOQUEUE = false
             });
@@ -64,12 +63,12 @@ namespace DemoCentral
                     demo.DDQUEUE = inQueue;
                     break;
                 default:
-                    throw new Exception("Unknown queue");
+                    throw new InvalidOperationException("Unknown queue");
             }
 
 
             //TODO implement better queue check, like names list etc
-            List<bool> queueStates = new List<bool> { demo.DFWQUEUE, demo.SOQUEUE };
+            List<bool> queueStates = new List<bool> { demo.DFWQUEUE, demo.SOQUEUE, demo.DDQUEUE };
             if (!queueStates.Contains(true))
             {
                 _context.InQueueDemo.Remove(demo);
