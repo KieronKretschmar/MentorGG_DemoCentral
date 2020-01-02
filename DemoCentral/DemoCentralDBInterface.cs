@@ -31,7 +31,7 @@ namespace DemoCentral
         internal void SetFileStatusDownloading(long matchId)
         {
             var demo = GetDemoById(matchId);
-            demo.FileStatus = (byte) FileStatus.DOWNLOADING;
+            demo.FileStatus = FileStatus.DOWNLOADING;
             _context.SaveChanges();
         }
 
@@ -55,7 +55,7 @@ namespace DemoCentral
             var model = new DC2DFWModel
             {
                 Event = demo.Event,
-                Source = (Source) demo.Source,
+                Source = demo.Source,
                 MatchDate = demo.MatchDate,
                 ZippedFilePath = demo.FilePath
             };
@@ -74,14 +74,14 @@ namespace DemoCentral
         public void SetFileStatusZipped(long matchId, bool success)
         {
             var demo = GetDemoById(matchId);
-            demo.FileStatus = success ? (byte) FileStatus.UNZIPPED : (byte) FileStatus.UNZIPFAILED;
+            demo.FileStatus = success ? FileStatus.UNZIPPED :  FileStatus.UNZIPFAILED;
             _context.SaveChanges();
         }
 
         public void SetFileStatusDownloaded(long matchId, bool success)
         {
             var demo = GetDemoById(matchId);
-            demo.FileStatus = success ? (byte) FileStatus.DOWNLOADED : (byte) FileStatus.DOWNLOADFAILED;
+            demo.FileStatus = success ? FileStatus.DOWNLOADED :  FileStatus.DOWNLOADFAILED;
             _context.SaveChanges();
         }
 
@@ -102,7 +102,7 @@ namespace DemoCentral
         public void SetUploadStatus(long matchId, bool success)
         {
             var demo = GetDemoById(matchId);
-            demo.UploadStatus = success ? (byte) UploadStatus.FINISHED : (byte) UploadStatus.FAILED;
+            demo.UploadStatus = success ?  UploadStatus.FINISHED :  UploadStatus.FAILED;
             _context.SaveChanges();
 
         }
@@ -119,7 +119,7 @@ namespace DemoCentral
         {
             var demo = GetDemoById(matchId);
 
-            demo.FileStatus = (byte) FileStatus.DOWNLOAD_RETRYING;
+            demo.FileStatus =  FileStatus.DOWNLOAD_RETRYING;
             string downloadUrl = demo.DownloadUrl;
             _context.SaveChanges();
 
@@ -144,11 +144,11 @@ namespace DemoCentral
             _context.Demo.Add(new Demo
             {
                 DownloadUrl = model.DownloadUrl,
-                FileStatus = (byte) FileStatus.NEW,
+                FileStatus = FileStatus.NEW,
                 UploadDate = DateTime.UtcNow,
-                UploadType = (byte) model.UploadType,
+                UploadType =  model.UploadType,
                 MatchDate = model.MatchDate,
-                Source = (byte) model.Source,
+                Source = model.Source,
                 DemoAnalyzerVersion = "",
                 UploaderId = model.UploaderId,
             });

@@ -20,7 +20,7 @@ namespace DemoCentral.Models
                 {
                     MatchId = match.MatchId,
                     MatchDate = match.MatchDate,
-                    Success = match.DemoAnalyzerStatus == (byte) DemoAnalyzerStatus.Finished
+                    Success = match.DemoAnalyzerStatus == DemoAnalyzerStatus.Finished
                 });
             }
 
