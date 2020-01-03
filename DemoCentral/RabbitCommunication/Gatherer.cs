@@ -19,7 +19,6 @@ namespace DemoCentral.RabbitCommunication
 
         public override void HandleMessage(IBasicProperties properties, GathererTransferModel model)
         {
-            //TODO handle correlationId from Gatherers
             //TODO handle duplicate entry, currently not inserted into db and forgotten afterwards
             if (_dbInterface.TryCreateNewDemoEntryFromGatherer(model, out long matchId))
             {
