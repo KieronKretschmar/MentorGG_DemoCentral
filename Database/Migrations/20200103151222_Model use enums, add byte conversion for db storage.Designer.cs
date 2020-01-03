@@ -3,14 +3,16 @@ using System;
 using DataBase.DatabaseClasses;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Database.Migrations
 {
     [DbContext(typeof(DemoCentralContext))]
-    partial class DemoCentralContextModelSnapshot : ModelSnapshot
+    [Migration("20200103151222_Model use enums, add byte conversion for db storage")]
+    partial class Modeluseenumsaddbyteconversionfordbstorage
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
