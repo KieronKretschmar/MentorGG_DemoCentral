@@ -9,13 +9,13 @@ namespace DemoCentral.RabbitCommunication
 {
     public class DemoFileWorker : RPCClient<DC2DFWModel, DFW2DCModel>
     {
-        private readonly DemoCentralDBInterface _demoDBInterface;
-        private readonly InQueueDBInterface _inQueueDBInterface;
+        private readonly IDemoCentralDBInterface _demoDBInterface;
+        private readonly IInQueueDBInterface _inQueueDBInterface;
 
         public DemoFileWorker(IRPCQueueConnections queueConnection, IServiceProvider provider, bool persistantMessageSending = true) : base(queueConnection, persistantMessageSending)
         {
-            _demoDBInterface = provider.GetService<DemoCentralDBInterface>();
-            _inQueueDBInterface = provider.GetService<InQueueDBInterface>();
+            _demoDBInterface = provider.GetRequiredService<IDemoCentralDBInterface>();
+            _inQueueDBInterface = provider.GetRequiredService<IInQueueDBInterface>();
         }
 
         public new void PublishMessage(string correlationId, DC2DFWModel model)
