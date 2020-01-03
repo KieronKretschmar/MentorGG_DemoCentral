@@ -2,3 +2,5 @@
 obj/
 bin/
 *.orig
+TestResults/
+DemoCentral/Properties/launchSettings.json
