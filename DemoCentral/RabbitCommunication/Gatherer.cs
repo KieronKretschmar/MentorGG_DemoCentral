@@ -19,16 +19,15 @@ namespace DemoCentral.RabbitCommunication
 
         public override void HandleMessage(IBasicProperties properties, GathererTransferModel model)
         {
-            long matchId = long.Parse(properties.CorrelationId);
-
+            //TODO handle correlationId from Gatherers
             //TODO handle duplicate entry, currently not inserted into db and forgotten afterwards
-            if (_dbInterface.TryCreateNewDemoEntryFromGatherer(matchId, model))
+            if (_dbInterface.TryCreateNewDemoEntryFromGatherer(model, out long matchId))
             {
                 var forwardModel = new DC_DD_Model
                 {
                     DownloadUrl = model.DownloadUrl
                 };
-                _demoDownloader.PublishMessage(properties.CorrelationId, forwardModel);
+                _demoDownloader.PublishMessage(matchId.ToString(), forwardModel);
             }
         }
     }

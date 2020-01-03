@@ -19,7 +19,7 @@ namespace DemoCentral
         void SetFileStatusDownloaded(long matchId, bool success);
         void SetFileStatusZipped(long matchId, bool success);
         void SetUploadStatus(long matchId, bool success);
-        bool TryCreateNewDemoEntryFromGatherer(long matchId, GathererTransferModel model);
+        bool TryCreateNewDemoEntryFromGatherer(GathererTransferModel model, out long matchId);
         void UpdateHash(long matchId, string hash);
     }
 
@@ -134,27 +134,32 @@ namespace DemoCentral
         }
 
 
-        public bool TryCreateNewDemoEntryFromGatherer(long matchId, GathererTransferModel model)
+        public bool TryCreateNewDemoEntryFromGatherer(GathererTransferModel model, out long matchId)
         {
             //checkdownloadurl
             var demo = _context.Demo.Where(x => x.DownloadUrl.Equals(model.DownloadUrl)).SingleOrDefault();
             if (demo != null)
+            {
+                matchId = -1;
                 return false;
-
-            _context.Demo.Add(new Demo
+            }
+            demo = new Demo
             {
                 DownloadUrl = model.DownloadUrl,
                 FileStatus = FileStatus.NEW,
                 UploadDate = DateTime.UtcNow,
-                UploadType =  model.UploadType,
+                UploadType = model.UploadType,
                 MatchDate = model.MatchDate,
                 Source = model.Source,
                 DemoAnalyzerVersion = "",
                 UploaderId = model.UploaderId,
-            });
+            };
+
+            _context.Demo.Add(demo);
 
             _context.SaveChanges();
 
+            matchId = demo.MatchId;
             _inQueueDBInterface.Add(matchId, model.MatchDate, model.Source, model.UploaderId);
 
             return true;
