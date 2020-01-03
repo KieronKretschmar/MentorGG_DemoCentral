@@ -7,17 +7,34 @@ using System.Collections.Generic;
 
 namespace DemoCentral
 {
+    /// <summary>
+    /// CRUD jobs for the database
+    /// </summary>
     public interface IInQueueDBInterface
     {
+        /// <summary>
+        /// Add a new demo to the queue, and set all queue status to false
+        /// </summary>
         void Add(long matchId, DateTime matchDate, Source source, long uploaderID);
+        /// <summary>
+        /// Get a list of all<see cref="InQueueDemo"/> for a certain player
+        /// </summary>
         List<InQueueDemo> GetPlayerMatchesInQueue(long playerId);
         int GetQueuePosition(long matchId);
         int GetTotalQueueLength();
         int IncrementRetry(long matchId);
         void RemoveDemoFromQueue(long matchId);
+        /// <summary>
+        /// Update the status for a certain queue
+        /// </summary>
+        /// <remarks>if all queues are set to false after execution the demo gets removed from the table</remarks>
+        /// <param name="inQueue">bool if it is in that queue</param>
         void UpdateQueueStatus(long matchId, string QueueName, bool inQueue);
     }
 
+    /// <summary>
+    /// Basic implementation of the <see cref="IInQueueDBInterface"/>
+    /// </summary>
     public class InQueueDBInterface : IInQueueDBInterface
     {
         private readonly DemoCentralContext _context;
@@ -37,7 +54,9 @@ namespace DemoCentral
                 InsertDate = DateTime.UtcNow,
                 UploaderId = uploaderId,
                 DFWQUEUE = false,
-                SOQUEUE = false
+                SOQUEUE = false,
+                DDQUEUE = false,
+                Retries = 0,
             });
 
             _context.SaveChanges();

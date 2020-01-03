@@ -1,5 +1,4 @@
 ﻿using DataBase.DatabaseClasses;
-using RabbitTransfer.Enums;
 using RabbitTransfer.TransferModels;
 using System;
 using System.Collections.Generic;
@@ -8,6 +7,9 @@ using DataBase.Enumerals;
 
 namespace DemoCentral
 {
+    /// <summary>
+    /// CRUD jobs for the Demo table
+    /// </summary>
     public interface IDemoCentralDBInterface
     {
         void AddFilePath(long matchId, string zippedFilePath);
@@ -20,10 +22,18 @@ namespace DemoCentral
         void SetFileStatusDownloaded(long matchId, bool success);
         void SetFileStatusZipped(long matchId, bool success);
         void SetUploadStatus(long matchId, bool success);
+        /// <summary>
+        /// try to create a new entry in the demo table, return false and a negative matchId if the downloadUrl is already known
+        /// </summary>
+        /// <remarks>the demo gets added to the InQueueDemo table too</remarks>
+        /// <returns>true and a positive matchId if the downloadUrl is unique</returns>
         bool TryCreateNewDemoEntryFromGatherer(GathererTransferModel model, out long matchId);
         void UpdateHash(long matchId, string hash);
     }
 
+    /// <summary>
+    /// Basic implementation of the <see cref="IDemoCentralDBInterface"/>
+    /// </summary>
     public class DemoCentralDBInterface : IDemoCentralDBInterface
     {
         private readonly DemoCentralContext _context;

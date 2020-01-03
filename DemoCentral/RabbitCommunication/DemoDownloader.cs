@@ -11,7 +11,20 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace DemoCentral.RabbitCommunication
 {
-    public class DemoDownloader : RPCClient<DC_DD_Model, DD_DC_Model>
+    public interface IDemoDownloader
+    {
+        /// <summary>
+        /// Handle the response from DemoDownloader, set the corresponding FileStatus, update the QueueStatus and check the retries, eventually remove the demo
+        /// </summary>
+        void HandleMessage(IBasicProperties properties, DD_DC_Model consumeModel);
+
+        /// <summary>
+        /// Send a downloadUrl to the DemoDownloader, set the FileStatus to Downloading, and update the DemoDownloaderQueue Status
+        /// </summary>
+        void PublishMessage(string correlationId, DC_DD_Model produceModel);
+    }
+
+    public class DemoDownloader : RPCClient<DC_DD_Model, DD_DC_Model>, IDemoDownloader
     {
         private readonly DemoCentralDBInterface _demoCentralDBInterface;
         private readonly InQueueDBInterface _inQueueDBInterface;
@@ -29,7 +42,7 @@ namespace DemoCentral.RabbitCommunication
             long matchId = long.Parse(correlationId);
             _demoCentralDBInterface.SetFileStatusDownloading(matchId);
             _inQueueDBInterface.UpdateQueueStatus(matchId, "DD", true);
-        
+
             base.PublishMessage(correlationId, produceModel);
         }
 

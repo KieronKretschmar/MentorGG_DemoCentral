@@ -7,7 +7,22 @@ using System;
 
 namespace DemoCentral.RabbitCommunication
 {
-    public class DemoFileWorker : RPCClient<DC2DFWModel, DFW2DCModel>
+    public interface IDemoFileWorker
+    {
+        /// <summary>
+        /// Handle response fromm DemoFileWorker, update filepath,filestatus and queue status if success,
+        /// remove entirely if duplicate, 
+        /// remove from queue if unzip failed 
+        /// </summary>
+        void HandleMessage(IBasicProperties properties, DFW2DCModel consumeModel);
+
+        /// <summary>
+        /// Send a downloaded demo to the demoFileWorker and update the queue status
+        /// </summary>
+        void PublishMessage(string correlationId, DC2DFWModel model);
+    }
+
+    public class DemoFileWorker : RPCClient<DC2DFWModel, DFW2DCModel>, IDemoFileWorker
     {
         private readonly IDemoCentralDBInterface _demoDBInterface;
         private readonly IInQueueDBInterface _inQueueDBInterface;

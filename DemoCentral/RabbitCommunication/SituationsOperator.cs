@@ -5,10 +5,6 @@ using RabbitTransfer.TransferModels;
 
 namespace DemoCentral.RabbitCommunication
 {
-    /// <summary>
-    /// SituationsOperator Consumer
-    /// This receives all the messages from the SO_DC Queue and updates their queue status
-    /// </summary>
     public class SituationsOperator : Consumer<AnalyzerTransferModel>
     {
         private readonly IInQueueDBInterface _inQueueDBInterface;
@@ -18,6 +14,9 @@ namespace DemoCentral.RabbitCommunication
             _inQueueDBInterface = inQueueDBInterface;
         }
 
+        /// <summary>
+        /// Handle response from SituationsOperator, update queue status
+        /// </summary>
         public override void HandleMessage(IBasicProperties properties, AnalyzerTransferModel model)
         {
             long matchId = long.Parse(properties.CorrelationId);
