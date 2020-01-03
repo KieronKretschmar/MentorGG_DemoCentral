@@ -5,22 +5,12 @@ using RabbitTransfer.TransferModels;
 
 namespace DemoCentral.RabbitCommunication
 {
-    public interface IGatherer
-    {
-        /// <summary>
-        /// Handle downloadUrl from GathererQueue, create new entry and send to downloader if unique, else delete and forget
-        /// </summary>
-        /// <param name="properties"></param>
-        /// <param name="model"></param>
-        void HandleMessage(IBasicProperties properties, GathererTransferModel model);
-    }
-
-    public class Gatherer : Consumer<GathererTransferModel>, IGatherer
+    public class Gatherer : Consumer<GathererTransferModel>
     {
         private readonly IDemoCentralDBInterface _dbInterface;
-        private readonly DemoDownloader _demoDownloader;
+        private readonly IDemoDownloader _demoDownloader;
 
-        public Gatherer(IQueueConnection queueConnection, IDemoCentralDBInterface dbInterface, DemoDownloader demoDownloader) : base(queueConnection)
+        public Gatherer(IQueueConnection queueConnection, IDemoCentralDBInterface dbInterface, IDemoDownloader demoDownloader) : base(queueConnection)
         {
 
             _dbInterface = dbInterface;

@@ -65,7 +65,7 @@ namespace DemoCentral
 
             //WORKAROUND for requesting a hostedService
             // from https://github.com/aspnet/Extensions/issues/553
-            services.AddSingleton<DemoFileWorker>(services =>
+            services.AddSingleton<IDemoFileWorker,DemoFileWorker>(services =>
             {
                 return new DemoFileWorker(demo_fileworker_rpc_queue, services);
             });
@@ -74,7 +74,7 @@ namespace DemoCentral
 
             //WORKAROUND for requesting a hostedService
             //from https://github.com/aspnet/Extensions/issues/553
-            services.AddSingleton<DemoDownloader>(services =>
+            services.AddSingleton<IDemoDownloader,DemoDownloader>(services =>
             {
                 return new DemoDownloader(demo_downloader_rpc_queue, services);
             });
@@ -82,7 +82,7 @@ namespace DemoCentral
 
             services.AddHostedService<Gatherer>(services =>
             {
-                return new Gatherer(gatherer_queue, services.GetRequiredService<IDemoCentralDBInterface>(), services.GetRequiredService<DemoDownloader>());
+                return new Gatherer(gatherer_queue, services.GetRequiredService<IDemoCentralDBInterface>(), services.GetRequiredService<IDemoDownloader>());
             });
         }
 

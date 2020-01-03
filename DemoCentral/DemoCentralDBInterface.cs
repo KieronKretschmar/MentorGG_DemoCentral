@@ -29,6 +29,7 @@ namespace DemoCentral
         /// <returns>true and a positive matchId if the downloadUrl is unique</returns>
         bool TryCreateNewDemoEntryFromGatherer(GathererTransferModel model, out long matchId);
         void UpdateHash(long matchId, string hash);
+        void SetFileStatusDownloading(long matchId);
     }
 
     /// <summary>
@@ -39,7 +40,7 @@ namespace DemoCentral
         private readonly DemoCentralContext _context;
         private readonly IInQueueDBInterface _inQueueDBInterface;
 
-        internal void SetFileStatusDownloading(long matchId)
+        public void SetFileStatusDownloading(long matchId)
         {
             var demo = GetDemoById(matchId);
             demo.FileStatus = FileStatus.DOWNLOADING;

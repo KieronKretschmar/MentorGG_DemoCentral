@@ -5,15 +5,7 @@ using RabbitTransfer.TransferModels;
 
 namespace DemoCentral.RabbitCommunication
 {
-    public interface IMatchDBI
-    {
-        /// <summary>
-        /// Handle response from  MatchDBI, update upload status
-        /// </summary>
-        void HandleMessage(IBasicProperties properties, AnalyzerTransferModel model);
-    }
-
-    public class MatchDBI : Consumer<AnalyzerTransferModel>, IMatchDBI
+    public class MatchDBI : Consumer<AnalyzerTransferModel>
     {
         private readonly IDemoCentralDBInterface _dbInterface;
 

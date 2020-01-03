@@ -26,15 +26,15 @@ namespace DemoCentral.RabbitCommunication
 
     public class DemoDownloader : RPCClient<DC_DD_Model, DD_DC_Model>, IDemoDownloader
     {
-        private readonly DemoCentralDBInterface _demoCentralDBInterface;
-        private readonly InQueueDBInterface _inQueueDBInterface;
-        private readonly DemoFileWorker _demoFileWorker;
+        private readonly IDemoCentralDBInterface _demoCentralDBInterface;
+        private readonly IInQueueDBInterface _inQueueDBInterface;
+        private readonly IDemoFileWorker _demoFileWorker;
 
         public DemoDownloader(IRPCQueueConnections queueConnection, IServiceProvider serviceProvider, bool persistantMessageSending = true) : base(queueConnection, persistantMessageSending)
         {
-            _demoCentralDBInterface = serviceProvider.GetService<DemoCentralDBInterface>();
-            _inQueueDBInterface = serviceProvider.GetService<InQueueDBInterface>();
-            _demoFileWorker = serviceProvider.GetRequiredService<DemoFileWorker>();
+            _demoCentralDBInterface = serviceProvider.GetService<IDemoCentralDBInterface>();
+            _inQueueDBInterface = serviceProvider.GetService<IInQueueDBInterface>();
+            _demoFileWorker = serviceProvider.GetRequiredService<IDemoFileWorker>();
         }
 
         public new void PublishMessage(string correlationId, DC_DD_Model produceModel)
