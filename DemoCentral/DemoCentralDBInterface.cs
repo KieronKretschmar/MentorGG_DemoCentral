@@ -15,6 +15,7 @@ namespace DemoCentral
         List<Demo> GetRecentMatches(long playerId, int recentMatches, int offset = 0);
         List<long> GetRecentMatchIds(long playerId, int recentMatches, int offset = 0);
         bool IsDuplicateHash(string hash);
+        void RemoveDemo(long matchId);
         string SetDownloadRetryingAndGetDownloadPath(long matchId);
         void SetFileStatusDownloaded(long matchId, bool success);
         void SetFileStatusZipped(long matchId, bool success);
@@ -74,14 +75,14 @@ namespace DemoCentral
         public void SetFileStatusZipped(long matchId, bool success)
         {
             var demo = GetDemoById(matchId);
-            demo.FileStatus = success ? FileStatus.UNZIPPED :  FileStatus.UNZIPFAILED;
+            demo.FileStatus = success ? FileStatus.UNZIPPED : FileStatus.UNZIPFAILED;
             _context.SaveChanges();
         }
 
         public void SetFileStatusDownloaded(long matchId, bool success)
         {
             var demo = GetDemoById(matchId);
-            demo.FileStatus = success ? FileStatus.DOWNLOADED :  FileStatus.DOWNLOADFAILED;
+            demo.FileStatus = success ? FileStatus.DOWNLOADED : FileStatus.DOWNLOADFAILED;
             _context.SaveChanges();
         }
 
@@ -92,7 +93,7 @@ namespace DemoCentral
             _context.SaveChanges();
         }
 
-        internal void RemoveDemo(long matchId)
+        public void RemoveDemo(long matchId)
         {
             var demo = GetDemoById(matchId);
             _context.Demo.Remove(demo);
@@ -102,7 +103,7 @@ namespace DemoCentral
         public void SetUploadStatus(long matchId, bool success)
         {
             var demo = GetDemoById(matchId);
-            demo.UploadStatus = success ?  UploadStatus.FINISHED :  UploadStatus.FAILED;
+            demo.UploadStatus = success ? UploadStatus.FINISHED : UploadStatus.FAILED;
             _context.SaveChanges();
 
         }
@@ -119,7 +120,7 @@ namespace DemoCentral
         {
             var demo = GetDemoById(matchId);
 
-            demo.FileStatus =  FileStatus.DOWNLOAD_RETRYING;
+            demo.FileStatus = FileStatus.DOWNLOAD_RETRYING;
             string downloadUrl = demo.DownloadUrl;
             _context.SaveChanges();
 
