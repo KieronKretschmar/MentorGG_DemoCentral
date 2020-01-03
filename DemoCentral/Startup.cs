@@ -34,11 +34,12 @@ namespace DemoCentral
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<DemoCentralContext>(options =>
-                options.UseMySql(Configuration.GetConnectionString("DemoCentralDB")));
+                options.UseMySql(Configuration.GetConnectionString("DemoCentralDB")), ServiceLifetime.Singleton, ServiceLifetime.Singleton);
+
             services.AddControllers();
 
-            services.AddScoped<IInQueueDBInterface, InQueueDBInterface>();
-            services.AddScoped<IDemoCentralDBInterface, DemoCentralDBInterface>();
+            services.AddSingleton<IInQueueDBInterface, InQueueDBInterface>();
+            services.AddSingleton<IDemoCentralDBInterface, DemoCentralDBInterface>();
 
             var AMQP_URI = Configuration.GetValue<string>("AMQP_URI");
 
@@ -59,27 +60,36 @@ namespace DemoCentral
             var AMQP_MATCHDBI = Configuration.GetValue<string>("AMQP_MATCHDBI");
             var matchDBI_queue = new QueueConnection(AMQP_URI, AMQP_MATCHDBI);
 
-
             services.AddHostedService<MatchDBI>(services =>
             {
                 return new MatchDBI(matchDBI_queue, services.GetRequiredService<IDemoCentralDBInterface>());
             });
 
-            services.AddHostedService<DemoFileWorker>(services =>
-            {
-                return new DemoFileWorker(demo_fileworker_rpc_queue, services);
-            });
-            services.AddHostedService<Gatherer>(services =>
-            {
-                return new Gatherer(gatherer_queue, services.GetRequiredService<IDemoCentralDBInterface>(), services.GetRequiredService<DemoDownloader>());
-            });
             services.AddHostedService<SituationsOperator>(services =>
             {
                 return new SituationsOperator(so_queue, services.GetRequiredService<IInQueueDBInterface>());
             });
-            services.AddHostedService<DemoDownloader>(services =>
+
+            //WORKAROUND for requesting a hostedService
+            // from https://github.com/aspnet/Extensions/issues/553
+            services.AddSingleton<DemoFileWorker>(services =>
+            {
+                return new DemoFileWorker(demo_fileworker_rpc_queue, services);
+            });
+            services.AddHostedService<DemoFileWorker>(p => p.GetRequiredService<DemoFileWorker>());
+
+
+            //WORKAROUND for requesting a hostedService
+            //from https://github.com/aspnet/Extensions/issues/553
+            services.AddSingleton<DemoDownloader>(services =>
             {
                 return new DemoDownloader(demo_downloader_rpc_queue, services);
+            });
+            services.AddHostedService<DemoDownloader>(p => p.GetRequiredService<DemoDownloader>());
+
+            services.AddHostedService<Gatherer>(services =>
+            {
+                return new Gatherer(gatherer_queue, services.GetRequiredService<IDemoCentralDBInterface>(), services.GetRequiredService<DemoDownloader>());
             });
         }
 
