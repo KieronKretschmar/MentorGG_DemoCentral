@@ -9,36 +9,36 @@ namespace Database.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DeleteData(
-                schema: "democentral",
+                schema: null,
                 table: "Demo",
                 keyColumn: "MatchId",
                 keyValue: 1);
 
             migrationBuilder.DeleteData(
-                schema: "democentral",
+                schema: null,
                 table: "Demo",
                 keyColumn: "MatchId",
                 keyValue: 2);
 
             migrationBuilder.DeleteData(
-                schema: "democentral",
+                schema: null,
                 table: "Demo",
                 keyColumn: "MatchId",
                 keyValue: 3);
 
             migrationBuilder.DropColumn(
                 name: "Source",
-                schema: "democentral",
+                schema: null,
                 table: "InQueue");
 
             migrationBuilder.DropColumn(
                 name: "UploadType",
-                schema: "democentral",
+                schema: null,
                 table: "InQueue");
 
             migrationBuilder.AlterColumn<long>(
                 name: "UploaderId",
-                schema: "democentral",
+                schema: null,
                 table: "InQueue",
                 nullable: false,
                 oldClrType: typeof(long),
@@ -46,7 +46,7 @@ namespace Database.Migrations
 
             migrationBuilder.AlterColumn<short>(
                 name: "DDQUEUE",
-                schema: "democentral",
+                schema: null,
                 table: "InQueue",
                 nullable: false,
                 oldClrType: typeof(bool),
@@ -54,7 +54,7 @@ namespace Database.Migrations
 
             migrationBuilder.AlterColumn<byte>(
                 name: "UploadStatus",
-                schema: "democentral",
+                schema: null,
                 table: "Demo",
                 type: "tinyint(3) unsigned",
                 nullable: false,
@@ -63,7 +63,7 @@ namespace Database.Migrations
 
             migrationBuilder.AlterColumn<int>(
                 name: "MatchId",
-                schema: "democentral",
+                schema: null,
                 table: "Demo",
                 type: "int(11)",
                 nullable: false,
@@ -76,7 +76,7 @@ namespace Database.Migrations
         {
             migrationBuilder.AlterColumn<long>(
                 name: "UploaderId",
-                schema: "democentral",
+                schema: null,
                 table: "InQueue",
                 type: "bigint(20)",
                 nullable: false,
@@ -84,7 +84,7 @@ namespace Database.Migrations
 
             migrationBuilder.AlterColumn<bool>(
                 name: "DDQUEUE",
-                schema: "democentral",
+                schema: null,
                 table: "InQueue",
                 type: "tinyint(1)",
                 nullable: false,
@@ -92,7 +92,7 @@ namespace Database.Migrations
 
             migrationBuilder.AddColumn<byte>(
                 name: "Source",
-                schema: "democentral",
+                schema: null,
                 table: "InQueue",
                 type: "tinyint(3) unsigned",
                 nullable: false,
@@ -100,7 +100,7 @@ namespace Database.Migrations
 
             migrationBuilder.AddColumn<byte>(
                 name: "UploadType",
-                schema: "democentral",
+                schema: null,
                 table: "InQueue",
                 type: "tinyint(3) unsigned",
                 nullable: false,
@@ -108,7 +108,7 @@ namespace Database.Migrations
 
             migrationBuilder.AlterColumn<byte>(
                 name: "UploadStatus",
-                schema: "democentral",
+                schema: null,
                 table: "Demo",
                 type: "tinyint unsigned",
                 nullable: false,
@@ -117,7 +117,7 @@ namespace Database.Migrations
 
             migrationBuilder.AlterColumn<int>(
                 name: "MatchId",
-                schema: "democentral",
+                schema: null,
                 table: "Demo",
                 type: "int(11)",
                 nullable: false,
@@ -126,19 +126,19 @@ namespace Database.Migrations
                 .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn);
 
             migrationBuilder.InsertData(
-                schema: "democentral",
+                schema: null,
                 table: "Demo",
                 columns: new[] { "MatchId", "DemoAnalyzerStatus", "DemoAnalyzerVersion", "DownloadUrl", "Event", "FileName", "FilePath", "FileStatus", "MatchDate", "MD5Hash", "Source", "UploadDate", "UploadStatus", "UploadType", "UploaderId" },
                 values: new object[] { 1, (byte)0, "", null, null, null, null, (byte)0, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, (byte)1, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), (byte)0, (byte)0, 1L });
 
             migrationBuilder.InsertData(
-                schema: "democentral",
+                schema: null,
                 table: "Demo",
                 columns: new[] { "MatchId", "DemoAnalyzerStatus", "DemoAnalyzerVersion", "DownloadUrl", "Event", "FileName", "FilePath", "FileStatus", "MatchDate", "MD5Hash", "Source", "UploadDate", "UploadStatus", "UploadType", "UploaderId" },
                 values: new object[] { 2, (byte)0, "", null, null, null, null, (byte)0, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, (byte)1, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), (byte)0, (byte)0, 2L });
 
             migrationBuilder.InsertData(
-                schema: "democentral",
+                schema: null,
                 table: "Demo",
                 columns: new[] { "MatchId", "DemoAnalyzerStatus", "DemoAnalyzerVersion", "DownloadUrl", "Event", "FileName", "FilePath", "FileStatus", "MatchDate", "MD5Hash", "Source", "UploadDate", "UploadStatus", "UploadType", "UploaderId" },
                 values: new object[] { 3, (byte)0, "", null, null, null, null, (byte)0, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, (byte)2, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), (byte)0, (byte)0, 3L });
