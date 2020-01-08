@@ -82,7 +82,7 @@ namespace DemoCentral
                     throw new InvalidOperationException("Unknown queue name");
             }
 
-            if (!demo.Queues.Contains(true))
+            if (!demo.InAnyQueue())
             {
                 _context.InQueueDemo.Remove(demo);
             }

@@ -17,5 +17,9 @@ namespace DataBase.DatabaseClasses
 
         public List<bool> Queues => new List<bool> { DDQUEUE, DFWQUEUE, SOQUEUE };
 
+        public bool InAnyQueue()
+        {
+            return this.Queues.Contains(true);
+        }
     }
 }
