@@ -66,7 +66,7 @@ namespace DemoCentral.RabbitCommunication
 
                 var model = _demoCentralDBInterface.CreateDemoFileWorkerModel(matchId);
 
-                _demoFileWorker.PublishMessage(properties.CorrelationId, model);
+                _demoFileWorker.SendMessageAndUpdateQueueStatus(properties.CorrelationId, model);
 
                 _logger.LogInformation("Demo#{matchId} successfully downloaded");
             }

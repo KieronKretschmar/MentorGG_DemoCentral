@@ -24,7 +24,7 @@ namespace DemoCentral.RabbitCommunication
         /// <summary>
         /// Send a downloaded demo to the demoFileWorker and update the queue status
         /// </summary>
-        void PublishMessage(string correlationId, DC2DFWModel model);
+        void SendMessageAndUpdateQueueStatus(string correlationId, DC2DFWModel model);
     }
 
     public class DemoFileWorker : RPCClient<DC2DFWModel, DFW2DCModel>, IDemoFileWorker
@@ -40,11 +40,11 @@ namespace DemoCentral.RabbitCommunication
             _logger = provider.GetRequiredService<ILogger<DemoFileWorker>>();
         }
 
-        public new void PublishMessage(string correlationId, DC2DFWModel model)
+        public void SendMessageAndUpdateQueueStatus(string correlationId, DC2DFWModel model)
         {
             long matchId = long.Parse(correlationId);
             _inQueueDBInterface.UpdateQueueStatus(matchId, QueueName.DemoFileWorker, true);
-            base.PublishMessage(correlationId, model);
+            PublishMessage(correlationId, model);
         }
 
         private void UpdateDBEntryFromFileWorkerResponse(long matchId, DFW2DCModel response)
