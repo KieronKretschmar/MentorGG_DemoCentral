@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using RabbitMQ.Client;
 using RabbitTransfer.RPC;
 using RabbitTransfer.TransferModels;
@@ -24,7 +20,7 @@ namespace DemoCentral.RabbitCommunication
         /// <summary>
         /// Send a downloadUrl to the DemoDownloader, set the FileStatus to Downloading, and update the DemoDownloaderQueue Status
         /// </summary>
-        void PublishMessage(string correlationId, DC_DD_Model produceModel);
+        void SendMessageAndUpdateStatus(string correlationId, DC_DD_Model produceModel);
     }
 
     public class DemoDownloader : RPCClient<DC_DD_Model, DD_DC_Model>, IDemoDownloader
@@ -40,13 +36,15 @@ namespace DemoCentral.RabbitCommunication
             _demoFileWorker = serviceProvider.GetRequiredService<IDemoFileWorker>();
         }
 
-        public new void PublishMessage(string correlationId, DC_DD_Model produceModel)
+
+
+        public void SendMessageAndUpdateStatus(string correlationId, DC_DD_Model produceModel)
         {
             long matchId = long.Parse(correlationId);
             _demoCentralDBInterface.SetFileStatusDownloading(matchId);
             _inQueueDBInterface.UpdateQueueStatus(matchId,QueueName.DemoDownloader, true);
 
-            base.PublishMessage(correlationId, produceModel);
+            PublishMessage(correlationId, produceModel);
         }
 
         public override void HandleMessage(IBasicProperties properties, DD_DC_Model consumeModel)
@@ -81,7 +79,7 @@ namespace DemoCentral.RabbitCommunication
                     {
                         DownloadUrl = downloadUrl,
                     };
-                    PublishMessage(properties.CorrelationId, resendModel);
+                    SendMessageAndUpdateStatus(properties.CorrelationId, resendModel);
                 }
             }
         }

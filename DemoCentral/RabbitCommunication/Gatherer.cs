@@ -29,7 +29,7 @@ namespace DemoCentral.RabbitCommunication
                 {
                     DownloadUrl = model.DownloadUrl
                 };
-                _demoDownloader.PublishMessage(matchId.ToString(), forwardModel);
+                _demoDownloader.SendMessageAndUpdateStatus(matchId.ToString(), forwardModel);
             }
         }
     }
