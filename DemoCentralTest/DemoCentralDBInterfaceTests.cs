@@ -113,7 +113,8 @@ namespace DemoCentralTests
         public void TryCreateNewDemoEntryFromGathererReturnsFalseOnKnownDemo()
         {
 
-            long matchId;
+            long first_matchId;
+            long second_matchId;
             bool success;
 
             Mock<IInQueueDBInterface> mockInQueueDB = new Mock<IInQueueDBInterface>();
@@ -135,12 +136,13 @@ namespace DemoCentralTests
             {
                 var test = new DemoCentralDBInterface(context, mockedObject);
 
-                test.TryCreateNewDemoEntryFromGatherer(model, out matchId);
-                success = test.TryCreateNewDemoEntryFromGatherer(model, out matchId);
+                test.TryCreateNewDemoEntryFromGatherer(model, out first_matchId);
+
+                success = test.TryCreateNewDemoEntryFromGatherer(model, out second_matchId);
             }
 
             Assert.IsFalse(success);
-            Assert.AreEqual(-1, matchId);
+            Assert.AreEqual(first_matchId, second_matchId);
         }
 
         [TestMethod]
