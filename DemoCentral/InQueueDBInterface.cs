@@ -2,6 +2,7 @@
 using System.Linq;
 using RabbitTransfer.Enums;
 using DataBase.DatabaseClasses;
+using Database.Enumerals;
 using System.Collections.Generic;
 
 
@@ -29,7 +30,7 @@ namespace DemoCentral
         /// </summary>
         /// <remarks>if all queues are set to false after execution the demo gets removed from the table</remarks>
         /// <param name="inQueue">bool if it is in that queue</param>
-        void UpdateQueueStatus(long matchId, string QueueName, bool inQueue);
+        void UpdateQueueStatus(long matchId, QueueName QueueName, bool inQueue);
     }
 
     /// <summary>
@@ -63,32 +64,25 @@ namespace DemoCentral
 
         }
 
-        public void UpdateQueueStatus(long matchId, string QueueName, bool inQueue)
+        public void UpdateQueueStatus(long matchId, QueueName QueueName, bool inQueue)
         {
             InQueueDemo demo = GetDemoById(matchId);
-            //TODO make queue name enum
             switch (QueueName)
             {
-                case "DFW":
-                case "DemoFileWorker":
-                    demo.DFWQUEUE = inQueue;
-                    break;
-                case "SO":
-                case "SituationsOperator":
-                    demo.SOQUEUE = inQueue;
-                    break;
-                case "DD":
-                case "DemoDownloader":
+                case QueueName.DemoDownloader:
                     demo.DDQUEUE = inQueue;
                     break;
+                case QueueName.DemoFileWorker:
+                    demo.DFWQUEUE = inQueue;
+                    break;
+                case QueueName.SituationsOperator:
+                    demo.SOQUEUE = inQueue;
+                    break;
                 default:
-                    throw new InvalidOperationException("Unknown queue");
+                    throw new InvalidOperationException("Unknown queue name");
             }
 
-
-            //TODO implement better queue check, like names list etc
-            List<bool> queueStates = new List<bool> { demo.DFWQUEUE, demo.SOQUEUE, demo.DDQUEUE };
-            if (!queueStates.Contains(true))
+            if (!demo.Queues.Contains(true))
             {
                 _context.InQueueDemo.Remove(demo);
             }

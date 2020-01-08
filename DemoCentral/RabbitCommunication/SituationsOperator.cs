@@ -20,7 +20,7 @@ namespace DemoCentral.RabbitCommunication
         public override void HandleMessage(IBasicProperties properties, AnalyzerTransferModel model)
         {
             long matchId = long.Parse(properties.CorrelationId);
-            _inQueueDBInterface.UpdateQueueStatus(matchId, "SO", model.Success);
+            _inQueueDBInterface.UpdateQueueStatus(matchId,Database.Enumerals.QueueName.SituationsOperator, model.Success);
         }
     }
 }

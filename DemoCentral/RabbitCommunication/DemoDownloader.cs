@@ -9,6 +9,7 @@ using RabbitTransfer.TransferModels;
 using RabbitTransfer.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Database.Enumerals;
 
 namespace DemoCentral.RabbitCommunication
 {
@@ -43,7 +44,7 @@ namespace DemoCentral.RabbitCommunication
         {
             long matchId = long.Parse(correlationId);
             _demoCentralDBInterface.SetFileStatusDownloading(matchId);
-            _inQueueDBInterface.UpdateQueueStatus(matchId, "DD", true);
+            _inQueueDBInterface.UpdateQueueStatus(matchId,QueueName.DemoDownloader, true);
 
             base.PublishMessage(correlationId, produceModel);
         }
@@ -58,7 +59,7 @@ namespace DemoCentral.RabbitCommunication
             {
                 _demoCentralDBInterface.AddFilePath(matchId, consumeModel.DemoUrl);
 
-                _inQueueDBInterface.UpdateQueueStatus(matchId, "DD", false);
+                _inQueueDBInterface.UpdateQueueStatus(matchId,QueueName.DemoDownloader, false);
 
                 var model = _demoCentralDBInterface.CreateDemoFileWorkerModel(matchId);
 

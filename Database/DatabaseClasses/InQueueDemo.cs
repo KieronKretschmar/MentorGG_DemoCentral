@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DataBase.DatabaseClasses
 {
@@ -13,5 +14,8 @@ namespace DataBase.DatabaseClasses
         public bool DFWQUEUE { get; set; }
         public bool SOQUEUE { get; set; }
         public int Retries { get; set; }
+
+        public List<bool> Queues => new List<bool> { DDQUEUE, DFWQUEUE, SOQUEUE };
+
     }
 }

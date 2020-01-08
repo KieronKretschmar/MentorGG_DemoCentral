@@ -5,6 +5,7 @@ using RabbitTransfer.Interfaces;
 using RabbitTransfer.RPC;
 using RabbitTransfer.TransferModels;
 using System;
+using Database.Enumerals;
 
 namespace DemoCentral.RabbitCommunication
 {
@@ -38,7 +39,7 @@ namespace DemoCentral.RabbitCommunication
         public new void PublishMessage(string correlationId, DC2DFWModel model)
         {
             long matchId = long.Parse(correlationId);
-            _inQueueDBInterface.UpdateQueueStatus(matchId, "DFW", true);
+            _inQueueDBInterface.UpdateQueueStatus(matchId, QueueName.DemoFileWorker, true);
             base.PublishMessage(correlationId, model);
         }
 
@@ -60,7 +61,7 @@ namespace DemoCentral.RabbitCommunication
 
                 _demoDBInterface.SetFileStatusZipped(matchId, true);
 
-                _inQueueDBInterface.UpdateQueueStatus(matchId, "DFW", false);
+                _inQueueDBInterface.UpdateQueueStatus(matchId, QueueName.DemoFileWorker, false);
             }
         }
 
