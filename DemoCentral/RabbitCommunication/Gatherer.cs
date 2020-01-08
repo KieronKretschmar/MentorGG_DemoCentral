@@ -5,6 +5,11 @@ using RabbitTransfer.TransferModels;
 
 namespace DemoCentral.RabbitCommunication
 {
+    /// <summary>
+    /// Consumer for the Gatherer queue
+    /// If a message is received , <see cref="HandleMessage(IBasicProperties, GathererTransferModel)"/> is called
+    /// and the message is forwarded to the demodownloader
+    /// </summary>
     public class Gatherer : Consumer<GathererTransferModel>
     {
         private readonly IDemoCentralDBInterface _dbInterface;
