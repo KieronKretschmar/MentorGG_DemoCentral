@@ -295,7 +295,7 @@ namespace DemoCentralTests
                 DemoCentralDBInterface test = new DemoCentralDBInterface(context, _mockInQueueDb);
                 AddDemoToDB(demo, context);
 
-                test.SetFileStatusZipped(demo.MatchId, true);
+                test.SetFileStatus(demo.MatchId, FileStatus.UNZIPPED);
             }
 
             Assert.IsTrue(demo.FileStatus == FileStatus.UNZIPPED);
@@ -311,7 +311,7 @@ namespace DemoCentralTests
                 DemoCentralDBInterface test = new DemoCentralDBInterface(context, _mockInQueueDb);
                 AddDemoToDB(demo, context);
 
-                test.SetFileStatusDownloaded(demo.MatchId, true);
+                test.SetFileStatus(demo.MatchId, FileStatus.DOWNLOADED);
             }
 
             Assert.IsTrue(demo.FileStatus == FileStatus.DOWNLOADED);

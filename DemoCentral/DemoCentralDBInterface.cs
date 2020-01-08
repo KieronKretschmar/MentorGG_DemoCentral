@@ -19,8 +19,7 @@ namespace DemoCentral
         bool IsDuplicateHash(string hash);
         void RemoveDemo(long matchId);
         string SetDownloadRetryingAndGetDownloadPath(long matchId);
-        void SetFileStatusDownloaded(long matchId, bool success);
-        void SetFileStatusZipped(long matchId, bool success);
+        void SetFileStatus(long matchId, FileStatus status);
         void SetUploadStatus(long matchId, bool success);
         /// <summary>
         /// try to create a new entry in the demo table, return false and a negative matchId if the downloadUrl is already known
@@ -29,7 +28,6 @@ namespace DemoCentral
         /// <returns>true and a positive matchId if the downloadUrl is unique</returns>
         bool TryCreateNewDemoEntryFromGatherer(GathererTransferModel model, out long matchId);
         void UpdateHash(long matchId, string hash);
-        void SetFileStatusDownloading(long matchId);
     }
 
     /// <summary>
@@ -39,13 +37,6 @@ namespace DemoCentral
     {
         private readonly DemoCentralContext _context;
         private readonly IInQueueDBInterface _inQueueDBInterface;
-
-        public void SetFileStatusDownloading(long matchId)
-        {
-            var demo = GetDemoById(matchId);
-            demo.FileStatus = FileStatus.DOWNLOADING;
-            _context.SaveChanges();
-        }
 
         public DemoCentralDBInterface(DemoCentralContext context, IInQueueDBInterface inQueueDBInterface)
         {
@@ -83,17 +74,10 @@ namespace DemoCentral
             return recentMatchesId;
         }
 
-        public void SetFileStatusZipped(long matchId, bool success)
+        public void SetFileStatus(long matchId, FileStatus status)
         {
             var demo = GetDemoById(matchId);
-            demo.FileStatus = success ? FileStatus.UNZIPPED : FileStatus.UNZIPFAILED;
-            _context.SaveChanges();
-        }
-
-        public void SetFileStatusDownloaded(long matchId, bool success)
-        {
-            var demo = GetDemoById(matchId);
-            demo.FileStatus = success ? FileStatus.DOWNLOADED : FileStatus.DOWNLOADFAILED;
+            demo.FileStatus = status;
             _context.SaveChanges();
         }
 

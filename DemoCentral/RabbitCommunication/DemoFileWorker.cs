@@ -6,6 +6,7 @@ using RabbitTransfer.RPC;
 using RabbitTransfer.TransferModels;
 using System;
 using Database.Enumerals;
+using DataBase.Enumerals;
 
 namespace DemoCentral.RabbitCommunication
 {
@@ -47,7 +48,7 @@ namespace DemoCentral.RabbitCommunication
         {
             if (!response.Unzipped)
             {
-                _demoDBInterface.SetFileStatusZipped(matchId, false);
+                _demoDBInterface.SetFileStatus(matchId, FileStatus.UNZIPFAILED);
                 _inQueueDBInterface.RemoveDemoFromQueue(matchId);
             }
             else if (response.DuplicateChecked && response.IsDuplicate)
@@ -59,7 +60,7 @@ namespace DemoCentral.RabbitCommunication
             {
                 _demoDBInterface.SetFilePath(matchId, response.zippedFilePath);
 
-                _demoDBInterface.SetFileStatusZipped(matchId, true);
+                _demoDBInterface.SetFileStatus(matchId, FileStatus.UNZIPPED);
 
                 _inQueueDBInterface.UpdateQueueStatus(matchId, QueueName.DemoFileWorker, false);
             }
