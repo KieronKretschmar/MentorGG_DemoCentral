@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using DemoCentral.Models;
 using DataBase.DatabaseClasses;
 using System.Net;
+using Microsoft.Extensions.Logging;
 
 namespace DemoCentral.Controllers.trusted
 {
@@ -15,10 +16,12 @@ namespace DemoCentral.Controllers.trusted
     public class HashController : ControllerBase
     {
         private readonly DemoCentralDBInterface _dbInterface;
+        private readonly ILogger<HashController> _logger;
 
-        public HashController(DemoCentralDBInterface dbInterface)
+        public HashController(DemoCentralDBInterface dbInterface, ILogger<HashController> logger)
         {
             _dbInterface = dbInterface;
+            _logger = logger;
         }
 
         /// <summary>
@@ -33,10 +36,12 @@ namespace DemoCentral.Controllers.trusted
             bool duplicateHash = _dbInterface.IsDuplicateHash(hash);
             if (duplicateHash)
             {
+                _logger.LogError("Demo#{matchId} was duplicate via MD5Hash");
                 return Conflict();
             }
             else
             {
+                _logger.LogInformation("Demo#{matchId} is unique");
                 _dbInterface.UpdateHash(matchId, hash);
 
                 return Ok();

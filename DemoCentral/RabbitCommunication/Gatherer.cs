@@ -1,4 +1,5 @@
-﻿using RabbitMQ.Client;
+﻿using Microsoft.Extensions.Logging;
+using RabbitMQ.Client;
 using RabbitTransfer.Consumer;
 using RabbitTransfer.Interfaces;
 using RabbitTransfer.TransferModels;
@@ -14,12 +15,14 @@ namespace DemoCentral.RabbitCommunication
     {
         private readonly IDemoCentralDBInterface _dbInterface;
         private readonly IDemoDownloader _demoDownloader;
+        private readonly ILogger<Gatherer> _logger;
 
-        public Gatherer(IQueueConnection queueConnection, IDemoCentralDBInterface dbInterface, IDemoDownloader demoDownloader) : base(queueConnection)
+        public Gatherer(IQueueConnection queueConnection, IDemoCentralDBInterface dbInterface, IDemoDownloader demoDownloader, ILogger<Gatherer> logger) : base(queueConnection)
         {
 
             _dbInterface = dbInterface;
             _demoDownloader = demoDownloader;
+            _logger = logger;
         }
 
         /// <summary>
@@ -37,7 +40,10 @@ namespace DemoCentral.RabbitCommunication
                     DownloadUrl = model.DownloadUrl
                 };
                 _demoDownloader.SendMessageAndUpdateStatus(matchId.ToString(), forwardModel);
+
+                _logger.LogInformation("Demo#{matchId} assigned to {model.DownloadUrl}");
             }
+            _logger.LogInformation("DownloadUrl {model.DownloadUrl} was duplicate of Demo#{matchId}");
         }
     }
 }

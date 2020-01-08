@@ -7,6 +7,7 @@ using DataBase.DatabaseClasses;
 using Microsoft.EntityFrameworkCore;
 using DemoCentral.RabbitCommunication;
 using RabbitTransfer.Queues;
+using Microsoft.Extensions.Logging;
 
 namespace DemoCentral
 {
@@ -26,6 +27,12 @@ namespace DemoCentral
                 options.UseMySql(Configuration.GetConnectionString("DemoCentralDB")), ServiceLifetime.Singleton, ServiceLifetime.Singleton);
 
             services.AddControllers();
+
+            services.AddLogging(o =>
+            {
+                o.AddConsole();
+                o.AddDebug();
+            });
 
             services.AddSingleton<IInQueueDBInterface, InQueueDBInterface>();
             services.AddSingleton<IDemoCentralDBInterface, DemoCentralDBInterface>();
@@ -55,12 +62,12 @@ namespace DemoCentral
             //if 3 or more are required to initialize another one, just pass the service provider
             services.AddHostedService<MatchDBI>(services =>
             {
-                return new MatchDBI(matchDBI_queue, services.GetRequiredService<IDemoCentralDBInterface>());
+                return new MatchDBI(matchDBI_queue, services.GetRequiredService<IDemoCentralDBInterface>(),services.GetRequiredService<ILogger<MatchDBI>>());
             });
 
             services.AddHostedService<SituationsOperator>(services =>
             {
-                return new SituationsOperator(so_queue, services.GetRequiredService<IInQueueDBInterface>());
+                return new SituationsOperator(so_queue, services.GetRequiredService<IInQueueDBInterface>(),services.GetRequiredService<ILogger<SituationsOperator>>());
             });
 
             //WORKAROUND for requesting a hostedService
@@ -86,7 +93,7 @@ namespace DemoCentral
 
             services.AddHostedService<Gatherer>(services =>
             {
-                return new Gatherer(gatherer_queue, services.GetRequiredService<IDemoCentralDBInterface>(), services.GetRequiredService<IDemoDownloader>());
+                return new Gatherer(gatherer_queue, services.GetRequiredService<IDemoCentralDBInterface>(), services.GetRequiredService<IDemoDownloader>(), services.GetRequiredService<ILogger<Gatherer>>());
             });
         }
 

@@ -7,6 +7,7 @@ using RabbitTransfer.TransferModels;
 using System;
 using Database.Enumerals;
 using DataBase.Enumerals;
+using Microsoft.Extensions.Logging;
 
 namespace DemoCentral.RabbitCommunication
 {
@@ -30,11 +31,13 @@ namespace DemoCentral.RabbitCommunication
     {
         private readonly IDemoCentralDBInterface _demoDBInterface;
         private readonly IInQueueDBInterface _inQueueDBInterface;
+        private readonly ILogger<DemoFileWorker> _logger;
 
         public DemoFileWorker(IRPCQueueConnections queueConnection, IServiceProvider provider, bool persistantMessageSending = true) : base(queueConnection, persistantMessageSending)
         {
             _demoDBInterface = provider.GetRequiredService<IDemoCentralDBInterface>();
             _inQueueDBInterface = provider.GetRequiredService<IInQueueDBInterface>();
+            _logger = provider.GetRequiredService<ILogger<DemoFileWorker>>();
         }
 
         public new void PublishMessage(string correlationId, DC2DFWModel model)
@@ -51,6 +54,7 @@ namespace DemoCentral.RabbitCommunication
                 //Remove demo from queue and set file status to unzip failed
                 _demoDBInterface.SetFileStatus(matchId, FileStatus.UNZIPFAILED);
                 _inQueueDBInterface.RemoveDemoFromQueue(matchId);
+                _logger.LogWarning("Demo#{matchId} could not be unzipped");
             }
             else if (response.DuplicateChecked && response.IsDuplicate)
             {
@@ -59,6 +63,7 @@ namespace DemoCentral.RabbitCommunication
                 //Currently a hash-checked demo, which is duplicated just gets removed
                 //Maybe keep track of it or just report back ?
                 _demoDBInterface.RemoveDemo(matchId);
+                _logger.LogWarning("Demo#{matchId} is duplicate via MD5Hash");
             }
             else if (response.Success)
             {
@@ -69,6 +74,7 @@ namespace DemoCentral.RabbitCommunication
                 _demoDBInterface.SetFileStatus(matchId, FileStatus.UNZIPPED);
 
                 _inQueueDBInterface.UpdateQueueStatus(matchId, QueueName.DemoFileWorker, false);
+                _logger.LogInformation("Demo#{matchId} was successfully handled by DemoFileWorker");
             }
         }
 

@@ -6,6 +6,7 @@ using RabbitTransfer.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Database.Enumerals;
+using Microsoft.Extensions.Logging;
 
 namespace DemoCentral.RabbitCommunication
 {
@@ -28,12 +29,15 @@ namespace DemoCentral.RabbitCommunication
         private readonly IDemoCentralDBInterface _demoCentralDBInterface;
         private readonly IInQueueDBInterface _inQueueDBInterface;
         private readonly IDemoFileWorker _demoFileWorker;
+        private readonly ILogger<DemoDownloader> _logger;
+        private const int RETRY_LIMIT = 3;
 
         public DemoDownloader(IRPCQueueConnections queueConnection, IServiceProvider serviceProvider, bool persistantMessageSending = true) : base(queueConnection, persistantMessageSending)
         {
             _demoCentralDBInterface = serviceProvider.GetService<IDemoCentralDBInterface>();
             _inQueueDBInterface = serviceProvider.GetService<IInQueueDBInterface>();
             _demoFileWorker = serviceProvider.GetRequiredService<IDemoFileWorker>();
+            _logger = serviceProvider.GetRequiredService<ILogger<DemoDownloader>>();
         }
 
 
@@ -63,14 +67,17 @@ namespace DemoCentral.RabbitCommunication
                 var model = _demoCentralDBInterface.CreateDemoFileWorkerModel(matchId);
 
                 _demoFileWorker.PublishMessage(properties.CorrelationId, model);
+
+                _logger.LogInformation("Demo#{matchId} successfully downloaded");
             }
             else
             {
                 int attempts = _inQueueDBInterface.IncrementRetry(matchId);
 
-                if (attempts >= 3)
+                if (attempts >= RETRY_LIMIT)
                 {
                     _inQueueDBInterface.RemoveDemoFromQueue(matchId);
+                    _logger.LogError("Demo#{matchId} failed download more than {RETRY_LIMIT}, deleted");
                 }
                 else
                 {
@@ -81,6 +88,8 @@ namespace DemoCentral.RabbitCommunication
                         DownloadUrl = downloadUrl,
                     };
                     SendMessageAndUpdateStatus(properties.CorrelationId, resendModel);
+
+                    _logger.LogWarning("Demo#{matchId} failed download, retrying");
                 }
             }
         }

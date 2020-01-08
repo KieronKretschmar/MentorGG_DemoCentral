@@ -14,10 +14,12 @@ namespace DemoCentral.Controllers.exposed
     public class QueueController : ControllerBase
     {
         private readonly InQueueDBInterface _dbInterface;
+        private readonly ILogger<QueueController> _logger;
 
-        public QueueController(InQueueDBInterface dbInterface)
+        public QueueController(InQueueDBInterface dbInterface, ILogger<QueueController> logger)
         {
             _dbInterface = dbInterface;
+            _logger = logger;
         }
 
         /// <summary>
@@ -29,12 +31,14 @@ namespace DemoCentral.Controllers.exposed
         // GET /api/exposed/queue/playermatches/1
         public ActionResult<int> QueuePosition(long matchId)
         {
+            _logger.LogInformation("Received request for queue position of Demo#{matchId}");
             try
             {
                 return new ActionResult<int>(_dbInterface.GetQueuePosition(matchId));
             }
             catch (InvalidOperationException)
             {
+                _logger.LogWarning("Demo#{matchId} not in queue");
                 return new BadRequestResult();
             }
         }
@@ -43,17 +47,18 @@ namespace DemoCentral.Controllers.exposed
         /// Get the number of enqueued matches for a certain player 
         /// </summary>
         /// <param name="playerId">steamid of the certain player</param>
-        /// <returns>either int or BadRequest if the demo could not be found</returns>
         [HttpGet("[action]/{playerId}")]
         // GET /api/exposed/queue/numberplayermatches/1
         public ActionResult<int> NumberPlayerMatches(long playerId)
         {
+            _logger.LogInformation("Received request for matches of player#{playerId}");
             try
             {
                 return new ActionResult<int>(_dbInterface.GetPlayerMatchesInQueue(playerId).Count);
             }
-            catch (InvalidOperationException)
+            catch
             {
+                _logger.LogError("Invalid player#{playerId}");
                 return new BadRequestResult();
             }
         }

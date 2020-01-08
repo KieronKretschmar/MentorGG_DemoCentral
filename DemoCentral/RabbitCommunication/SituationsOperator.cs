@@ -1,4 +1,5 @@
-﻿using RabbitMQ.Client;
+﻿using Microsoft.Extensions.Logging;
+using RabbitMQ.Client;
 using RabbitTransfer.Consumer;
 using RabbitTransfer.Interfaces;
 using RabbitTransfer.TransferModels;
@@ -8,10 +9,12 @@ namespace DemoCentral.RabbitCommunication
     public class SituationsOperator : Consumer<AnalyzerTransferModel>
     {
         private readonly IInQueueDBInterface _inQueueDBInterface;
+        private readonly ILogger<SituationsOperator> _logger;
 
-        public SituationsOperator(IQueueConnection queueConnection, IInQueueDBInterface inQueueDBInterface) : base(queueConnection)
+        public SituationsOperator(IQueueConnection queueConnection, IInQueueDBInterface inQueueDBInterface, ILogger<SituationsOperator> logger) : base(queueConnection)
         {
             _inQueueDBInterface = inQueueDBInterface;
+            _logger = logger;
         }
 
         /// <summary>
@@ -21,6 +24,9 @@ namespace DemoCentral.RabbitCommunication
         {
             long matchId = long.Parse(properties.CorrelationId);
             _inQueueDBInterface.UpdateQueueStatus(matchId,Database.Enumerals.QueueName.SituationsOperator, model.Success);
+
+            string log = model.Success ? "finished " : "failed ";
+            _logger.LogInformation("Demo#{matchId}" + log + "siutationsoperator");
         }
     }
 }
