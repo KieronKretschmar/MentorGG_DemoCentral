@@ -14,6 +14,9 @@ namespace DemoCentral
     {
         void SetFilePath(long matchId, string zippedFilePath);
         DC2DFWModel CreateDemoFileWorkerModel(long matchId);
+        /// <summary>
+        /// Returns the player matches in queue , empty list if none found
+        /// </summary>
         List<Demo> GetRecentMatches(long playerId, int recentMatches, int offset = 0);
         List<long> GetRecentMatchIds(long playerId, int recentMatches, int offset = 0);
         bool IsDuplicateHash(string hash);
@@ -139,17 +142,8 @@ namespace DemoCentral
                 matchId = demo.MatchId;
                 return false;
             }
-            demo = new Demo
-            {
-                DownloadUrl = model.DownloadUrl,
-                FileStatus = FileStatus.NEW,
-                UploadDate = DateTime.UtcNow,
-                UploadType = model.UploadType,
-                MatchDate = model.MatchDate,
-                Source = model.Source,
-                DemoAnalyzerVersion = "",
-                UploaderId = model.UploaderId,
-            };
+
+            demo = Demo.FromGatherTransferModel(model);
 
             _context.Demo.Add(demo);
 

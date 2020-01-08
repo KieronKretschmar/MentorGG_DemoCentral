@@ -2,6 +2,7 @@
 using RabbitTransfer.Enums;
 using DataBase.Enumerals;
 using System.Collections.Generic;
+using RabbitTransfer.TransferModels;
 
 namespace DataBase.DatabaseClasses
 {
@@ -22,5 +23,26 @@ namespace DataBase.DatabaseClasses
         public string DemoAnalyzerVersion { get; set; }
         public DateTime UploadDate { get; set; }
         public string Event {get; set; }
+
+        public static Demo FromGatherTransferModel(GathererTransferModel model)
+        {
+            return new Demo
+            {
+                MatchDate = model.MatchDate,
+                UploaderId = model.UploaderId,
+                UploadType = model.UploadType,
+                UploadStatus = UploadStatus.NEW,
+                Source = model.Source,
+                DownloadUrl = model.DownloadUrl,
+                FileName = "",
+                FilePath = "",
+                Md5hash = "",
+                FileStatus = FileStatus.NEW,
+                DemoAnalyzerStatus = DemoAnalyzerStatus.New,
+                DemoAnalyzerVersion = "",
+                UploadDate = DateTime.UtcNow,
+                //TODO MANDATORY get event?
+            };
+        }
     }
 }
