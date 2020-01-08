@@ -64,21 +64,25 @@ namespace DemoCentral
             });
 
             //WORKAROUND for requesting a hostedService
+            //Hosted services cant be addressed as an API, which we want to do with the PublishMessage() method
+            //so we add a singleton and a hosted service, which returns the singleton instance
             // from https://github.com/aspnet/Extensions/issues/553
             services.AddSingleton<IDemoFileWorker,DemoFileWorker>(services =>
             {
                 return new DemoFileWorker(demo_fileworker_rpc_queue, services);
             });
-            services.AddHostedService<DemoFileWorker>(p => p.GetRequiredService<DemoFileWorker>());
+            services.AddHostedService<IDemoFileWorker>(p => p.GetRequiredService<IDemoFileWorker>());
 
 
             //WORKAROUND for requesting a hostedService
+            //Hosted services cant be addressed as an API, which we want to do with the PublishMessage() method
+            //so we add a singleton and a hosted service, which returns the singleton instance
             //from https://github.com/aspnet/Extensions/issues/553
             services.AddSingleton<IDemoDownloader,DemoDownloader>(services =>
             {
                 return new DemoDownloader(demo_downloader_rpc_queue, services);
             });
-            services.AddHostedService<DemoDownloader>(p => p.GetRequiredService<DemoDownloader>());
+            services.AddHostedService<IDemoDownloader>(p => p.GetRequiredService<IDemoDownloader>());
 
             services.AddHostedService<Gatherer>(services =>
             {

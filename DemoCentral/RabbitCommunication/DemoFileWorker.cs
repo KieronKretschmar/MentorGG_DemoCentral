@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using RabbitMQ.Client;
 using RabbitTransfer.Interfaces;
 using RabbitTransfer.RPC;
@@ -7,7 +8,8 @@ using System;
 
 namespace DemoCentral.RabbitCommunication
 {
-    public interface IDemoFileWorker
+    //Implement IHostedService so the Interface can be added via AddHostedService()
+    public interface IDemoFileWorker : IHostedService
     {
         /// <summary>
         /// Handle response fromm DemoFileWorker, update filepath,filestatus and queue status if success,

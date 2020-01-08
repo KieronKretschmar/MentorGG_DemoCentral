@@ -8,10 +8,12 @@ using RabbitTransfer.RPC;
 using RabbitTransfer.TransferModels;
 using RabbitTransfer.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace DemoCentral.RabbitCommunication
 {
-    public interface IDemoDownloader
+    //Implement IHostedService so the Interface can be added via AddHostedService()
+    public interface IDemoDownloader : IHostedService
     {
         /// <summary>
         /// Handle the response from DemoDownloader, set the corresponding FileStatus, update the QueueStatus and check the retries, eventually remove the demo
