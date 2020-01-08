@@ -55,7 +55,9 @@ namespace DemoCentral.RabbitCommunication
             else if (response.DuplicateChecked && response.IsDuplicate)
             {
                 //Remove demo if duplicate
-                //TODO Put in extra table if same match uploaded by different persons
+                //TODO OPTIONAL FEATURE handle duplicate entry 2
+                //Currently a hash-checked demo, which is duplicated just gets removed
+                //Maybe keep track of it or just report back ?
                 _demoDBInterface.RemoveDemo(matchId);
             }
             else if (response.Success)

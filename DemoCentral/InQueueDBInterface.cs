@@ -114,7 +114,9 @@ namespace DemoCentral
         {
             var demo = GetDemoById(matchId);
 
-            //TODO possible optimization by keeping track of row in db
+            //TODO OPTIONAL OPTIMIZATION queue position
+            //Currently the same demos get checked for every method call, and their insert date gets compared
+            //Maybe sort by insert date as the primary key? or add a rowindex which can be referenced ?
             return _context.InQueueDemo.Select(x => x.InsertDate).Where(x => x < demo.InsertDate).Count();
         }
 

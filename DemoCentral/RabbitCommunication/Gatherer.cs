@@ -27,7 +27,9 @@ namespace DemoCentral.RabbitCommunication
         /// </summary>
         public override void HandleMessage(IBasicProperties properties, GathererTransferModel model)
         {
-            //TODO handle duplicate entry, currently not inserted into db and forgotten afterwards
+            //TODO OPTIONAL FEATURE handle duplicate entry
+            //Currently not inserted into db and forgotten afterwards
+            //Maybe saved to special table or keep track of it otherwise
             if (_dbInterface.TryCreateNewDemoEntryFromGatherer(model, out long matchId))
             {
                 var forwardModel = new DC_DD_Model
