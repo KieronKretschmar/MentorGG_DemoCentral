@@ -44,20 +44,24 @@ namespace DemoCentral.RabbitCommunication
             base.PublishMessage(correlationId, model);
         }
 
-        private void updateDBEntryFromFileWorkerResponse(long matchId, DFW2DCModel response)
+        private void UpdateDBEntryFromFileWorkerResponse(long matchId, DFW2DCModel response)
         {
             if (!response.Unzipped)
             {
+                //Remove demo from queue and set file status to unzip failed
                 _demoDBInterface.SetFileStatus(matchId, FileStatus.UNZIPFAILED);
                 _inQueueDBInterface.RemoveDemoFromQueue(matchId);
             }
             else if (response.DuplicateChecked && response.IsDuplicate)
             {
+                //Remove demo if duplicate
                 //TODO Put in extra table if same match uploaded by different persons
                 _demoDBInterface.RemoveDemo(matchId);
             }
             else if (response.Success)
             {
+                //Successful handled in demo fileworker
+                //store filepath, set status to unzipped, remove from queue
                 _demoDBInterface.SetFilePath(matchId, response.zippedFilePath);
 
                 _demoDBInterface.SetFileStatus(matchId, FileStatus.UNZIPPED);
@@ -69,7 +73,7 @@ namespace DemoCentral.RabbitCommunication
         public override void HandleMessage(IBasicProperties properties, DFW2DCModel consumeModel)
         {
             long matchId = long.Parse(properties.CorrelationId);
-            updateDBEntryFromFileWorkerResponse(matchId, consumeModel);
+            UpdateDBEntryFromFileWorkerResponse(matchId, consumeModel);
         }
     }
 }
