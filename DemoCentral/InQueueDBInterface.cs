@@ -120,6 +120,11 @@ namespace DemoCentral
             return _context.InQueueDemo.Count(x => x.InsertDate<demo.InsertDate);
         }
 
+        /// <summary>
+        /// Increments the number of retries for this demo and return the new number
+        /// </summary>
+        /// <param name="matchId"></param>
+        /// <returns></returns>
         public int IncrementRetry(long matchId)
         {
             var demo = GetDemoById(matchId);
