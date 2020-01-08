@@ -55,7 +55,7 @@ namespace DemoCentral.RabbitCommunication
 
             if (consumeModel.Success)
             {
-                _demoCentralDBInterface.AddFilePath(matchId, consumeModel.DemoUrl);
+                _demoCentralDBInterface.SetFilePath(matchId, consumeModel.DemoUrl);
 
                 _inQueueDBInterface.UpdateQueueStatus(matchId,QueueName.DemoDownloader, false);
 

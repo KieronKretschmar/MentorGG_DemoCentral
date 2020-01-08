@@ -12,7 +12,7 @@ namespace DemoCentral
     /// </summary>
     public interface IDemoCentralDBInterface
     {
-        void AddFilePath(long matchId, string zippedFilePath);
+        void SetFilePath(long matchId, string zippedFilePath);
         DC2DFWModel CreateDemoFileWorkerModel(long matchId);
         List<Demo> GetRecentMatches(long playerId, int recentMatches, int offset = 0);
         List<long> GetRecentMatchIds(long playerId, int recentMatches, int offset = 0);
@@ -97,7 +97,7 @@ namespace DemoCentral
             _context.SaveChanges();
         }
 
-        public void AddFilePath(long matchId, string zippedFilePath)
+        public void SetFilePath(long matchId, string zippedFilePath)
         {
             var demo = GetDemoById(matchId);
             demo.FilePath = zippedFilePath;

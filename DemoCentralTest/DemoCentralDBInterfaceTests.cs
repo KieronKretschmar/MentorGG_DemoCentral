@@ -329,7 +329,7 @@ namespace DemoCentralTests
                 DemoCentralDBInterface test = new DemoCentralDBInterface(context, _mockInQueueDb);
                 AddDemoToDB(demo, context);
 
-                test.AddFilePath(demo.MatchId, test_path);
+                test.SetFilePath(demo.MatchId, test_path);
             }
 
             Assert.AreEqual(test_path, demo.FilePath);

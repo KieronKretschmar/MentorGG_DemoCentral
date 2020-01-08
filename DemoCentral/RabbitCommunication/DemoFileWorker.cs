@@ -57,7 +57,7 @@ namespace DemoCentral.RabbitCommunication
             }
             else if (response.Success)
             {
-                _demoDBInterface.AddFilePath(matchId, response.zippedFilePath);
+                _demoDBInterface.SetFilePath(matchId, response.zippedFilePath);
 
                 _demoDBInterface.SetFileStatusZipped(matchId, true);
 
