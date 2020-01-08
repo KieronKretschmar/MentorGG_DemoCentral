@@ -8,7 +8,7 @@ using System.Collections.Generic;
 namespace DemoCentral
 {
     /// <summary>
-    /// CRUD jobs for the database
+    /// Interface for the InQueueDemo table of the database
     /// </summary>
     public interface IInQueueDBInterface
     {
