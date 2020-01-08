@@ -163,7 +163,7 @@ namespace DemoCentral
 
         private Demo GetDemoById(long matchId)
         {
-            return _context.Demo.Where(x => x.MatchId == matchId).Single();
+            return _context.Demo.Single(x => x.MatchId == matchId);
         }
     }
 
