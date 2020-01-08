@@ -21,8 +21,14 @@ namespace DemoCentral.Controllers.trusted
             _dbInterface = dbInterface;
         }
 
-        [HttpGet]
-        public IActionResult GetHash(long matchId, string hash)
+        /// <summary>
+        /// Check if the hash is already in the database, create if not
+        /// </summary>
+        /// <param name="matchId">id of the match to potentially create</param>
+        /// <param name="hash">hash to check</param>
+        /// <returns>Conflict or Ok if hash is known or not</returns>
+        [HttpPost]
+        public ActionResult CreateHash(long matchId, string hash)
         {
             bool duplicateHash = _dbInterface.IsDuplicateHash(hash);
             if (duplicateHash)
