@@ -4,3 +4,4 @@ bin/
 *.orig
 TestResults/
 DemoCentral/Properties/launchSettings.json
+DemoCentral/appsettings.json
