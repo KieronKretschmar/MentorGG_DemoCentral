@@ -13,13 +13,10 @@ namespace DemoCentral.Controllers.exposed
     {
         private readonly InQueueDBInterface _dbInterface;
 
-        //Routing documentation is here https://docs.microsoft.com/de-de/aspnet/core/fundamentals/routing?view=aspnetcore-3.0#route-template-reference
-
         public QueueController(InQueueDBInterface dbInterface)
         {
             _dbInterface = dbInterface;
         }
-
 
         [HttpGet("{matchId}")]
         // GET /api/exposed/queue/playermatches/1
