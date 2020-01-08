@@ -2,12 +2,9 @@
 {
     public enum DemoAnalyzerStatus
     {
-        tbd = 1,
-        inQueue = 2,
+        New = 1,
+        InQueue = 2,
         Finished = 3,
         Failed = 4,
     }
-
-
-
 }
