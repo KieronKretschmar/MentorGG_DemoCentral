@@ -5,3 +5,4 @@ bin/
 TestResults/
 DemoCentral/Properties/launchSettings.json
 DemoCentral/appsettings.json
+DemoCentral/Democentral.csproj.user
