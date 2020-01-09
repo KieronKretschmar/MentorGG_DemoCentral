@@ -55,8 +55,10 @@ namespace DemoCentral.RabbitCommunication
                 _demoDBInterface.SetFileStatus(matchId, FileStatus.UNZIPFAILED);
                 _inQueueDBInterface.RemoveDemoFromQueue(matchId);
                 _logger.LogWarning($"Demo#{matchId} could not be unzipped");
+                return;
             }
-            else if (response.DuplicateChecked && response.IsDuplicate)
+
+            if (response.DuplicateChecked && response.IsDuplicate)
             {
                 //Remove demo if duplicate
                 //TODO OPTIONAL FEATURE handle duplicate entry 2
@@ -64,8 +66,10 @@ namespace DemoCentral.RabbitCommunication
                 //Maybe keep track of it or just report back ?
                 _demoDBInterface.RemoveDemo(matchId);
                 _logger.LogWarning($"Demo#{matchId} is duplicate via MD5Hash");
+                return;
             }
-            else if (response.Success)
+
+            if (response.Success)
             {
                 //Successful handled in demo fileworker
                 //store filepath, set status to unzipped, remove from queue
@@ -75,6 +79,7 @@ namespace DemoCentral.RabbitCommunication
 
                 _inQueueDBInterface.UpdateProcessStatus(matchId, ProcessedBy.DemoFileWorker, false);
                 _logger.LogInformation($"Demo#{matchId} was successfully handled by DemoFileWorker");
+                return;
             }
         }
 
