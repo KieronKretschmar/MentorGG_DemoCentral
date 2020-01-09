@@ -15,10 +15,10 @@ namespace DemoCentral.Controllers.trusted
     [ApiController]
     public class HashController : ControllerBase
     {
-        private readonly DemoCentralDBInterface _dbInterface;
+        private readonly IDemoCentralDBInterface _dbInterface;
         private readonly ILogger<HashController> _logger;
 
-        public HashController(DemoCentralDBInterface dbInterface, ILogger<HashController> logger)
+        public HashController(IDemoCentralDBInterface dbInterface, ILogger<HashController> logger)
         {
             _dbInterface = dbInterface;
             _logger = logger;

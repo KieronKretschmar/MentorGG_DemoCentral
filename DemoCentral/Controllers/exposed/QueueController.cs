@@ -13,10 +13,10 @@ namespace DemoCentral.Controllers.exposed
     [Route("api/exposed/[controller]")]
     public class QueueController : ControllerBase
     {
-        private readonly InQueueDBInterface _dbInterface;
+        private readonly IInQueueDBInterface _dbInterface;
         private readonly ILogger<QueueController> _logger;
 
-        public QueueController(InQueueDBInterface dbInterface, ILogger<QueueController> logger)
+        public QueueController(IInQueueDBInterface dbInterface, ILogger<QueueController> logger)
         {
             _dbInterface = dbInterface;
             _logger = logger;
