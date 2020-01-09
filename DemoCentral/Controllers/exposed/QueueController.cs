@@ -34,7 +34,7 @@ namespace DemoCentral.Controllers.exposed
             _logger.LogInformation("Received request for queue position of Demo#{matchId}");
             try
             {
-                return new ActionResult<int>(_dbInterface.GetQueuePosition(matchId));
+                return _dbInterface.GetQueuePosition(matchId);
             }
             catch (InvalidOperationException)
             {
@@ -54,7 +54,7 @@ namespace DemoCentral.Controllers.exposed
             _logger.LogInformation("Received request for matches of player#{playerId}");
             try
             {
-                return new ActionResult<int>(_dbInterface.GetPlayerMatchesInQueue(playerId).Count);
+                return _dbInterface.GetPlayerMatchesInQueue(playerId).Count;
             }
             catch
             {
