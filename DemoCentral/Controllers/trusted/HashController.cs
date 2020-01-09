@@ -31,24 +31,30 @@ namespace DemoCentral.Controllers.trusted
         /// <param name="hash">hash to check</param>
         /// <returns>Conflict or Ok if hash is known or not</returns>
         [HttpPost("[action]")]
-        //https://localhost:44368/api/trusted/Hash/CreateHash?matchId=XXXX&hash=YYYYY
+        //POST api/trusted/Hash/CreateHash?matchId=XXXX&hash=YYYYY
         public ActionResult CreateHash(long matchId, string hash)
         {
             bool duplicateHash = _dbInterface.IsDuplicateHash(hash);
-            if (duplicateHash)
+            try
             {
-                _logger.LogError($"Demo#{matchId} was duplicate via MD5Hash");
-                return Conflict();
-            }
-            else
-            {
-                _logger.LogInformation($"Demo#{matchId} is unique");
-                _dbInterface.UpdateHash(matchId, hash);
+                if (duplicateHash)
+                {
+                    string error = $"Demo#{matchId} was duplicate via MD5Hash";
+                    _logger.LogError(error);
+                    return Conflict(error);
+                }
+                else
+                {
+                    _logger.LogInformation($"Demo#{matchId} is unique");
+                    _dbInterface.SetHash(matchId, hash);
 
-                return Ok();
+                    return Ok();
+                }
+            }
+            catch (InvalidOperationException)
+            {
+                return NotFound($"Demo#{matchId} not found");
             }
         }
     }
-
-
 }

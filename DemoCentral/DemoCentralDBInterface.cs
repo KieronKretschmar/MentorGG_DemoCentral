@@ -32,7 +32,7 @@ namespace DemoCentral
         /// <param name="matchId">Return either a new matchId or the one of the found demo if the download url is known</param>
         /// <returns>true, if downloadUrl is unique</returns>
         bool TryCreateNewDemoEntryFromGatherer(GathererTransferModel model, out long matchId);
-        void UpdateHash(long matchId, string hash);
+        void SetHash(long matchId, string hash);
     }
 
     /// <summary>
@@ -49,7 +49,7 @@ namespace DemoCentral
             _inQueueDBInterface = inQueueDBInterface;
         }
 
-        public void UpdateHash(long matchId, string hash)
+        public void SetHash(long matchId, string hash)
         {
             var demo = GetDemoById(matchId);
             demo.Md5hash = hash;
@@ -129,7 +129,7 @@ namespace DemoCentral
 
         public bool IsDuplicateHash(string hash)
         {
-            var demo = _context.Demo.Where(x => x.Md5hash == hash).SingleOrDefault();
+            var demo = _context.Demo.Where(x => x.Md5hash.Equals(hash)).SingleOrDefault();
 
             return !(demo == null);
         }

@@ -38,8 +38,10 @@ namespace DemoCentral.Controllers.exposed
             }
             catch (InvalidOperationException)
             {
-                _logger.LogWarning($"Demo#{matchId} not in queue");
-                return new BadRequestResult();
+                string error = $"Demo#{matchId} not in queue";
+
+                _logger.LogWarning(error);
+                return NotFound(error);
             }
         }
 
@@ -52,15 +54,7 @@ namespace DemoCentral.Controllers.exposed
         public ActionResult<int> NumberPlayerMatches(long playerId)
         {
             _logger.LogInformation($"Received request for matches of player#{playerId}");
-            try
-            {
-                return _dbInterface.GetPlayerMatchesInQueue(playerId).Count;
-            }
-            catch
-            {
-                _logger.LogError($"Invalid player#{playerId}");
-                return new BadRequestResult();
-            }
+            return _dbInterface.GetPlayerMatchesInQueue(playerId).Count;
         }
     }
 
