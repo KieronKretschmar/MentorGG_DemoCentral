@@ -30,7 +30,8 @@ namespace DemoCentral.Controllers.trusted
         /// <param name="matchId">id of the match to potentially create</param>
         /// <param name="hash">hash to check</param>
         /// <returns>Conflict or Ok if hash is known or not</returns>
-        [HttpPost]
+        [HttpPost("[action]")]
+        //https://localhost:44368/api/trusted/Hash/CreateHash?matchId=XXXX&hash=YYYYY
         public ActionResult CreateHash(long matchId, string hash)
         {
             bool duplicateHash = _dbInterface.IsDuplicateHash(hash);
