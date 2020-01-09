@@ -28,14 +28,15 @@ namespace DemoCentral.Models
             {
                 Entries = matchHistoryEntries
             };
+
+        }
+
+        public class MatchHistoryEntry
+        {
+            public long MatchId { get; set; }
+            public DateTime MatchDate { get; set; }
+            public DemoAnalyzerStatus Status { get; set; }
         }
     }
 
-}
-
-public class MatchHistoryEntry
-{
-    public long MatchId { get; set; }
-    public DateTime MatchDate { get; set; }
-    public DemoAnalyzerStatus Status { get; set; }
 }
