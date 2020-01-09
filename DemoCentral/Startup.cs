@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using DemoCentral.RabbitCommunication;
 using RabbitTransfer.Queues;
 using Microsoft.Extensions.Logging;
+using System;
 
 namespace DemoCentral
 {
@@ -33,6 +34,12 @@ namespace DemoCentral
                 o.AddConsole();
                 o.AddDebug();
             });
+
+            if (Configuration.GetValue<bool>("IS_MIGRATING"))
+            {
+                Console.WriteLine("IS_MIGRATING is true! ARE YOU STILL MIGRATING?");
+                return;
+            }
 
             services.AddSingleton<IInQueueDBInterface, InQueueDBInterface>();
             services.AddSingleton<IDemoCentralDBInterface, DemoCentralDBInterface>();
