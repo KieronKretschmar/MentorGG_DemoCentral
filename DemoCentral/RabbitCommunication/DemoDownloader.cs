@@ -30,7 +30,7 @@ namespace DemoCentral.RabbitCommunication
         private readonly IInQueueDBInterface _inQueueDBInterface;
         private readonly IDemoFileWorker _demoFileWorker;
         private readonly ILogger<DemoDownloader> _logger;
-        private const int RETRY_LIMIT = 3;
+        private const int MAX_RETRIES = 2;
 
         public DemoDownloader(IRPCQueueConnections queueConnection, IServiceProvider serviceProvider, bool persistantMessageSending = true) : base(queueConnection, persistantMessageSending)
         {
@@ -74,10 +74,10 @@ namespace DemoCentral.RabbitCommunication
             {
                 int attempts = _inQueueDBInterface.IncrementRetry(matchId);
 
-                if (attempts >= RETRY_LIMIT)
+                if (attempts > MAX_RETRIES)
                 {
                     _inQueueDBInterface.RemoveDemoFromQueue(matchId);
-                    _logger.LogError($"Demo#{matchId} failed download more than {RETRY_LIMIT}, deleted");
+                    _logger.LogError($"Demo#{matchId} failed download more than {MAX_RETRIES}, deleted");
                 }
                 else
                 {
