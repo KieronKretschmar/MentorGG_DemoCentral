@@ -158,7 +158,7 @@ namespace DemoCentralTests
                 AddDemoToDB(demo, context);
 
                 matchId = demo.MatchId;
-                test.UpdateHash(matchId, new_hash);
+                test.SetHash(matchId, new_hash);
             }
 
             Assert.AreEqual(new_hash, demo.Md5hash);
@@ -173,7 +173,7 @@ namespace DemoCentralTests
             {
                 var test = new DemoCentralDBInterface(context, _mockInQueueDb);
 
-                Assert.ThrowsException<InvalidOperationException>(() => test.UpdateHash(unknown_matchId, new_hash));
+                Assert.ThrowsException<InvalidOperationException>(() => test.SetHash(unknown_matchId, new_hash));
             }
         }
 
@@ -284,6 +284,28 @@ namespace DemoCentralTests
 
             //Checks if the same elements are contained, regardless of the order
             CollectionAssert.AreEquivalent(expected, matches);
+        }
+
+        [TestMethod]
+        public void GetRecentMatchesDoesNotFailIfOffsetGreaterThanRequestedMatches()
+        {
+            List<Demo> matches;
+            Demo demo1 = CopyDemo(_standardDemo);
+            Demo demo2 = CopyDemo(demo1);
+            Demo demo3 = CopyDemo(demo1);
+            long playerId = demo1.UploaderId;
+
+            using (var context = new DemoCentralContext(_test_config))
+            {
+                var test = new DemoCentralDBInterface(context, _mockInQueueDb);
+                AddDemoToDB(demo1, context);
+                AddDemoToDB(demo2, context);
+                AddDemoToDB(demo3, context);
+
+                //implicitly asserts that no exception is thrown
+                //if one is, the unit test fails 
+                matches = test.GetRecentMatches(playerId, 1, 2);
+            }
         }
 
 
@@ -457,6 +479,28 @@ namespace DemoCentralTests
         }
 
         [TestMethod]
+        public void GetRecentMatchIdsDoesNotFailIfOffsetGreaterThanRequestedMatches()
+        {
+
+            List<long> matches;
+            Demo demo1 = CopyDemo(_standardDemo);
+            Demo demo2 = CopyDemo(demo1);
+            Demo demo3 = CopyDemo(demo1);
+            long playerId = demo1.UploaderId;
+
+            using (var context = new DemoCentralContext(_test_config))
+            {
+                var test = new DemoCentralDBInterface(context, _mockInQueueDb);
+                AddDemoToDB(demo1, context);
+                AddDemoToDB(demo2, context);
+                AddDemoToDB(demo3, context);
+
+                //implicitly asserts that no exception is thrown
+                //if one is, the unit test fails 
+                matches = test.GetRecentMatchIds(playerId, 1, 2);
+            }
+        }
+
         public void SetDownloadRetryingAndGetDownloadPathSetsDownloadRetrying()
         {
             Demo demo = CopyDemo(_standardDemo);
