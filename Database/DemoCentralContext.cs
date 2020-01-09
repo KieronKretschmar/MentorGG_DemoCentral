@@ -56,7 +56,7 @@ namespace DataBase.DatabaseClasses
                 //Otherwise the enum would fail
                 entity.Property(e => e.FileStatus).HasColumnType("tinyint(3) unsigned").HasConversion<byte>();
                 entity.Property(e => e.UploadType).HasColumnType("tinyint(3) unsigned").HasConversion<byte>();
-                entity.Property(e => e.DemoAnalyzerStatus).HasColumnType("tinyint(3) unsigned").HasConversion<byte>();
+                entity.Property(e => e.DemoFileWorkerStatus).HasColumnType("tinyint(3) unsigned").HasConversion<byte>();
                 entity.Property(e => e.UploadStatus).HasColumnType("tinyint(3) unsigned").HasConversion<byte>();
                 entity.Property(e => e.Source).HasColumnType("tinyint(3) unsigned").HasConversion<byte>();
 

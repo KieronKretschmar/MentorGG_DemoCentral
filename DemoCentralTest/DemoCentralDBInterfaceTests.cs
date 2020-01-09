@@ -33,7 +33,7 @@ namespace DemoCentralTests
                 UploadType = UploadType.Unknown,
                 MatchDate = default(DateTime),
                 Source = Source.Unknown,
-                DemoAnalyzerVersion = "",
+                DemoFileWorkerVersion = "",
                 UploaderId = 1234,
             };
         }
@@ -558,7 +558,7 @@ namespace DemoCentralTests
                 UploadType = demo1.UploadType,
                 MatchDate = demo1.MatchDate,
                 Source = demo1.Source,
-                DemoAnalyzerVersion = demo1.DemoAnalyzerVersion,
+                DemoFileWorkerVersion = demo1.DemoFileWorkerVersion,
                 UploaderId = demo1.UploaderId,
             };
         }

@@ -19,10 +19,12 @@ namespace DataBase.DatabaseClasses
         public string FilePath { get; set; }
         public string Md5hash { get; set; }
         public FileStatus FileStatus { get; set; }
-        public DemoAnalyzerStatus DemoAnalyzerStatus { get; set; }
-        public string DemoAnalyzerVersion { get; set; }
+        public DemoFileWorkerStatus DemoFileWorkerStatus { get; set; }
+        public string DemoFileWorkerVersion { get; set; }
+        public string DatabaseVersion { get; set; }
         public DateTime UploadDate { get; set; }
         public string Event {get; set; }
+
 
         public static Demo FromGatherTransferModel(GathererTransferModel model)
         {
@@ -38,8 +40,8 @@ namespace DataBase.DatabaseClasses
                 FilePath = "",
                 Md5hash = "",
                 FileStatus = FileStatus.NEW,
-                DemoAnalyzerStatus = DemoAnalyzerStatus.New,
-                DemoAnalyzerVersion = "",
+                DemoFileWorkerStatus = DemoFileWorkerStatus.New,
+                DemoFileWorkerVersion = "",
                 UploadDate = DateTime.UtcNow,
                 //TODO MANDATORY get event?
             };

@@ -18,12 +18,17 @@ namespace DemoCentral.RabbitCommunication
         }
 
         /// <summary>
-        /// Handle response from  MatchDBI, update upload status
+        /// Handle response from  MatchDBI, update upload status, set database version
         /// </summary>
         public override void HandleMessage(IBasicProperties properties, AnalyzerTransferModel model)
         {
             long matchId = long.Parse(properties.CorrelationId);
             _dbInterface.SetUploadStatus(matchId, model.Success);
+
+            if (model.Success)
+            {
+                _dbInterface.SetDatabaseVersion(matchId, model.AnalyzerVersion);
+            }
 
             string log = model.Success ? "was uploaded" : "failed upload";
             _logger.LogInformation($"Demo#{matchId} " + log);

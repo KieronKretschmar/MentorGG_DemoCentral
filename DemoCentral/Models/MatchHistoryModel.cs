@@ -20,7 +20,7 @@ namespace DemoCentral.Models
                 {
                     MatchId = match.MatchId,
                     MatchDate = match.MatchDate,
-                    Status = match.DemoAnalyzerStatus
+                    Status = match.DemoFileWorkerStatus
                 });
             }
 
@@ -35,7 +35,7 @@ namespace DemoCentral.Models
         {
             public long MatchId { get; set; }
             public DateTime MatchDate { get; set; }
-            public DemoAnalyzerStatus Status { get; set; }
+            public DemoFileWorkerStatus Status { get; set; }
         }
     }
 

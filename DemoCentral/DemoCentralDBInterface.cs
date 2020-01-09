@@ -24,6 +24,8 @@ namespace DemoCentral
         string SetDownloadRetryingAndGetDownloadPath(long matchId);
         void SetFileStatus(long matchId, FileStatus status);
         void SetUploadStatus(long matchId, bool success);
+        void SetDatabaseVersion(long matchId, string databaseVersion);
+
         /// <summary>
         /// try to create a new entry in the demo table, return false and the matchId of the match, if the downloadUrl is already known, else forward demo to downloader
         /// </summary>
@@ -158,6 +160,13 @@ namespace DemoCentral
         private Demo GetDemoById(long matchId)
         {
             return _context.Demo.Single(x => x.MatchId == matchId);
+        }
+
+        public void SetDatabaseVersion(long matchId, string databaseVersion)
+        {
+            var demo = GetDemoById(matchId);
+            demo.DatabaseVersion = databaseVersion;
+            _context.SaveChanges();
         }
     }
 
