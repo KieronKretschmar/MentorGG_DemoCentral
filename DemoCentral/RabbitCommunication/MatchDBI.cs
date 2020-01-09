@@ -26,7 +26,7 @@ namespace DemoCentral.RabbitCommunication
             _dbInterface.SetUploadStatus(matchId, model.Success);
 
             string log = model.Success ? "was uploaded" : "failed upload";
-            _logger.LogInformation($"Demo#{matchId}" + log);
+            _logger.LogInformation($"Demo#{matchId} " + log);
         }
     }
 }
