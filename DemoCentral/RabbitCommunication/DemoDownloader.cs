@@ -68,7 +68,7 @@ namespace DemoCentral.RabbitCommunication
 
                 _demoFileWorker.SendMessageAndUpdateQueueStatus(properties.CorrelationId, model);
 
-                _logger.LogInformation("Demo#{matchId} successfully downloaded");
+                _logger.LogInformation($"Demo#{matchId} successfully downloaded");
             }
             else
             {
@@ -77,7 +77,7 @@ namespace DemoCentral.RabbitCommunication
                 if (attempts >= RETRY_LIMIT)
                 {
                     _inQueueDBInterface.RemoveDemoFromQueue(matchId);
-                    _logger.LogError("Demo#{matchId} failed download more than {RETRY_LIMIT}, deleted");
+                    _logger.LogError($"Demo#{matchId} failed download more than {RETRY_LIMIT}, deleted");
                 }
                 else
                 {
@@ -89,7 +89,7 @@ namespace DemoCentral.RabbitCommunication
                     };
                     SendMessageAndUpdateStatus(properties.CorrelationId, resendModel);
 
-                    _logger.LogWarning("Demo#{matchId} failed download, retrying");
+                    _logger.LogWarning($"Demo#{matchId} failed download, retrying");
                 }
             }
         }

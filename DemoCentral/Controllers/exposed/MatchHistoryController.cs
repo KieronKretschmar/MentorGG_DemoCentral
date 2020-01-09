@@ -25,7 +25,7 @@ namespace DemoCentral.Controllers.exposed
         [HttpGet]
         public MatchHistoryModel GetMatchHistory(long playerId, int recentMatches, int offset)
         {
-            _logger.LogInformation("Received request for player#{playerId} to get {recentMatches} last matches, offset {offset}");
+            _logger.LogInformation($"Received request for player#{playerId} to get {recentMatches} last matches, offset {offset}");
             return MatchHistoryModel.FromRecentMatches(playerId, recentMatches, offset, _dbInterface);
         }
     }

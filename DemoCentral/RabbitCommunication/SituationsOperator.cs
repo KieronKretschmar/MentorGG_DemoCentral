@@ -27,7 +27,7 @@ namespace DemoCentral.RabbitCommunication
             _inQueueDBInterface.UpdateProcessStatus(matchId, ProcessedBy.SituationsOperator, model.Success);
 
             string log = model.Success ? "finished " : "failed ";
-            _logger.LogInformation("Demo#{matchId}" + log + "siutationsoperator");
+            _logger.LogInformation($"Demo#{matchId}" + log + "siutationsoperator");
         }
     }
 }

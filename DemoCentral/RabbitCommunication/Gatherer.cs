@@ -41,9 +41,9 @@ namespace DemoCentral.RabbitCommunication
                 };
                 _demoDownloader.SendMessageAndUpdateStatus(matchId.ToString(), forwardModel);
 
-                _logger.LogInformation("Demo#{matchId} assigned to {model.DownloadUrl}");
+                _logger.LogInformation($"Demo#{matchId} assigned to {model.DownloadUrl}");
             }
-            _logger.LogInformation("DownloadUrl {model.DownloadUrl} was duplicate of Demo#{matchId}");
+            _logger.LogInformation($"DownloadUrl {model.DownloadUrl} was duplicate of Demo#{matchId}");
         }
     }
 }

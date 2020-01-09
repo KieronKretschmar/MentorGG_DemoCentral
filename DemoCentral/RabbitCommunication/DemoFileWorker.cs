@@ -54,7 +54,7 @@ namespace DemoCentral.RabbitCommunication
                 //Remove demo from queue and set file status to unzip failed
                 _demoDBInterface.SetFileStatus(matchId, FileStatus.UNZIPFAILED);
                 _inQueueDBInterface.RemoveDemoFromQueue(matchId);
-                _logger.LogWarning("Demo#{matchId} could not be unzipped");
+                _logger.LogWarning($"Demo#{matchId} could not be unzipped");
             }
             else if (response.DuplicateChecked && response.IsDuplicate)
             {
@@ -63,7 +63,7 @@ namespace DemoCentral.RabbitCommunication
                 //Currently a hash-checked demo, which is duplicated just gets removed
                 //Maybe keep track of it or just report back ?
                 _demoDBInterface.RemoveDemo(matchId);
-                _logger.LogWarning("Demo#{matchId} is duplicate via MD5Hash");
+                _logger.LogWarning($"Demo#{matchId} is duplicate via MD5Hash");
             }
             else if (response.Success)
             {
@@ -74,7 +74,7 @@ namespace DemoCentral.RabbitCommunication
                 _demoDBInterface.SetFileStatus(matchId, FileStatus.UNZIPPED);
 
                 _inQueueDBInterface.UpdateProcessStatus(matchId, ProcessedBy.DemoFileWorker, false);
-                _logger.LogInformation("Demo#{matchId} was successfully handled by DemoFileWorker");
+                _logger.LogInformation($"Demo#{matchId} was successfully handled by DemoFileWorker");
             }
         }
 

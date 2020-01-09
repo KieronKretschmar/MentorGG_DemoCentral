@@ -31,14 +31,14 @@ namespace DemoCentral.Controllers.exposed
         // GET /api/exposed/queue/playermatches/1
         public ActionResult<int> QueuePosition(long matchId)
         {
-            _logger.LogInformation("Received request for queue position of Demo#{matchId}");
+            _logger.LogInformation($"Received request for queue position of Demo#{matchId}");
             try
             {
                 return _dbInterface.GetQueuePosition(matchId);
             }
             catch (InvalidOperationException)
             {
-                _logger.LogWarning("Demo#{matchId} not in queue");
+                _logger.LogWarning($"Demo#{matchId} not in queue");
                 return new BadRequestResult();
             }
         }
@@ -51,14 +51,14 @@ namespace DemoCentral.Controllers.exposed
         // GET /api/exposed/queue/numberplayermatches/1
         public ActionResult<int> NumberPlayerMatches(long playerId)
         {
-            _logger.LogInformation("Received request for matches of player#{playerId}");
+            _logger.LogInformation($"Received request for matches of player#{playerId}");
             try
             {
                 return _dbInterface.GetPlayerMatchesInQueue(playerId).Count;
             }
             catch
             {
-                _logger.LogError("Invalid player#{playerId}");
+                _logger.LogError($"Invalid player#{playerId}");
                 return new BadRequestResult();
             }
         }

@@ -36,12 +36,12 @@ namespace DemoCentral.Controllers.trusted
             bool duplicateHash = _dbInterface.IsDuplicateHash(hash);
             if (duplicateHash)
             {
-                _logger.LogError("Demo#{matchId} was duplicate via MD5Hash");
+                _logger.LogError($"Demo#{matchId} was duplicate via MD5Hash");
                 return Conflict();
             }
             else
             {
-                _logger.LogInformation("Demo#{matchId} is unique");
+                _logger.LogInformation($"Demo#{matchId} is unique");
                 _dbInterface.UpdateHash(matchId, hash);
 
                 return Ok();
