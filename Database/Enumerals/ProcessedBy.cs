@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Database.Enumerals
 {
-    public enum QueueName
+    public enum ProcessedBy
     {
         DemoDownloader,
         DemoFileWorker,

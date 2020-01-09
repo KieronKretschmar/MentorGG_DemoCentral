@@ -23,7 +23,7 @@ namespace DemoCentral.RabbitCommunication
         public override void HandleMessage(IBasicProperties properties, AnalyzerTransferModel model)
         {
             long matchId = long.Parse(properties.CorrelationId);
-            _inQueueDBInterface.UpdateQueueStatus(matchId,Database.Enumerals.QueueName.SituationsOperator, model.Success);
+            _inQueueDBInterface.UpdateProcessStatus(matchId,Database.Enumerals.ProcessedBy.SituationsOperator, model.Success);
 
             string log = model.Success ? "finished " : "failed ";
             _logger.LogInformation("Demo#{matchId}" + log + "siutationsoperator");

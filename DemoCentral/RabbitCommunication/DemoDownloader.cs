@@ -46,7 +46,7 @@ namespace DemoCentral.RabbitCommunication
         {
             long matchId = long.Parse(correlationId);
             _demoCentralDBInterface.SetFileStatus(matchId,DataBase.Enumerals.FileStatus.DOWNLOADING);
-            _inQueueDBInterface.UpdateQueueStatus(matchId,QueueName.DemoDownloader, true);
+            _inQueueDBInterface.UpdateProcessStatus(matchId,ProcessedBy.DemoDownloader, true);
 
             PublishMessage(correlationId, produceModel);
         }
@@ -62,7 +62,7 @@ namespace DemoCentral.RabbitCommunication
 
                 _demoCentralDBInterface.SetFileStatus(matchId, DataBase.Enumerals.FileStatus.DOWNLOADED);
 
-                _inQueueDBInterface.UpdateQueueStatus(matchId,QueueName.DemoDownloader, false);
+                _inQueueDBInterface.UpdateProcessStatus(matchId,ProcessedBy.DemoDownloader, false);
 
                 var model = _demoCentralDBInterface.CreateDemoFileWorkerModel(matchId);
 

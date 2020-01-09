@@ -30,7 +30,7 @@ namespace DemoCentral
         /// </summary>
         /// <remarks>if all queues are set to false after execution the demo gets removed from the table</remarks>
         /// <param name="inQueue">bool if it is in that queue</param>
-        void UpdateQueueStatus(long matchId, QueueName QueueName, bool inQueue);
+        void UpdateProcessStatus(long matchId, ProcessedBy QueueName, bool inQueue);
     }
 
     /// <summary>
@@ -64,19 +64,19 @@ namespace DemoCentral
 
         }
 
-        public void UpdateQueueStatus(long matchId, QueueName QueueName, bool inQueue)
+        public void UpdateProcessStatus(long matchId, ProcessedBy process, bool processing)
         {
             InQueueDemo demo = GetDemoById(matchId);
-            switch (QueueName)
+            switch (process)
             {
-                case QueueName.DemoDownloader:
-                    demo.DDQUEUE = inQueue;
+                case ProcessedBy.DemoDownloader:
+                    demo.DDQUEUE = processing;
                     break;
-                case QueueName.DemoFileWorker:
-                    demo.DFWQUEUE = inQueue;
+                case ProcessedBy.DemoFileWorker:
+                    demo.DFWQUEUE = processing;
                     break;
-                case QueueName.SituationsOperator:
-                    demo.SOQUEUE = inQueue;
+                case ProcessedBy.SituationsOperator:
+                    demo.SOQUEUE = processing;
                     break;
                 default:
                     throw new InvalidOperationException("Unknown queue name");

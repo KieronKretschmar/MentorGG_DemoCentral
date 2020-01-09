@@ -46,7 +46,6 @@ namespace DemoCentral.Controllers.trusted
 
                 return Ok();
             }
-
         }
     }
 

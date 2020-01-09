@@ -43,7 +43,7 @@ namespace DemoCentral.RabbitCommunication
         public void SendMessageAndUpdateQueueStatus(string correlationId, DC2DFWModel model)
         {
             long matchId = long.Parse(correlationId);
-            _inQueueDBInterface.UpdateQueueStatus(matchId, QueueName.DemoFileWorker, true);
+            _inQueueDBInterface.UpdateProcessStatus(matchId, ProcessedBy.DemoFileWorker, true);
             PublishMessage(correlationId, model);
         }
 
@@ -73,7 +73,7 @@ namespace DemoCentral.RabbitCommunication
 
                 _demoDBInterface.SetFileStatus(matchId, FileStatus.UNZIPPED);
 
-                _inQueueDBInterface.UpdateQueueStatus(matchId, QueueName.DemoFileWorker, false);
+                _inQueueDBInterface.UpdateProcessStatus(matchId, ProcessedBy.DemoFileWorker, false);
                 _logger.LogInformation("Demo#{matchId} was successfully handled by DemoFileWorker");
             }
         }

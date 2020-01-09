@@ -88,9 +88,9 @@ namespace DemoCentralTests
                 InQueueDBInterface test = new InQueueDBInterface(context);
                 test.Add(matchId, new DateTime(), Source.Faceit, 1234);
 
-                test.UpdateQueueStatus(matchId, QueueName.DemoDownloader, true);
-                test.UpdateQueueStatus(matchId, QueueName.DemoFileWorker, true);
-                test.UpdateQueueStatus(matchId, QueueName.SituationsOperator, true);
+                test.UpdateProcessStatus(matchId, ProcessedBy.DemoDownloader, true);
+                test.UpdateProcessStatus(matchId, ProcessedBy.DemoFileWorker, true);
+                test.UpdateProcessStatus(matchId, ProcessedBy.SituationsOperator, true);
             }
 
             using (var context = new DemoCentralContext(_test_config))
@@ -113,8 +113,8 @@ namespace DemoCentralTests
                 InQueueDBInterface test = new InQueueDBInterface(context);
                 test.Add(matchId, new DateTime(), Source.Faceit, 1234);
 
-                test.UpdateQueueStatus(matchId, QueueName.DemoDownloader, true);
-                test.UpdateQueueStatus(matchId, QueueName.DemoDownloader, false);
+                test.UpdateProcessStatus(matchId, ProcessedBy.DemoDownloader, true);
+                test.UpdateProcessStatus(matchId, ProcessedBy.DemoDownloader, false);
             }
 
             using (var context = new DemoCentralContext(_test_config))
