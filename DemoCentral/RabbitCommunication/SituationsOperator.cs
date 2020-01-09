@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Database.Enumerals;
+using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
 using RabbitTransfer.Consumer;
 using RabbitTransfer.Interfaces;
@@ -23,7 +24,7 @@ namespace DemoCentral.RabbitCommunication
         public override void HandleMessage(IBasicProperties properties, AnalyzerTransferModel model)
         {
             long matchId = long.Parse(properties.CorrelationId);
-            _inQueueDBInterface.UpdateProcessStatus(matchId,Database.Enumerals.ProcessedBy.SituationsOperator, model.Success);
+            _inQueueDBInterface.UpdateProcessStatus(matchId, ProcessedBy.SituationsOperator, model.Success);
 
             string log = model.Success ? "finished " : "failed ";
             _logger.LogInformation("Demo#{matchId}" + log + "siutationsoperator");
