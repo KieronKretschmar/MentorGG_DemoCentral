@@ -15,11 +15,11 @@ namespace DataBase.DatabaseClasses
         public bool SOQUEUE { get; set; }
         public int Retries { get; set; }
 
-        public List<bool> Queues => new List<bool> { DDQUEUE, DFWQUEUE, SOQUEUE };
+        private List<bool> Queues => new List<bool> { DDQUEUE, DFWQUEUE, SOQUEUE };
 
         public bool InAnyQueue()
         {
-            return this.Queues.Contains(true);
+            return Queues.Contains(true);
         }
     }
 }

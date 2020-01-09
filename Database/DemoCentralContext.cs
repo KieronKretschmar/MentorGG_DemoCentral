@@ -35,7 +35,6 @@ namespace DataBase.DatabaseClasses
                 entity.Property(e => e.DFWQUEUE).HasConversion(new BoolToZeroOneConverter<short>());
                 entity.Property(e => e.SOQUEUE).HasConversion(new BoolToZeroOneConverter<short>());
                 entity.Property(e => e.DDQUEUE).HasConversion(new BoolToZeroOneConverter<short>());
-                entity.Ignore(q => q.Queues);
             });
 
             modelBuilder.Entity<Demo>(entity =>
