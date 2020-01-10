@@ -31,12 +31,6 @@ namespace DataBase.DatabaseClasses
             {
                 entity.HasKey(e => e.MatchId);
                 entity.ToTable("InQueue", "democentral");
-
-                //Ensure bools are stored as a short inside the database, while the model still can use bools 
-                //Otherwise requesting data from the context would return an int instead of a bool
-                entity.Property(e => e.DFWQUEUE).HasConversion(new BoolToZeroOneConverter<short>());
-                entity.Property(e => e.SOQUEUE).HasConversion(new BoolToZeroOneConverter<short>());
-                entity.Property(e => e.DDQUEUE).HasConversion(new BoolToZeroOneConverter<short>());
             });
 
             modelBuilder.Entity<Demo>(entity =>
@@ -54,15 +48,14 @@ namespace DataBase.DatabaseClasses
 
                 //Ensure that an enum is stored as a byte inside the database, while still allowing for enum use in DB model
                 //Otherwise the enum would fail
-                entity.Property(e => e.FileStatus).HasColumnType("tinyint(3) unsigned").HasConversion<byte>();
-                entity.Property(e => e.UploadType).HasColumnType("tinyint(3) unsigned").HasConversion<byte>();
-                entity.Property(e => e.DemoFileWorkerStatus).HasColumnType("tinyint(3) unsigned").HasConversion<byte>();
-                entity.Property(e => e.UploadStatus).HasColumnType("tinyint(3) unsigned").HasConversion<byte>();
-                entity.Property(e => e.Source).HasColumnType("tinyint(3) unsigned").HasConversion<byte>();
+                entity.Property(e => e.FileStatus).HasColumnType("tinyint(3)").HasConversion<byte>();
+                entity.Property(e => e.UploadType).HasColumnType("tinyint(3)").HasConversion<byte>();
+                entity.Property(e => e.DemoFileWorkerStatus).HasColumnType("tinyint(3)").HasConversion<byte>();
+                entity.Property(e => e.UploadStatus).HasColumnType("tinyint(3)").HasConversion<byte>();
+                entity.Property(e => e.Source).HasColumnType("tinyint(3)").HasConversion<byte>();
 
 
                 entity.Property(e => e.Md5hash)
-                    .HasColumnName("MD5Hash")
                     .HasColumnType("longtext");
 
                 entity.Property(e => e.UploaderId).HasColumnType("bigint(20)");

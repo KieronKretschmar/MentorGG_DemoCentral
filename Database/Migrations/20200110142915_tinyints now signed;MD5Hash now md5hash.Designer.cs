@@ -3,14 +3,16 @@ using System;
 using DataBase.DatabaseClasses;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Database.Migrations
 {
     [DbContext(typeof(DemoCentralContext))]
-    partial class DemoCentralContextModelSnapshot : ModelSnapshot
+    [Migration("20200110142915_tinyints now signed;MD5Hash now md5hash")]
+    partial class tinyintsnowsignedMD5Hashnowmd5hash
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -79,11 +81,11 @@ namespace Database.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    b.Property<bool>("DDQUEUE")
-                        .HasColumnType("tinyint(1)");
+                    b.Property<short>("DDQUEUE")
+                        .HasColumnType("smallint");
 
-                    b.Property<bool>("DFWQUEUE")
-                        .HasColumnType("tinyint(1)");
+                    b.Property<short>("DFWQUEUE")
+                        .HasColumnType("smallint");
 
                     b.Property<DateTime>("InsertDate")
                         .HasColumnType("datetime(6)");
@@ -94,8 +96,8 @@ namespace Database.Migrations
                     b.Property<int>("Retries")
                         .HasColumnType("int");
 
-                    b.Property<bool>("SOQUEUE")
-                        .HasColumnType("tinyint(1)");
+                    b.Property<short>("SOQUEUE")
+                        .HasColumnType("smallint");
 
                     b.Property<long>("UploaderId")
                         .HasColumnType("bigint");
