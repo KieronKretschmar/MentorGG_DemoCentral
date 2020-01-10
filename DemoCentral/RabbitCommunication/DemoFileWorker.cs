@@ -58,7 +58,17 @@ namespace DemoCentral.RabbitCommunication
                 return;
             }
 
-            if (response.DuplicateChecked && response.IsDuplicate)
+            if (!response.DuplicateChecked)
+            {
+                //Keep track of demos for which the duplicate check itself failed,
+                //they may or may not be duplicates, the check itself failed for any reason
+                _inQueueDBInterface.RemoveDemoFromQueue(matchId);
+                _demoDBInterface.SetFileStatus(matchId, FileStatus.DUPLICATECHECKFAILED);
+                _logger.LogWarning($"Demo#{matchId} was not duplicate checked");
+                return;
+            }
+
+            if (response.IsDuplicate)
             {
                 //Remove demo if duplicate
                 //TODO OPTIONAL FEATURE handle duplicate entry 2
@@ -81,12 +91,17 @@ namespace DemoCentral.RabbitCommunication
                 _logger.LogInformation($"Demo#{matchId} was successfully handled by DemoFileWorker");
                 return;
             }
+
+            //If you get here, the above if cases do not catch every statement
+            //Therefore the response has more possible statusses than handled here
+            //Probably a coding error if you update DemoFileWorker
+            _logger.LogError("Could not handle response from DemoFileWorker");
         }
 
-        public override void HandleMessage(IBasicProperties properties, DFW2DCModel consumeModel)
-        {
-            long matchId = long.Parse(properties.CorrelationId);
-            UpdateDBEntryFromFileWorkerResponse(matchId, consumeModel);
-        }
+    public override void HandleMessage(IBasicProperties properties, DFW2DCModel consumeModel)
+    {
+        long matchId = long.Parse(properties.CorrelationId);
+        UpdateDBEntryFromFileWorkerResponse(matchId, consumeModel);
     }
+}
 }
