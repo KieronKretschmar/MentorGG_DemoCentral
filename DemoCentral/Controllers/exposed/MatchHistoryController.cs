@@ -24,10 +24,10 @@ namespace DemoCentral.Controllers.exposed
 
         [HttpGet]
         //GET api/exposed/matchhistory?playerId=XXXX&recentMatches=YYYY&offset = 0
-        public MatchHistoryModel GetMatchHistory(long playerId, int recentMatches, int offset)
+        public MatchHistoryModel GetMatchHistory(long uploaderId, int recentMatches, int offset)
         {
-            _logger.LogInformation($"Received request for player#{playerId} to get {recentMatches} last matches, offset {offset}");
-            return MatchHistoryModel.FromRecentMatches(playerId, recentMatches, offset, _dbInterface);
+            _logger.LogInformation($"Received request for player#{uploaderId} to get {recentMatches} last matches, offset {offset}");
+            return MatchHistoryModel.FromRecentMatches(uploaderId, recentMatches, offset, _dbInterface);
         }
     }
 }
