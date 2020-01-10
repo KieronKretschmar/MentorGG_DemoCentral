@@ -539,6 +539,7 @@ namespace DemoCentralTests
         {
             Demo demo = CopyDemo(_standardDemo);
             bool isDuplicate;
+            long matchId;
 
             string duplicate_hash = "test_hash_duplicate";
 
@@ -549,10 +550,11 @@ namespace DemoCentralTests
                 var test = new DemoCentralDBInterface(context, _mockInQueueDb);
                 AddDemoToDB(demo, context);
 
-                isDuplicate = test.IsDuplicateHash(duplicate_hash);
+                isDuplicate = test.IsDuplicateHash(duplicate_hash, out matchId);
             }
 
             Assert.IsTrue(isDuplicate);
+            Assert.AreEqual(demo.MatchId, matchId);
         }
 
 
@@ -561,6 +563,7 @@ namespace DemoCentralTests
         {
             Demo demo = CopyDemo(_standardDemo);
             bool isDuplicate;
+            long matchId;
 
             string first_hash = "test_hash_non_duplicate_1";
             string second_hash = "test_hash_non_duplicate_2";
@@ -573,11 +576,12 @@ namespace DemoCentralTests
                 var test = new DemoCentralDBInterface(context, _mockInQueueDb);
                 AddDemoToDB(demo, context);
 
-                isDuplicate = test.IsDuplicateHash(second_hash);
+                isDuplicate = test.IsDuplicateHash(second_hash, out matchId);
             }
 
             Assert.AreNotEqual(first_hash, second_hash);
             Assert.IsFalse(isDuplicate);
+            Assert.AreEqual(-1,matchId);
         }
 
         private Demo GetDemoByMatchId(long matchId, DemoCentralContext context)

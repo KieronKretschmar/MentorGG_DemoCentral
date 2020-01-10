@@ -19,7 +19,7 @@ namespace DemoCentral
         /// </summary>
         List<Demo> GetRecentMatches(long playerId, int recentMatches, int offset = 0);
         List<long> GetRecentMatchIds(long playerId, int recentMatches, int offset = 0);
-        bool IsDuplicateHash(string hash);
+        bool IsDuplicateHash(string hash, out long matchId);
         void RemoveDemo(long matchId);
         string SetDownloadRetryingAndGetDownloadPath(long matchId);
         void SetFileStatus(long matchId, FileStatus status);
@@ -127,9 +127,16 @@ namespace DemoCentral
             return downloadUrl;
         }
 
-        public bool IsDuplicateHash(string hash)
+        /// <summary>
+        /// Checks if a hash is already in the database, \n
+        /// if so the out parameter is the matchId of the original demo, else -1
+        /// </summary>
+        /// <param name="matchId">id of the original match or -1 if hash is unique</param>
+        public bool IsDuplicateHash(string hash, out long matchId)
         {
             var demo = _context.Demo.Where(x => x.Md5hash.Equals(hash)).SingleOrDefault();
+
+            matchId = demo == null ? -1 : demo.MatchId;
 
             return !(demo == null);
         }
