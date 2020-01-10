@@ -16,60 +16,66 @@ namespace DemoCentralTests
     public class TrustedHashControllerTests
     {
         private readonly DbContextOptions<DemoCentralContext> _test_config;
-        private readonly ILogger<HashController> mockIlogger;
+        private readonly ILogger<HashController> mockILogger;
         private readonly IDemoCentralDBInterface mockIDemoDBInterface;
 
         public TrustedHashControllerTests()
         {
             _test_config = DCTestsDBHelper.test_config;
-            mockIlogger = new Mock<ILogger<HashController>>().Object;
+            mockILogger = new Mock<ILogger<HashController>>().Object;
             mockIDemoDBInterface = new Mock<IDemoCentralDBInterface>().Object;
         }
 
         [TestMethod]
-        public void GetHashReturnsHTTPConflictIfDuplicated()
+        public void CreateHashReturnsHTTPConflictIfDuplicated()
         {
             var mockIDemoDBInterface = new Mock<IDemoCentralDBInterface>();
-            mockIDemoDBInterface.Setup(x => x.IsDuplicateHash("")).Returns(true);
+            long matchId = 1;
+            string hash = "test_hash";
+
+            mockIDemoDBInterface.Setup(x => x.IsDuplicateHash(hash, out matchId)).Returns(true);
             ActionResult response;
+
+            mockIDemoDBInterface.Object.IsDuplicateHash(hash, out matchId);
 
             using (var context = new DemoCentralContext(_test_config))
             {
-                var test = new HashController(mockIDemoDBInterface.Object, mockIlogger);
-                response = test.CreateHash(1, "");
+                var test = new HashController(mockIDemoDBInterface.Object, mockILogger);
+                response = test.CreateHash(matchId,hash);
             }
             Assert.IsInstanceOfType(response, typeof(ConflictObjectResult));
         }
 
 
         [TestMethod]
-        public void GetHashReturnsHTTPOkIfNotDuplicated()
+        public void CreateHashReturnsHTTPOkIfNotDuplicated()
         {
             var mockIDemoDBInterface = new Mock<IDemoCentralDBInterface>();
-            mockIDemoDBInterface.Setup(x => x.IsDuplicateHash("")).Returns(false);
+            long matchId = 1;
+            mockIDemoDBInterface.Setup(x => x.IsDuplicateHash("", out matchId)).Returns(false);
             ActionResult response;
 
             using (var context = new DemoCentralContext(_test_config))
             {
-                var test = new HashController(mockIDemoDBInterface.Object, mockIlogger);
-                response = test.CreateHash(1, "");
+                var test = new HashController(mockIDemoDBInterface.Object, mockILogger);
+                response = test.CreateHash(matchId,"");
             }
             Assert.IsInstanceOfType(response, typeof(OkResult));
         }
 
 
         [TestMethod]
-        public void GetHashSavesHashIfNotDuplicated()
+        public void CreateHashSavesHashIfNotDuplicated()
         {
             var mockIDemoDBInterface = new Mock<IDemoCentralDBInterface>();
-            mockIDemoDBInterface.Setup(x => x.IsDuplicateHash("")).Returns(false);
-            string hash = "test_hash";
             long matchId = 1;
+            string hash = "test_hash";
+            mockIDemoDBInterface.Setup(x => x.IsDuplicateHash("", out matchId)).Returns(false);
             ActionResult response;
 
             using (var context = new DemoCentralContext(_test_config))
             {
-                var test = new HashController(mockIDemoDBInterface.Object, mockIlogger);
+                var test = new HashController(mockIDemoDBInterface.Object, mockILogger);
                 response = test.CreateHash(matchId, hash);
             }
             mockIDemoDBInterface.Verify(x => x.SetHash(matchId, hash), Times.Once);
