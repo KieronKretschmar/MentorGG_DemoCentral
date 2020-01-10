@@ -34,13 +34,12 @@ namespace DemoCentral.Controllers.trusted
         //POST api/trusted/Hash/CreateHash?matchId=XXXX&hash=YYYYY
         public ActionResult CreateHash(long matchId, string hash)
         {
-            bool duplicateHash = _dbInterface.IsDuplicateHash(hash, out long possibleMatchId);
+            bool duplicateHash = _dbInterface.IsDuplicateHash(hash, out long duplicateMatchId);
             try
             {
-
                 if (duplicateHash)
                 {
-                    string error = $"Demo#{matchId} was duplicate of Demo#{possibleMatchId} via MD5Hash";
+                    string error = $"Demo#{matchId} was duplicate of Demo#{duplicateMatchId} via MD5Hash";
                     _logger.LogWarning(error);
                     return Conflict(error);
                 }
@@ -55,8 +54,7 @@ namespace DemoCentral.Controllers.trusted
             catch (InvalidOperationException)
             {
                 string critical = $"Requested hash update for non-existing demo#{matchId} \n " +
-                    $"One should have been created by DemoCentral on first receiving the demo from the Gatherer \n" +
-                    "THIS CASE SHOULD NEVER HAPPEN IN PRODUCTION";
+                    $"One should have been created by DemoCentral on first receiving the demo from the Gatherer";
                 _logger.LogCritical(critical);
                 throw new InvalidOperationException(critical);
             }
