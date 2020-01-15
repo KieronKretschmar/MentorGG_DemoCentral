@@ -40,7 +40,7 @@ namespace DemoCentral.Controllers.trusted
                 if (duplicateHash)
                 {
                     string error = $"Demo#{matchId} was duplicate of Demo#{duplicateMatchId} via MD5Hash";
-                    _logger.LogWarning(error);
+                    _logger.LogInformation(error);
                     return Conflict(error);
                 }
                 else
