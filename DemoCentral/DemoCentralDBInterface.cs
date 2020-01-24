@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using DataBase.Enumerals;
+using Microsoft.Extensions.Logging;
 
 namespace DemoCentral
 {
@@ -42,16 +43,31 @@ namespace DemoCentral
     {
         private readonly DemoCentralContext _context;
         private readonly IInQueueDBInterface _inQueueDBInterface;
+        private readonly ILogger<DemoCentralDBInterface> _logger;
 
-        public DemoCentralDBInterface(DemoCentralContext context, IInQueueDBInterface inQueueDBInterface)
+        public DemoCentralDBInterface(DemoCentralContext context, IInQueueDBInterface inQueueDBInterface, ILogger<DemoCentralDBInterface> logger)
         {
             _context = context;
             _inQueueDBInterface = inQueueDBInterface;
+            _logger = logger;
         }
 
         public void SetHash(long matchId, string hash)
         {
-            var demo = GetDemoById(matchId);
+            Demo demo = null;
+
+            try
+            {
+                demo = GetDemoById(matchId);
+            }
+            catch (InvalidOperationException e)
+            {
+                string critical = $"Requested hash update for non-existing demo#{matchId} \n " +
+                    $"One should have been created by DemoCentral on first receiving the demo from the Gatherer";
+                _logger.LogCritical(critical);
+                throw new InvalidOperationException(critical, e);
+            }
+
             demo.Md5hash = hash;
             _context.SaveChanges();
         }

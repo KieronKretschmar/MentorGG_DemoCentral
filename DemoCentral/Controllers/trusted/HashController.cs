@@ -35,30 +35,20 @@ namespace DemoCentral.Controllers.trusted
         public ActionResult CreateHash(long matchId, string hash)
         {
             bool duplicateHash = _dbInterface.IsDuplicateHash(hash, out long duplicateMatchId);
-            try
-            {
-                if (duplicateHash)
-                {
-                    string error = $"Demo#{matchId} was duplicate of Demo#{duplicateMatchId} via MD5Hash";
-                    _logger.LogInformation(error);
-                    return Conflict(error);
-                }
-                else
-                {
-                    _logger.LogInformation($"Demo#{matchId} is unique");
-                    _dbInterface.SetHash(matchId, hash);
 
-                    return Ok();
-                }
-            }
-            catch (InvalidOperationException)
+            if (duplicateHash)
             {
-                string critical = $"Requested hash update for non-existing demo#{matchId} \n " +
-                    $"One should have been created by DemoCentral on first receiving the demo from the Gatherer";
-                _logger.LogCritical(critical);
-                throw new InvalidOperationException(critical);
+                string error = $"Demo#{matchId} was duplicate of Demo#{duplicateMatchId} via MD5Hash";
+                _logger.LogInformation(error);
+                return Conflict(error);
+            }
+            else
+            {
+                _logger.LogInformation($"Demo#{matchId} is unique");
+                _dbInterface.SetHash(matchId, hash);
+
+                return Ok();
             }
         }
-
     }
 }
