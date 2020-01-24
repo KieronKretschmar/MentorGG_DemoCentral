@@ -27,7 +27,7 @@ namespace DemoCentral
         void SetDatabaseVersion(long matchId, string databaseVersion);
 
         /// <summary>
-        /// try to create a new entry in the demo table, return false and the matchId of the match, if the downloadUrl is already known, else forward demo to downloader
+        /// try to create a new entry in the demo table. Returns false and the matchId of the match, if the downloadUrl is already known. If not, the task is forwarded to downloader and true is returned.
         /// </summary>
         /// <param name="matchId">Return either a new matchId or the one of the found demo if the download url is known</param>
         /// <returns>true, if downloadUrl is unique</returns>
