@@ -1,97 +1,197 @@
-﻿using System;
-using System.Linq;
-using DemoCentral.Enumerals;
-using DemoCentral.DatabaseClasses;
+﻿using DataBase.DatabaseClasses;
+using RabbitTransfer.TransferModels;
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using DataBase.Enumerals;
+using Microsoft.Extensions.Logging;
 
 namespace DemoCentral
 {
-    public class DemoCentralDBInterface
+    /// <summary>
+    /// Interface for the Demo table of the database
+    /// </summary>
+    public interface IDemoCentralDBInterface
     {
-        public static List<long> GetRecentMatchIds(long playerId,int recentMatches,int offset = 0)
-        {
-            List<long> recentMatchesId;
-            using(var context = new democentralContext())
-            {
-                var res = context.Demo.Where(x => x.UploaderId == playerId).Take(recentMatches + offset).ToList();
+        void SetFilePath(long matchId, string zippedFilePath);
+        DC2DFWModel CreateDemoFileWorkerModel(long matchId);
+        /// <summary>
+        /// Returns the player matches in queue , empty list if none found
+        /// </summary>
+        List<Demo> GetRecentMatches(long playerId, int recentMatches, int offset = 0);
+        List<long> GetRecentMatchIds(long playerId, int recentMatches, int offset = 0);
+        bool IsDuplicateHash(string hash, out long matchId);
+        void RemoveDemo(long matchId);
+        string SetDownloadRetryingAndGetDownloadPath(long matchId);
+        void SetFileStatus(long matchId, FileStatus status);
+        void SetUploadStatus(long matchId, bool success);
+        void SetDatabaseVersion(long matchId, string databaseVersion);
 
-                res.RemoveRange(0, offset);
-                recentMatchesId = res.Select(x=>x.MatchId).ToList();
-            }
-
-            return recentMatchesId;
-        }
-
-        public static void AddFilePath(long matchId, string zippedFilePath)
-        {
-            using (var context = new democentralContext())
-            {
-                context.Demo.Where(x => x.MatchId == matchId).Single().FilePath = zippedFilePath;
-                context.SaveChanges();
-            }
-        }
-
-        public static void UpdateUploadStatus(long matchId, bool success)
-        {
-            using (var context= new democentralContext())
-            {
-                context.Demo.Where(x => x.MatchId == matchId).Single().UploadStatus = success? (byte) UploadStatus.FINISHED: (byte) UploadStatus.FAILED;
-                context.SaveChanges();
-            }
-        }
-
-        public static void UpdateDownloadStatus(long matchId, bool success)
-        {
-            using (var context = new democentralContext())
-            {
-                context.Demo.Where(x => x.MatchId == matchId).Single().FileStatus = success ? (byte)FileStatus.DOWNLOADED : (byte)FileStatus.DOWNLOADFAILED;
-                context.SaveChanges();
-            }
-        }
-
-        public static List<Demo> GetRecentMatches(long playerId, int recentMatches, int offset = 0)
-        {
-            List<Demo> recentMatchesId;
-            using (var context = new democentralContext())
-            {
-                var res = context.Demo.Where(x => x.UploaderId == playerId).Take(recentMatches + offset).ToList();
-                res.RemoveRange(0, offset);
-
-                recentMatchesId = res;
-            }
-
-            return recentMatchesId;
-        }
-
-
-        public static bool CreateNewDemoEntryFromGatherer(GathererTransferModel model)
-        {
-            using (var context = new democentralContext())
-            {
-                //checkdownloadurl
-                var demo = context.Demo.Where(x => x.DownloadUrl.Equals(model.DownloadUrl)).SingleOrDefault();
-                if (demo != null) return false;
-
-                context.Demo.Add(new Demo
-                {
-                    DownloadUrl = model.DownloadUrl,
-                    FileStatus = (byte)FileStatus.NEW,
-                    UploadDate = DateTime.Now,
-                    UploadType = model.UploadType,
-                    MatchDate = model.MatchDate,
-                    Source = model.Source,
-                    DemoAnalyzerVersion = "",
-                    UploaderId = model.UploaderId,
-                });
-
-                Console.WriteLine("New DemoEntry created");
-                context.SaveChanges();
-
-                QueueTracker.Add(model.matchId, model.MatchDate, model.Source, model.UploaderId);
-
-                return true;
-            }
-        }
-
+        /// <summary>
+        /// try to create a new entry in the demo table. Returns false and the matchId of the match, if the downloadUrl is already known. If not, the task is forwarded to downloader and true is returned.
+        /// </summary>
+        /// <param name="matchId">Return either a new matchId or the one of the found demo if the download url is known</param>
+        /// <returns>true, if downloadUrl is unique</returns>
+        bool TryCreateNewDemoEntryFromGatherer(GathererTransferModel model, out long matchId);
+        void SetHash(long matchId, string hash);
     }
+
+    /// <summary>
+    /// Basic implementation of the <see cref="IDemoCentralDBInterface"/>
+    /// </summary>
+    public class DemoCentralDBInterface : IDemoCentralDBInterface
+    {
+        private readonly DemoCentralContext _context;
+        private readonly IInQueueDBInterface _inQueueDBInterface;
+        private readonly ILogger<DemoCentralDBInterface> _logger;
+
+        public DemoCentralDBInterface(DemoCentralContext context, IInQueueDBInterface inQueueDBInterface, ILogger<DemoCentralDBInterface> logger)
+        {
+            _context = context;
+            _inQueueDBInterface = inQueueDBInterface;
+            _logger = logger;
+        }
+
+        public void SetHash(long matchId, string hash)
+        {
+            Demo demo = null;
+
+            try
+            {
+                demo = GetDemoById(matchId);
+            }
+            catch (InvalidOperationException e)
+            {
+                string critical = $"Requested hash update for non-existing demo#{matchId} \n " +
+                    $"One should have been created by DemoCentral on first receiving the demo from the Gatherer";
+                _logger.LogCritical(critical);
+                throw new InvalidOperationException(critical, e);
+            }
+
+            demo.Md5hash = hash;
+            _context.SaveChanges();
+        }
+
+        public DC2DFWModel CreateDemoFileWorkerModel(long matchId)
+        {
+            var demo = GetDemoById(matchId);
+
+            var model = new DC2DFWModel
+            {
+                Event = demo.Event,
+                Source = demo.Source,
+                MatchDate = demo.MatchDate,
+                ZippedFilePath = demo.FilePath
+            };
+
+            return model;
+        }
+
+        public List<long> GetRecentMatchIds(long playerId, int recentMatches, int offset = 0)
+        {
+            List<long> recentMatchesId = _context.Demo.Where(x => x.UploaderId == playerId).Select(x => x.MatchId).Take(recentMatches + offset).ToList();
+            recentMatchesId.RemoveRange(0, offset);
+
+            return recentMatchesId;
+        }
+
+        public void SetFileStatus(long matchId, FileStatus status)
+        {
+            var demo = GetDemoById(matchId);
+            demo.FileStatus = status;
+            _context.SaveChanges();
+        }
+
+        public void SetFilePath(long matchId, string zippedFilePath)
+        {
+            var demo = GetDemoById(matchId);
+            demo.FilePath = zippedFilePath;
+            _context.SaveChanges();
+        }
+
+        public void RemoveDemo(long matchId)
+        {
+            var demo = GetDemoById(matchId);
+            _context.Demo.Remove(demo);
+            _context.SaveChanges();
+        }
+
+        public void SetUploadStatus(long matchId, bool success)
+        {
+            var demo = GetDemoById(matchId);
+            demo.UploadStatus = success ? UploadStatus.FINISHED : UploadStatus.FAILED;
+            _context.SaveChanges();
+
+        }
+
+        public List<Demo> GetRecentMatches(long playerId, int recentMatches, int offset = 0)
+        {
+            var recentMatchesId = _context.Demo.Where(x => x.UploaderId == playerId).Take(recentMatches + offset).ToList();
+            recentMatchesId.RemoveRange(0, offset);
+
+            return recentMatchesId;
+        }
+
+        public string SetDownloadRetryingAndGetDownloadPath(long matchId)
+        {
+            var demo = GetDemoById(matchId);
+
+            demo.FileStatus = FileStatus.DOWNLOAD_RETRYING;
+            string downloadUrl = demo.DownloadUrl;
+            _context.SaveChanges();
+
+            return downloadUrl;
+        }
+
+        /// <summary>
+        /// Checks if a hash is already in the database, \n
+        /// if so the out parameter is the matchId of the original demo, else -1
+        /// </summary>
+        /// <param name="matchId">id of the original match or -1 if hash is unique</param>
+        public bool IsDuplicateHash(string hash, out long matchId)
+        {
+            var demo = _context.Demo.Where(x => x.Md5hash.Equals(hash)).SingleOrDefault();
+
+            matchId = demo == null ? -1 : demo.MatchId;
+
+            return !(demo == null);
+        }
+
+
+        public bool TryCreateNewDemoEntryFromGatherer(GathererTransferModel model, out long matchId)
+        {
+            //checkdownloadurl
+            var demo = _context.Demo.Where(x => x.DownloadUrl.Equals(model.DownloadUrl)).SingleOrDefault();
+            if (demo != null)
+            {
+                matchId = demo.MatchId;
+                return false;
+            }
+
+            demo = Demo.FromGatherTransferModel(model);
+
+            _context.Demo.Add(demo);
+
+            _context.SaveChanges();
+
+            matchId = demo.MatchId;
+            _inQueueDBInterface.Add(matchId, model.MatchDate, model.Source, model.UploaderId);
+
+            return true;
+        }
+
+        private Demo GetDemoById(long matchId)
+        {
+            return _context.Demo.Single(x => x.MatchId == matchId);
+        }
+
+        public void SetDatabaseVersion(long matchId, string databaseVersion)
+        {
+            var demo = GetDemoById(matchId);
+            demo.DatabaseVersion = databaseVersion;
+            _context.SaveChanges();
+        }
+    }
+
 }
+

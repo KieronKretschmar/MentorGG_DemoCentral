@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using System.Web;
+using System.Net;
 
 namespace DemoCentral.Controllers.exposed
 {
@@ -11,21 +13,48 @@ namespace DemoCentral.Controllers.exposed
     [Route("api/exposed/[controller]")]
     public class QueueController : ControllerBase
     {
-        //Routing documentation is here https://docs.microsoft.com/de-de/aspnet/core/fundamentals/routing?view=aspnetcore-3.0#route-template-reference
+        private readonly IInQueueDBInterface _dbInterface;
+        private readonly ILogger<QueueController> _logger;
 
-
-        [HttpGet("{matchId}")]
-        // GET /api/exposed/queue/playermatches/1
-        public int QueuePosition(long matchId)
+        public QueueController(IInQueueDBInterface dbInterface, ILogger<QueueController> logger)
         {
-            return QueueTracker.GetQueuePosition(matchId);
+            _dbInterface = dbInterface;
+            _logger = logger;
         }
 
-        [HttpGet("[action]/{playerId}")]
-        // GET /api/exposed/queue/playermatches/1
-        public int PlayerMatches(long playerId)
+        /// <summary>
+        /// Get the position in queue for a certain demo 
+        /// </summary>
+        /// <param name="matchId">id of the certain demo</param>
+        /// <returns>either int or BadRequest if the demo could not be found</returns>
+        [HttpGet("{matchId}")]
+        // GET /api/exposed/queue/1
+        public ActionResult<int> QueuePosition(long matchId)
         {
-            return QueueTracker.GetPlayerMatchesInQueue(playerId).Count;
+            _logger.LogInformation($"Received request for queue position of Demo#{matchId}");
+            try
+            {
+                return _dbInterface.GetQueuePosition(matchId);
+            }
+            catch (InvalidOperationException)
+            {
+                string error = $"Demo#{matchId} not in queue";
+
+                _logger.LogWarning(error);
+                return NotFound(error);
+            }
+        }
+
+        /// <summary>
+        /// Get the number of enqueued matches for a certain player 
+        /// </summary>
+        /// <param name="playerId">steamid of the certain player</param>
+        [HttpGet("[action]/{playerId:long}")]
+        // GET /api/exposed/queue/numberplayermatches/1
+        public ActionResult<int> NumberPlayerMatches(long playerId)
+        {
+            _logger.LogInformation($"Received request for matches of player#{playerId}");
+            return _dbInterface.GetPlayerMatchesInQueue(playerId).Count;
         }
     }
 

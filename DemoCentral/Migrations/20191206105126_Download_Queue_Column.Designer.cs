@@ -9,8 +9,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DemoCentral.Migrations
 {
     [DbContext(typeof(DemoCentralContext))]
-    [Migration("20191129110431_rename_demoId")]
-    partial class rename_demoId
+    [Migration("20191206105126_Download_Queue_Column")]
+    partial class Download_Queue_Column
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -119,6 +119,9 @@ namespace DemoCentral.Migrations
                     b.Property<long>("MatchId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
+
+                    b.Property<bool>("DDQUEUE")
+                        .HasColumnType("tinyint(1)");
 
                     b.Property<short>("DFWQUEUE")
                         .HasColumnType("smallint");
