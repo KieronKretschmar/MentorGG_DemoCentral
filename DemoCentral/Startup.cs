@@ -25,7 +25,7 @@ namespace DemoCentral
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<DemoCentralContext>(options =>
-                options.UseMySql(Configuration.GetConnectionString("DemoCentralDB")), ServiceLifetime.Singleton, ServiceLifetime.Singleton);
+                options.UseMySql(Configuration.GetValue<string>("CONNECTION_STRING")), ServiceLifetime.Singleton, ServiceLifetime.Singleton);
 
             services.AddControllers();
 
