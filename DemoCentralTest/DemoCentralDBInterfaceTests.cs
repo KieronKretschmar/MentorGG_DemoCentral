@@ -10,6 +10,7 @@ using System;
 using RabbitTransfer.Enums;
 using DataBase.Enumerals;
 using System.Collections.Generic;
+using Microsoft.Extensions.Logging;
 
 namespace DemoCentralTests
 {
@@ -18,12 +19,14 @@ namespace DemoCentralTests
     {
         private DbContextOptions<DemoCentralContext> _test_config;
         private IInQueueDBInterface _mockInQueueDb;
+        private ILogger<DemoCentralDBInterface> _mockILogger;
         private Demo _standardDemo;
 
         public DemoCentralDBInterfaceTests()
         {
             _test_config = DCTestsDBHelper.test_config;
             _mockInQueueDb = new Mock<IInQueueDBInterface>().Object;
+            _mockILogger = new Mock<ILogger<DemoCentralDBInterface>>().Object;
 
             _standardDemo = new Demo
             {
@@ -62,7 +65,7 @@ namespace DemoCentralTests
 
             using (var context = new DemoCentralContext(_test_config))
             {
-                var test = new DemoCentralDBInterface(context, _mockInQueueDb);
+                var test = new DemoCentralDBInterface(context, _mockInQueueDb, _mockILogger);
 
                 test.TryCreateNewDemoEntryFromGatherer(model, out matchId);
             }
@@ -101,7 +104,7 @@ namespace DemoCentralTests
 
             using (var context = new DemoCentralContext(_test_config))
             {
-                var test = new DemoCentralDBInterface(context, mockedObject);
+                var test = new DemoCentralDBInterface(context, mockedObject, _mockILogger);
 
                 test.TryCreateNewDemoEntryFromGatherer(model, out matchId);
             }
@@ -134,7 +137,7 @@ namespace DemoCentralTests
 
             using (var context = new DemoCentralContext(_test_config))
             {
-                var test = new DemoCentralDBInterface(context, mockedObject);
+                var test = new DemoCentralDBInterface(context, mockedObject,_mockILogger);
 
                 test.TryCreateNewDemoEntryFromGatherer(model, out first_matchId);
 
@@ -154,7 +157,7 @@ namespace DemoCentralTests
 
             using (var context = new DemoCentralContext(_test_config))
             {
-                var test = new DemoCentralDBInterface(context, _mockInQueueDb);
+                var test = new DemoCentralDBInterface(context, _mockInQueueDb,_mockILogger);
                 AddDemoToDB(demo, context);
 
                 matchId = demo.MatchId;
@@ -171,7 +174,7 @@ namespace DemoCentralTests
             var new_hash = "new_hash";
             using (var context = new DemoCentralContext(_test_config))
             {
-                var test = new DemoCentralDBInterface(context, _mockInQueueDb);
+                var test = new DemoCentralDBInterface(context, _mockInQueueDb, _mockILogger);
 
                 Assert.ThrowsException<InvalidOperationException>(() => test.SetHash(unknown_matchId, new_hash));
             }
@@ -191,7 +194,7 @@ namespace DemoCentralTests
 
             using (var context = new DemoCentralContext(_test_config))
             {
-                var test = new DemoCentralDBInterface(context, _mockInQueueDb);
+                var test = new DemoCentralDBInterface(context, _mockInQueueDb, _mockILogger);
                 AddDemoToDB(demo, context);
 
                 matchId = demo.MatchId;
@@ -214,7 +217,7 @@ namespace DemoCentralTests
 
             using (var context = new DemoCentralContext(_test_config))
             {
-                var test = new DemoCentralDBInterface(context, _mockInQueueDb);
+                var test = new DemoCentralDBInterface(context, _mockInQueueDb, _mockILogger);
                 AddDemoToDB(demo1, context);
                 AddDemoToDB(demo2, context);
                 AddDemoToDB(demo3, context);
@@ -242,7 +245,7 @@ namespace DemoCentralTests
 
             using (var context = new DemoCentralContext(_test_config))
             {
-                var test = new DemoCentralDBInterface(context, _mockInQueueDb);
+                var test = new DemoCentralDBInterface(context, _mockInQueueDb, _mockILogger);
                 AddDemoToDB(demo1, context);
                 AddDemoToDB(demo2, context);
                 AddDemoToDB(demo3, context);
@@ -269,7 +272,7 @@ namespace DemoCentralTests
 
             using (var context = new DemoCentralContext(_test_config))
             {
-                var test = new DemoCentralDBInterface(context, _mockInQueueDb);
+                var test = new DemoCentralDBInterface(context, _mockInQueueDb, _mockILogger);
                 AddDemoToDB(demo1, context);
                 AddDemoToDB(demo2, context);
                 AddDemoToDB(demo3, context);
@@ -297,7 +300,7 @@ namespace DemoCentralTests
 
             using (var context = new DemoCentralContext(_test_config))
             {
-                var test = new DemoCentralDBInterface(context, _mockInQueueDb);
+                var test = new DemoCentralDBInterface(context, _mockInQueueDb, _mockILogger);
                 AddDemoToDB(demo1, context);
                 AddDemoToDB(demo2, context);
                 AddDemoToDB(demo3, context);
@@ -316,7 +319,7 @@ namespace DemoCentralTests
 
             using (var context = new DemoCentralContext(_test_config))
             {
-                DemoCentralDBInterface test = new DemoCentralDBInterface(context, _mockInQueueDb);
+                DemoCentralDBInterface test = new DemoCentralDBInterface(context, _mockInQueueDb, _mockILogger);
                 AddDemoToDB(demo, context);
 
                 test.SetFileStatus(demo.MatchId, FileStatus.UNZIPPED);
@@ -332,7 +335,7 @@ namespace DemoCentralTests
 
             using (var context = new DemoCentralContext(_test_config))
             {
-                DemoCentralDBInterface test = new DemoCentralDBInterface(context, _mockInQueueDb);
+                DemoCentralDBInterface test = new DemoCentralDBInterface(context, _mockInQueueDb, _mockILogger);
                 AddDemoToDB(demo, context);
 
                 test.SetFileStatus(demo.MatchId, FileStatus.DOWNLOADED);
@@ -350,7 +353,7 @@ namespace DemoCentralTests
 
             using (var context = new DemoCentralContext(_test_config))
             {
-                DemoCentralDBInterface test = new DemoCentralDBInterface(context, _mockInQueueDb);
+                DemoCentralDBInterface test = new DemoCentralDBInterface(context, _mockInQueueDb, _mockILogger);
                 AddDemoToDB(demo, context);
 
                 test.SetFilePath(demo.MatchId, test_path);
@@ -367,7 +370,7 @@ namespace DemoCentralTests
 
             using (var context = new DemoCentralContext(_test_config))
             {
-                DemoCentralDBInterface test = new DemoCentralDBInterface(context, _mockInQueueDb);
+                DemoCentralDBInterface test = new DemoCentralDBInterface(context, _mockInQueueDb, _mockILogger);
                 AddDemoToDB(demo, context);
                 test.RemoveDemo(demo.MatchId);
             }
@@ -386,7 +389,7 @@ namespace DemoCentralTests
 
             using (var context = new DemoCentralContext(_test_config))
             {
-                DemoCentralDBInterface test = new DemoCentralDBInterface(context, _mockInQueueDb);
+                DemoCentralDBInterface test = new DemoCentralDBInterface(context, _mockInQueueDb, _mockILogger);
                 AddDemoToDB(demo, context);
 
                 test.SetUploadStatus(demo.MatchId, true);
@@ -406,7 +409,7 @@ namespace DemoCentralTests
 
             using (var context = new DemoCentralContext(_test_config))
             {
-                var test = new DemoCentralDBInterface(context, _mockInQueueDb);
+                var test = new DemoCentralDBInterface(context, _mockInQueueDb, _mockILogger);
                 AddDemoToDB(demo1, context);
                 AddDemoToDB(demo2, context);
                 AddDemoToDB(demo3, context);
@@ -433,7 +436,7 @@ namespace DemoCentralTests
 
             using (var context = new DemoCentralContext(_test_config))
             {
-                var test = new DemoCentralDBInterface(context, _mockInQueueDb);
+                var test = new DemoCentralDBInterface(context, _mockInQueueDb, _mockILogger);
                 AddDemoToDB(demo1, context);
                 AddDemoToDB(demo2, context);
                 AddDemoToDB(demo3, context);
@@ -461,7 +464,7 @@ namespace DemoCentralTests
 
             using (var context = new DemoCentralContext(_test_config))
             {
-                var test = new DemoCentralDBInterface(context, _mockInQueueDb);
+                var test = new DemoCentralDBInterface(context, _mockInQueueDb, _mockILogger);
                 AddDemoToDB(demo1, context);
                 AddDemoToDB(demo2, context);
                 AddDemoToDB(demo3, context);
@@ -490,7 +493,7 @@ namespace DemoCentralTests
 
             using (var context = new DemoCentralContext(_test_config))
             {
-                var test = new DemoCentralDBInterface(context, _mockInQueueDb);
+                var test = new DemoCentralDBInterface(context, _mockInQueueDb, _mockILogger);
                 AddDemoToDB(demo1, context);
                 AddDemoToDB(demo2, context);
                 AddDemoToDB(demo3, context);
@@ -507,7 +510,7 @@ namespace DemoCentralTests
 
             using (var context = new DemoCentralContext(_test_config))
             {
-                var test = new DemoCentralDBInterface(context, _mockInQueueDb);
+                var test = new DemoCentralDBInterface(context, _mockInQueueDb, _mockILogger);
                 AddDemoToDB(demo, context);
                 test.SetDownloadRetryingAndGetDownloadPath(demo.MatchId);
             }
@@ -525,7 +528,7 @@ namespace DemoCentralTests
 
             using (var context = new DemoCentralContext(_test_config))
             {
-                var test = new DemoCentralDBInterface(context, _mockInQueueDb);
+                var test = new DemoCentralDBInterface(context, _mockInQueueDb, _mockILogger);
                 AddDemoToDB(demo, context);
                 returnPath = test.SetDownloadRetryingAndGetDownloadPath(demo.MatchId);
             }
@@ -547,7 +550,7 @@ namespace DemoCentralTests
 
             using (var context = new DemoCentralContext(_test_config))
             {
-                var test = new DemoCentralDBInterface(context, _mockInQueueDb);
+                var test = new DemoCentralDBInterface(context, _mockInQueueDb, _mockILogger);
                 AddDemoToDB(demo, context);
 
                 isDuplicate = test.IsDuplicateHash(duplicate_hash, out matchId);
@@ -573,7 +576,7 @@ namespace DemoCentralTests
 
             using (var context = new DemoCentralContext(_test_config))
             {
-                var test = new DemoCentralDBInterface(context, _mockInQueueDb);
+                var test = new DemoCentralDBInterface(context, _mockInQueueDb, _mockILogger);
                 AddDemoToDB(demo, context);
 
                 isDuplicate = test.IsDuplicateHash(second_hash, out matchId);
