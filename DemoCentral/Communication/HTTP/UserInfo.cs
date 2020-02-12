@@ -10,7 +10,7 @@ namespace DemoCentral.Communication.HTTP
 {
     public interface IUserInfo
     {
-
+        public Task<AnalyzerQuality> GetAnalyzerQualityAsync(long steamId);
     }
 
     public class UserInfo : IUserInfo
@@ -30,7 +30,7 @@ namespace DemoCentral.Communication.HTTP
         /// <exception cref="HttpRequestException"></exception>
         /// <param name="steamIds"></param>
         /// <returns></returns>
-        public async Task<AnalyzerQuality> GetAnalyzerQuality(long steamId)
+        public async Task<AnalyzerQuality> GetAnalyzerQualityAsync(long steamId)
         {
             var queryString = $"{_http_USER_SUBSCRIPTION}?steamId={steamId}";
             var response = await Client.GetAsync(queryString);

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using DataBase.Enumerals;
 using Microsoft.Extensions.Logging;
+using Database.Enumerals;
 
 namespace DemoCentral
 {
@@ -32,7 +33,7 @@ namespace DemoCentral
         /// </summary>
         /// <param name="matchId">Return either a new matchId or the one of the found demo if the download url is known</param>
         /// <returns>true, if downloadUrl is unique</returns>
-        bool TryCreateNewDemoEntryFromGatherer(GathererTransferModel model, out long matchId);
+        bool TryCreateNewDemoEntryFromGatherer(GathererTransferModel model,AnalyzerQuality currentQuality, out long matchId);
         void SetHash(long matchId, string hash);
     }
 
@@ -158,14 +159,23 @@ namespace DemoCentral
         }
 
 
-        public bool TryCreateNewDemoEntryFromGatherer(GathererTransferModel model, out long matchId)
+        public bool TryCreateNewDemoEntryFromGatherer(GathererTransferModel model,AnalyzerQuality currentQuality, out long matchId)
         {
             //checkdownloadurl
             var demo = _context.Demo.Where(x => x.DownloadUrl.Equals(model.DownloadUrl)).SingleOrDefault();
             if (demo != null)
             {
                 matchId = demo.MatchId;
-                return false;
+                //Check whether a new entry has to be created as the new entry
+                //would have a higher analyzer quality than the old one
+                if (!(currentQuality > demo.Quality))
+                    return false;
+
+                demo.Quality = currentQuality;
+                _context.SaveChanges();
+
+                _inQueueDBInterface.Add(matchId, model.MatchDate, model.Source, model.UploaderId);
+                return true;
             }
 
             demo = Demo.FromGatherTransferModel(model);
