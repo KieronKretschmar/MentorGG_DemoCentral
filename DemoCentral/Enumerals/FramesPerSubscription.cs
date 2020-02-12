@@ -8,7 +8,7 @@ namespace DemoCentral.Enumerals
 {
     public static class FramesPerSubscription
     {
-        public static Dictionary<AnalyzerQuality, int> Frames = new Dictionary<AnalyzerQuality, int>
+        public static Dictionary<AnalyzerQuality, byte> Frames = new Dictionary<AnalyzerQuality, byte>
         {
             {AnalyzerQuality.Low, 1},
             {AnalyzerQuality.Medium, 8},
