@@ -46,6 +46,8 @@ namespace DataBase.DatabaseClasses
 
                 entity.Property(e => e.FilePath).HasColumnType("longtext");
 
+                entity.Property(e => e.Frames).HasColumnType("tinyint(3)");
+
                 //Ensure that an enum is stored as a byte inside the database, while still allowing for enum use in DB model
                 //Otherwise the enum would fail
                 entity.Property(e => e.FileStatus).HasColumnType("tinyint(3)").HasConversion<byte>();
@@ -53,6 +55,7 @@ namespace DataBase.DatabaseClasses
                 entity.Property(e => e.DemoFileWorkerStatus).HasColumnType("tinyint(3)").HasConversion<byte>();
                 entity.Property(e => e.UploadStatus).HasColumnType("tinyint(3)").HasConversion<byte>();
                 entity.Property(e => e.Source).HasColumnType("tinyint(3)").HasConversion<byte>();
+                entity.Property(e => e.Quality).HasColumnType("tinyint(3)").HasConversion<byte>();
 
 
                 entity.Property(e => e.Md5hash)

@@ -3,6 +3,7 @@ using RabbitTransfer.Enums;
 using DataBase.Enumerals;
 using System.Collections.Generic;
 using RabbitTransfer.TransferModels;
+using Database.Enumerals;
 
 namespace DataBase.DatabaseClasses
 {
@@ -19,6 +20,8 @@ namespace DataBase.DatabaseClasses
         public string FilePath { get; set; }
         public string Md5hash { get; set; }
         public FileStatus FileStatus { get; set; }
+        public AnalyzerQuality Quality { get; set; }
+        public byte Frames { get; set; }
         public DemoFileWorkerStatus DemoFileWorkerStatus { get; set; }
         public string DemoFileWorkerVersion { get; set; }
         public string DatabaseVersion { get; set; }
