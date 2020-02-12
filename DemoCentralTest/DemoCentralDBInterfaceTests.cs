@@ -1,4 +1,4 @@
-using Microsoft.Extensions.DependencyInjection;
+using Database.Enumerals;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using RabbitTransfer.TransferModels;
 using DemoCentral;
@@ -67,7 +67,7 @@ namespace DemoCentralTests
             {
                 var test = new DemoCentralDBInterface(context, _mockInQueueDb, _mockILogger);
 
-                test.TryCreateNewDemoEntryFromGatherer(model, out matchId);
+                test.TryCreateNewDemoEntryFromGatherer(model,AnalyzerQuality.High, out matchId);
             }
 
             using (var context = new DemoCentralContext(_test_config))
@@ -106,14 +106,51 @@ namespace DemoCentralTests
             {
                 var test = new DemoCentralDBInterface(context, mockedObject, _mockILogger);
 
-                test.TryCreateNewDemoEntryFromGatherer(model, out matchId);
+                test.TryCreateNewDemoEntryFromGatherer(model,AnalyzerQuality.High, out matchId);
             }
 
             mockInQueueDB.Verify(mockedObject => mockedObject.Add(matchId, matchDate, Source.Unknown, uploaderId), Times.Once());
         }
 
         [TestMethod]
-        public void TryCreateNewDemoEntryFromGathererReturnsFalseOnKnownDemo()
+        public void TryCreateNewDemoEntryFromGathererReturnsFalseOnKnownDemoWithSameQuality()
+        {
+
+            long first_matchId;
+            long second_matchId;
+            bool success;
+
+            Mock<IInQueueDBInterface> mockInQueueDB = new Mock<IInQueueDBInterface>();
+            var mockedObject = mockInQueueDB.Object;
+            var matchDate = default(DateTime);
+            var downloadUrl = "xyz";
+            var uploaderId = 1234;
+            var quality = AnalyzerQuality.Low;
+
+            GathererTransferModel model = new GathererTransferModel
+            {
+                MatchDate = matchDate,
+                DownloadUrl = downloadUrl,
+                UploaderId = uploaderId,
+                Source = Source.Unknown,
+                UploadType = UploadType.Unknown,
+            };
+
+            using (var context = new DemoCentralContext(_test_config))
+            {
+                var test = new DemoCentralDBInterface(context, mockedObject,_mockILogger);
+
+                test.TryCreateNewDemoEntryFromGatherer(model,quality, out first_matchId);
+
+                success = test.TryCreateNewDemoEntryFromGatherer(model,quality, out second_matchId);
+            }
+
+            Assert.IsFalse(success);
+            Assert.AreEqual(first_matchId, second_matchId);
+        }
+
+        [TestMethod]
+        public void TryCreateNewDemoEntryFromGathererReturnsTrueOnKnownDemoWithLowerQuality()
         {
 
             long first_matchId;
@@ -137,14 +174,14 @@ namespace DemoCentralTests
 
             using (var context = new DemoCentralContext(_test_config))
             {
-                var test = new DemoCentralDBInterface(context, mockedObject,_mockILogger);
+                var test = new DemoCentralDBInterface(context, mockedObject, _mockILogger);
 
-                test.TryCreateNewDemoEntryFromGatherer(model, out first_matchId);
+                test.TryCreateNewDemoEntryFromGatherer(model, AnalyzerQuality.Low, out first_matchId);
 
-                success = test.TryCreateNewDemoEntryFromGatherer(model, out second_matchId);
+                success = test.TryCreateNewDemoEntryFromGatherer(model, AnalyzerQuality.High, out second_matchId);
             }
 
-            Assert.IsFalse(success);
+            Assert.IsTrue(success);
             Assert.AreEqual(first_matchId, second_matchId);
         }
 
@@ -541,6 +578,7 @@ namespace DemoCentralTests
         public void IsDuplicateHashOutputsTrueForDuplicate()
         {
             Demo demo = CopyDemo(_standardDemo);
+            demo.Frames = 16;
             bool isDuplicate;
             long matchId;
 
