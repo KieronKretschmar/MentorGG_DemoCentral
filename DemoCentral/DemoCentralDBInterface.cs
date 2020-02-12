@@ -34,8 +34,9 @@ namespace DemoCentral
         /// </summary>
         /// <param name="matchId">Return either a new matchId or the one of the found demo if the download url is known</param>
         /// <returns>true, if downloadUrl is unique</returns>
-        bool TryCreateNewDemoEntryFromGatherer(GathererTransferModel model,AnalyzerQuality currentQuality, out long matchId);
+        bool TryCreateNewDemoEntryFromGatherer(GathererTransferModel model, AnalyzerQuality currentQuality, out long matchId);
         void SetHash(long matchId, string hash);
+        void SetFrames(long matchId, int framesPerSecond);
     }
 
     /// <summary>
@@ -161,7 +162,7 @@ namespace DemoCentral
         }
 
 
-        public bool TryCreateNewDemoEntryFromGatherer(GathererTransferModel model,AnalyzerQuality currentQuality, out long matchId)
+        public bool TryCreateNewDemoEntryFromGatherer(GathererTransferModel model, AnalyzerQuality currentQuality, out long matchId)
         {
             //checkdownloadurl
             var demo = _context.Demo.Where(x => x.DownloadUrl.Equals(model.DownloadUrl)).SingleOrDefault();
@@ -204,6 +205,14 @@ namespace DemoCentral
         {
             var demo = GetDemoById(matchId);
             demo.DatabaseVersion = databaseVersion;
+            _context.SaveChanges();
+        }
+
+        public void SetFrames(long matchId, int framesPerSecond)
+        {
+            Demo demo = GetDemoById(matchId);
+
+            demo.Frames = (byte) framesPerSecond;
             _context.SaveChanges();
         }
     }

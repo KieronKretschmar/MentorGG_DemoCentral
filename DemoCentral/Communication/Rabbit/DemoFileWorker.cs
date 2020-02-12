@@ -86,7 +86,7 @@ namespace DemoCentral.RabbitCommunication
                 _demoDBInterface.SetFilePath(matchId, response.zippedFilePath);
 
                 _demoDBInterface.SetFileStatus(matchId, FileStatus.UNZIPPED);
-
+                _demoDBInterface.SetFrames(matchId, response.FramesPerSecond);
                 _inQueueDBInterface.UpdateProcessStatus(matchId, ProcessedBy.DemoFileWorker, false);
                 _logger.LogInformation($"Demo#{matchId} was successfully handled by DemoFileWorker");
                 return;
