@@ -9,6 +9,7 @@ using DemoCentral.RabbitCommunication;
 using RabbitTransfer.Queues;
 using Microsoft.Extensions.Logging;
 using System;
+using DemoCentral.Communication.HTTP;
 
 namespace DemoCentral
 {
@@ -65,6 +66,8 @@ namespace DemoCentral
             var AMQP_MATCHDBI = Configuration.GetValue<string>("AMQP_MATCHDBI");
             var matchDBI_queue = new QueueConnection(AMQP_URI, AMQP_MATCHDBI);
 
+            var HTTP_USER_SUBSCRIPTION = Configuration.GetValue<string>("HTTP_USER_SUBSCRIPTION");
+
             //Add services, 
             //if 3 or more are required to initialize another one, just pass the service provider
             services.AddHostedService<MatchDBI>(services =>
@@ -96,6 +99,12 @@ namespace DemoCentral
             {
                 return new DemoDownloader(demo_downloader_rpc_queue, services);
             });
+
+            services.AddSingleton<IUserInfo, UserInfo>(services =>
+            {
+                return new UserInfo(HTTP_USER_SUBSCRIPTION);
+            });
+
             services.AddHostedService<IDemoDownloader>(p => p.GetRequiredService<IDemoDownloader>());
 
             services.AddHostedService<Gatherer>(services =>

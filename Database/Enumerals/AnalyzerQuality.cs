@@ -3,7 +3,7 @@
     public enum AnalyzerQuality : byte
     {
         Low=10,
-        Middle=20,
+        Medium=20,
         High=30,
     }
 }
