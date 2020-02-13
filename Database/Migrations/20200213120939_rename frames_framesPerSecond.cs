@@ -9,12 +9,13 @@ namespace Database.Migrations
         {
             migrationBuilder.DropColumn(
                 name: "Frames",
-                schema: "democentral",
+                
+
                 table: "Demo");
 
             migrationBuilder.AlterColumn<int>(
                 name: "MatchId",
-                schema: "democentral",
+                schema: null,
                 table: "Demo",
                 type: "int(11)",
                 nullable: false,
@@ -24,7 +25,7 @@ namespace Database.Migrations
 
             migrationBuilder.AddColumn<byte>(
                 name: "FramesPerSecond",
-                schema: "democentral",
+                schema: null,
                 table: "Demo",
                 nullable: false,
                 defaultValue: (byte)0);
@@ -34,12 +35,12 @@ namespace Database.Migrations
         {
             migrationBuilder.DropColumn(
                 name: "FramesPerSecond",
-                schema: "democentral",
+                schema: null,
                 table: "Demo");
 
             migrationBuilder.AlterColumn<int>(
                 name: "MatchId",
-                schema: "democentral",
+                schema: null,
                 table: "Demo",
                 type: "int(11)",
                 nullable: false,
@@ -49,7 +50,7 @@ namespace Database.Migrations
 
             migrationBuilder.AddColumn<byte>(
                 name: "Frames",
-                schema: "democentral",
+                schema: null,
                 table: "Demo",
                 type: "tinyint unsigned",
                 nullable: false,

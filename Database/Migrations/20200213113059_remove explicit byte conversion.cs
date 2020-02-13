@@ -9,7 +9,7 @@ namespace Database.Migrations
         {
             migrationBuilder.AlterColumn<byte>(
                 name: "UploadType",
-                schema: "democentral",
+                schema: null,
                 table: "Demo",
                 nullable: false,
                 oldClrType: typeof(sbyte),
@@ -17,7 +17,7 @@ namespace Database.Migrations
 
             migrationBuilder.AlterColumn<int>(
                 name: "UploadStatus",
-                schema: "democentral",
+                schema: null,
                 table: "Demo",
                 nullable: false,
                 oldClrType: typeof(sbyte),
@@ -25,7 +25,7 @@ namespace Database.Migrations
 
             migrationBuilder.AlterColumn<byte>(
                 name: "Source",
-                schema: "democentral",
+                schema: null,
                 table: "Demo",
                 nullable: false,
                 oldClrType: typeof(sbyte),
@@ -33,7 +33,7 @@ namespace Database.Migrations
 
             migrationBuilder.AlterColumn<byte>(
                 name: "Quality",
-                schema: "democentral",
+                schema: null,
                 table: "Demo",
                 nullable: false,
                 oldClrType: typeof(sbyte),
@@ -41,7 +41,7 @@ namespace Database.Migrations
 
             migrationBuilder.AlterColumn<byte>(
                 name: "Frames",
-                schema: "democentral",
+                schema: null,
                 table: "Demo",
                 nullable: false,
                 oldClrType: typeof(sbyte),
@@ -49,7 +49,7 @@ namespace Database.Migrations
 
             migrationBuilder.AlterColumn<int>(
                 name: "FileStatus",
-                schema: "democentral",
+                schema: null,
                 table: "Demo",
                 nullable: false,
                 oldClrType: typeof(sbyte),
@@ -57,7 +57,7 @@ namespace Database.Migrations
 
             migrationBuilder.AlterColumn<int>(
                 name: "DemoFileWorkerStatus",
-                schema: "democentral",
+                schema: null,
                 table: "Demo",
                 nullable: false,
                 oldClrType: typeof(sbyte),
@@ -65,7 +65,7 @@ namespace Database.Migrations
 
             migrationBuilder.AlterColumn<int>(
                 name: "MatchId",
-                schema: "democentral",
+                schema: null,
                 table: "Demo",
                 type: "int(11)",
                 nullable: false,
@@ -78,7 +78,7 @@ namespace Database.Migrations
         {
             migrationBuilder.AlterColumn<sbyte>(
                 name: "UploadType",
-                schema: "democentral",
+                schema: null,
                 table: "Demo",
                 type: "tinyint(3)",
                 nullable: false,
@@ -86,7 +86,7 @@ namespace Database.Migrations
 
             migrationBuilder.AlterColumn<sbyte>(
                 name: "UploadStatus",
-                schema: "democentral",
+                schema: null,
                 table: "Demo",
                 type: "tinyint(3)",
                 nullable: false,
@@ -94,7 +94,7 @@ namespace Database.Migrations
 
             migrationBuilder.AlterColumn<sbyte>(
                 name: "Source",
-                schema: "democentral",
+                schema: null,
                 table: "Demo",
                 type: "tinyint(3)",
                 nullable: false,
@@ -102,7 +102,7 @@ namespace Database.Migrations
 
             migrationBuilder.AlterColumn<sbyte>(
                 name: "Quality",
-                schema: "democentral",
+                schema: null,
                 table: "Demo",
                 type: "tinyint(3)",
                 nullable: false,
@@ -110,7 +110,7 @@ namespace Database.Migrations
 
             migrationBuilder.AlterColumn<sbyte>(
                 name: "Frames",
-                schema: "democentral",
+                schema: null,
                 table: "Demo",
                 type: "tinyint(3)",
                 nullable: false,
@@ -118,7 +118,7 @@ namespace Database.Migrations
 
             migrationBuilder.AlterColumn<sbyte>(
                 name: "FileStatus",
-                schema: "democentral",
+                schema: null,
                 table: "Demo",
                 type: "tinyint(3)",
                 nullable: false,
@@ -126,7 +126,7 @@ namespace Database.Migrations
 
             migrationBuilder.AlterColumn<sbyte>(
                 name: "DemoFileWorkerStatus",
-                schema: "democentral",
+                schema: null,
                 table: "Demo",
                 type: "tinyint(3)",
                 nullable: false,
@@ -134,7 +134,7 @@ namespace Database.Migrations
 
             migrationBuilder.AlterColumn<int>(
                 name: "MatchId",
-                schema: "democentral",
+                schema: null,
                 table: "Demo",
                 type: "int(11)",
                 nullable: false,

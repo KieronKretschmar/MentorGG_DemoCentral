@@ -9,7 +9,9 @@ namespace Database.Migrations
         {
             migrationBuilder.AlterColumn<byte>(
                 name: "UploadStatus",
-                schema: "democentral",
+                
+
+
                 table: "Demo",
                 nullable: false,
                 oldClrType: typeof(int),
@@ -17,7 +19,7 @@ namespace Database.Migrations
 
             migrationBuilder.AlterColumn<byte>(
                 name: "FileStatus",
-                schema: "democentral",
+                schema: null,
                 table: "Demo",
                 nullable: false,
                 oldClrType: typeof(int),
@@ -25,7 +27,7 @@ namespace Database.Migrations
 
             migrationBuilder.AlterColumn<byte>(
                 name: "DemoFileWorkerStatus",
-                schema: "democentral",
+                schema: null,
                 table: "Demo",
                 nullable: false,
                 oldClrType: typeof(int),
@@ -33,7 +35,7 @@ namespace Database.Migrations
 
             migrationBuilder.AlterColumn<int>(
                 name: "MatchId",
-                schema: "democentral",
+                schema: null,
                 table: "Demo",
                 type: "int(11)",
                 nullable: false,
@@ -46,7 +48,7 @@ namespace Database.Migrations
         {
             migrationBuilder.AlterColumn<int>(
                 name: "UploadStatus",
-                schema: "democentral",
+                schema: null,
                 table: "Demo",
                 type: "int",
                 nullable: false,
@@ -54,7 +56,7 @@ namespace Database.Migrations
 
             migrationBuilder.AlterColumn<int>(
                 name: "FileStatus",
-                schema: "democentral",
+                schema: null,
                 table: "Demo",
                 type: "int",
                 nullable: false,
@@ -62,7 +64,7 @@ namespace Database.Migrations
 
             migrationBuilder.AlterColumn<int>(
                 name: "DemoFileWorkerStatus",
-                schema: "democentral",
+                schema: null,
                 table: "Demo",
                 type: "int",
                 nullable: false,
@@ -70,7 +72,7 @@ namespace Database.Migrations
 
             migrationBuilder.AlterColumn<int>(
                 name: "MatchId",
-                schema: "democentral",
+                schema: null,
                 table: "Demo",
                 type: "int(11)",
                 nullable: false,
