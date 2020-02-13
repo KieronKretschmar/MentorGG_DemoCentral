@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Linq;
 using DemoCentral.Enumerals;
-using DemoCentral.DatabaseClasses;
 using System.Collections.Generic;
-
+using DataBase.DatabaseClasses;
 
 namespace DemoCentral
 {
@@ -15,13 +14,12 @@ namespace DemoCentral
 
         public static void Add(long matchId, DateTime matchDate, byte source, long uploaderID)
         {
-            using (var context = new democentralContext())
+            using (var context = new DemoCentralContext())
             {
                 context.InQueueDemo.Add(new InQueueDemo
                 {
                     MatchId = matchId,
                     MatchDate = matchDate,
-                    Source = source,
                     UploaderId = uploaderID,
                     InsertDate = DateTime.Now,
                     DFWQUEUE = false,
@@ -35,7 +33,7 @@ namespace DemoCentral
         public static void UpdateQueueStatus(long matchId, string QueueName, bool inQueue)
         {
 
-            using (var context = new democentralContext())
+            using (var context = new DemoCentralContext())
             {
                 var demo = context.InQueueDemo.Where(x => x.MatchId == matchId).Single();
                 //TODO make queue name enum
@@ -67,7 +65,7 @@ namespace DemoCentral
 
         public static List<InQueueDemo> GetPlayerMatchesInQueue(long playerId)
         {
-            using (var context = new democentralContext())
+            using (var context = new DemoCentralContext())
             {
                 return context.InQueueDemo.Where(x => x.UploaderId == playerId).ToList();
             }
@@ -75,7 +73,7 @@ namespace DemoCentral
 
         public static int GetTotalQueueLength()
         {
-            using (var context = new democentralContext())
+            using (var context = new DemoCentralContext())
             {
                 return context.InQueueDemo.Count();
             }
@@ -83,7 +81,7 @@ namespace DemoCentral
 
         public static void RemoveDemoFromQueue(long matchId)
         {
-            using (var context = new democentralContext())
+            using (var context = new DemoCentralContext())
             {
                 var demo = context.InQueueDemo.Find(matchId);
                 if (demo == null) throw new KeyNotFoundException("Demo not in Queue");
@@ -94,7 +92,7 @@ namespace DemoCentral
 
         public static int GetQueuePosition(long matchId)
         {
-            using (var context = new democentralContext())
+            using (var context = new DemoCentralContext())
             {
                 var demo = context.InQueueDemo.Find(matchId);
 
@@ -108,7 +106,7 @@ namespace DemoCentral
 
         public static int IncrementRetry(long matchId)
         {
-            using (var context = new democentralContext())
+            using (var context = new DemoCentralContext())
             {
                 var demo = context.InQueueDemo.Where(x => x.MatchId == matchId).Single();
                 var attempts = demo.Retries++;
