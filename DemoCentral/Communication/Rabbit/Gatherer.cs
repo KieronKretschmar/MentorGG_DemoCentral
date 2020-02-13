@@ -18,14 +18,14 @@ namespace DemoCentral.RabbitCommunication
         private readonly IDemoCentralDBInterface _dbInterface;
         private readonly IDemoDownloader _demoDownloader;
         private readonly ILogger<Gatherer> _logger;
-        private IUserInfo _userInfo;
+        private IUserInfoOperator _userInfoOperator;
 
-        public Gatherer(IQueueConnection queueConnection, IDemoCentralDBInterface dbInterface, IDemoDownloader demoDownloader,IUserInfo userInfo, ILogger<Gatherer> logger) : base(queueConnection)
+        public Gatherer(IQueueConnection queueConnection, IDemoCentralDBInterface dbInterface, IDemoDownloader demoDownloader,IUserInfoOperator userInfoOperator, ILogger<Gatherer> logger) : base(queueConnection)
         {
 
             _dbInterface = dbInterface;
             _demoDownloader = demoDownloader;
-            _userInfo = userInfo;
+            _userInfoOperator = userInfoOperator;
             _logger = logger;
         }
 
@@ -34,7 +34,7 @@ namespace DemoCentral.RabbitCommunication
         /// </summary>
         public async override void HandleMessage(IBasicProperties properties, GathererTransferModel model)
         {
-            AnalyzerQuality currentQuality = await _userInfo.GetAnalyzerQualityAsync(model.UploaderId);
+            AnalyzerQuality currentQuality = await _userInfoOperator.GetAnalyzerQualityAsync(model.UploaderId);
             //TODO OPTIONAL FEATURE handle duplicate entry
             //Currently not inserted into db and forgotten afterwards
             //Maybe saved to special table or keep track of it otherwise

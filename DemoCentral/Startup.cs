@@ -100,16 +100,16 @@ namespace DemoCentral
                 return new DemoDownloader(demo_downloader_rpc_queue, services);
             });
 
-            services.AddSingleton<IUserInfo, UserInfo>(services =>
+            services.AddSingleton<IUserInfoOperator, UserInfoOperator>(services =>
             {
-                return new UserInfo(HTTP_USER_SUBSCRIPTION);
+                return new UserInfoOperator(HTTP_USER_SUBSCRIPTION);
             });
 
             services.AddHostedService<IDemoDownloader>(p => p.GetRequiredService<IDemoDownloader>());
 
             services.AddHostedService<Gatherer>(services =>
             {
-                return new Gatherer(gatherer_queue, services.GetRequiredService<IDemoCentralDBInterface>(), services.GetRequiredService<IDemoDownloader>(),services.GetRequiredService<IUserInfo>(), services.GetRequiredService<ILogger<Gatherer>>());
+                return new Gatherer(gatherer_queue, services.GetRequiredService<IDemoCentralDBInterface>(), services.GetRequiredService<IDemoDownloader>(),services.GetRequiredService<IUserInfoOperator>(), services.GetRequiredService<ILogger<Gatherer>>());
             });
         }
 

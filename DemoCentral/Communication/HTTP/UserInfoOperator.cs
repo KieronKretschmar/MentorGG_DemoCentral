@@ -8,27 +8,27 @@ using System.Threading.Tasks;
 
 namespace DemoCentral.Communication.HTTP
 {
-    public interface IUserInfo
+    public interface IUserInfoOperator
     {
         public Task<AnalyzerQuality> GetAnalyzerQualityAsync(long steamId);
     }
 
-    public class UserInfo : IUserInfo
+    public class UserInfoOperator : IUserInfoOperator
     {
         private string _http_USER_SUBSCRIPTION;
         private readonly HttpClient Client;
 
 
-        public UserInfo(string http_user_subscription)
+        public UserInfoOperator(string http_user_subscription)
         {
             _http_USER_SUBSCRIPTION = http_user_subscription;
         }
 
         /// <summary>
-        /// Gets users from SteamUserOperator.
+        /// Gets the analyzer quality associated with a users subscription plan
         /// </summary>
         /// <exception cref="HttpRequestException"></exception>
-        /// <param name="steamIds"></param>
+        /// <param name="steamId"></param>
         /// <returns></returns>
         public async Task<AnalyzerQuality> GetAnalyzerQualityAsync(long steamId)
         {
@@ -46,21 +46,18 @@ namespace DemoCentral.Communication.HTTP
             var userSubscriptionString = await response.Content.ReadAsStringAsync();
 
             var userSubscription = Enum.Parse<UserSubscription>(userSubscriptionString);
-            var quality = AnalyzerQuality.Low;
 
-            switch (userSubscription)   
+            switch (userSubscription)
             {
                 case UserSubscription.Free:
-                    quality = AnalyzerQuality.Low;
-                    break;
+                    return AnalyzerQuality.Low;
                 case UserSubscription.Premium:
-                    quality = AnalyzerQuality.Medium;
-                    break;
+                    return AnalyzerQuality.Medium;
                 case UserSubscription.Ultimate:
-                    quality = AnalyzerQuality.High;
-                    break;
+                    return AnalyzerQuality.High;
+                default:
+                    return AnalyzerQuality.Low;
             }
-            return quality;
         }
     }
 }
