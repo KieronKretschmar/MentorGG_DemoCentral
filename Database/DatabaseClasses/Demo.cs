@@ -21,7 +21,7 @@ namespace DataBase.DatabaseClasses
         public string Md5hash { get; set; }
         public FileStatus FileStatus { get; set; }
         public AnalyzerQuality Quality { get; set; }
-        public byte Frames { get; set; }
+        public byte FramesPerSecond { get; set; }
         public DemoFileWorkerStatus DemoFileWorkerStatus { get; set; }
         public string DemoFileWorkerVersion { get; set; }
         public string DatabaseVersion { get; set; }

@@ -578,7 +578,7 @@ namespace DemoCentralTests
         public void IsDuplicateHashOutputsTrueForDuplicate()
         {
             Demo demo = CopyDemo(_standardDemo);
-            demo.Frames = 16;
+            demo.FramesPerSecond = 16;
             bool isDuplicate;
             long matchId;
 

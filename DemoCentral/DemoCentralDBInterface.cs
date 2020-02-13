@@ -22,7 +22,7 @@ namespace DemoCentral
         /// </summary>
         List<Demo> GetRecentMatches(long playerId, int recentMatches, int offset = 0);
         List<long> GetRecentMatchIds(long playerId, int recentMatches, int offset = 0);
-        bool IsDuplicateHash(string hash, out long matchId, byte frames = 1);
+        bool IsDuplicateHash(string hash, out long matchId, byte framesPerSecond = 1);
         void RemoveDemo(long matchId);
         string SetDownloadRetryingAndGetDownloadPath(long matchId);
         void SetFileStatus(long matchId, FileStatus status);
@@ -85,7 +85,7 @@ namespace DemoCentral
                 Source = demo.Source,
                 MatchDate = demo.MatchDate,
                 ZippedFilePath = demo.FilePath,
-                FramesPerSecond = demo.Frames,
+                FramesPerSecond = demo.FramesPerSecond,
             };
 
             return model;
@@ -152,13 +152,13 @@ namespace DemoCentral
         /// if so the out parameter is the matchId of the original demo, else -1
         /// </summary>
         /// <param name="matchId">id of the original match or -1 if hash is unique</param>
-        public bool IsDuplicateHash(string hash, out long matchId, byte frames = 1)
+        public bool IsDuplicateHash(string hash, out long matchId, byte framesPerSecond = 1)
         {
             var demo = _context.Demo.Where(x => x.Md5hash.Equals(hash)).SingleOrDefault();
 
             matchId = demo == null ? -1 : demo.MatchId;
 
-            return !(demo == null) && demo.Frames > frames;
+            return !(demo == null) && demo.FramesPerSecond > framesPerSecond;
         }
 
 
@@ -175,7 +175,7 @@ namespace DemoCentral
                     return false;
 
                 demo.Quality = currentQuality;
-                demo.Frames = FramesPerQuality.Frames[currentQuality];
+                demo.FramesPerSecond = FramesPerQuality.Frames[currentQuality];
                 _context.SaveChanges();
 
                 _inQueueDBInterface.Add(matchId, model.MatchDate, model.Source, model.UploaderId);
@@ -184,7 +184,7 @@ namespace DemoCentral
 
             demo = Demo.FromGatherTransferModel(model);
             demo.Quality = currentQuality;
-            demo.Frames = FramesPerQuality.Frames[currentQuality];
+            demo.FramesPerSecond = FramesPerQuality.Frames[currentQuality];
 
             _context.Demo.Add(demo);
 
@@ -212,7 +212,7 @@ namespace DemoCentral
         {
             Demo demo = GetDemoById(matchId);
 
-            demo.Frames = (byte) framesPerSecond;
+            demo.FramesPerSecond = (byte) framesPerSecond;
             _context.SaveChanges();
         }
     }
