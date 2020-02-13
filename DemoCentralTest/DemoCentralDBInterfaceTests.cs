@@ -591,7 +591,7 @@ namespace DemoCentralTests
                 var test = new DemoCentralDBInterface(context, _mockInQueueDb, _mockILogger);
                 AddDemoToDB(demo, context);
 
-                isDuplicate = test.IsDuplicateHash(duplicate_hash, out matchId);
+                isDuplicate = test.IsDuplicateHashWithHigherFPS(duplicate_hash, out matchId);
             }
 
             Assert.IsTrue(isDuplicate);
@@ -617,7 +617,7 @@ namespace DemoCentralTests
                 var test = new DemoCentralDBInterface(context, _mockInQueueDb, _mockILogger);
                 AddDemoToDB(demo, context);
 
-                isDuplicate = test.IsDuplicateHash(second_hash, out matchId);
+                isDuplicate = test.IsDuplicateHashWithHigherFPS(second_hash, out matchId);
             }
 
             Assert.AreNotEqual(first_hash, second_hash);

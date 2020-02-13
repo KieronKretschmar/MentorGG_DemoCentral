@@ -34,11 +34,11 @@ namespace DemoCentral.RabbitCommunication
         /// </summary>
         public async override void HandleMessage(IBasicProperties properties, GathererTransferModel model)
         {
-            AnalyzerQuality currentQuality = await _userInfoOperator.GetAnalyzerQualityAsync(model.UploaderId);
+            AnalyzerQuality requestedQuality = await _userInfoOperator.GetAnalyzerQualityAsync(model.UploaderId);
             //TODO OPTIONAL FEATURE handle duplicate entry
             //Currently not inserted into db and forgotten afterwards
             //Maybe saved to special table or keep track of it otherwise
-            if (_dbInterface.TryCreateNewDemoEntryFromGatherer(model,currentQuality,  out long matchId))
+            if (_dbInterface.TryCreateNewDemoEntryFromGatherer(model,requestedQuality,  out long matchId))
             {
                 var forwardModel = new DC_DD_Model
                 {
