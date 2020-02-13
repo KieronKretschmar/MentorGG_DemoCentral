@@ -1,6 +1,6 @@
 ﻿namespace DataBase.Enumerals
 {
-    public enum UploadStatus
+    public enum UploadStatus : byte
     {
 
         NEW = 0,

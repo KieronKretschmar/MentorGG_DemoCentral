@@ -3,14 +3,16 @@ using System;
 using DataBase.DatabaseClasses;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Database.Migrations
 {
     [DbContext(typeof(DemoCentralContext))]
-    partial class DemoCentralContextModelSnapshot : ModelSnapshot
+    [Migration("20200213113059_remove explicit byte conversion")]
+    partial class removeexplicitbyteconversion
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -26,8 +28,8 @@ namespace Database.Migrations
                     b.Property<string>("DatabaseVersion")
                         .HasColumnType("longtext CHARACTER SET utf8mb4");
 
-                    b.Property<byte>("DemoFileWorkerStatus")
-                        .HasColumnType("tinyint unsigned");
+                    b.Property<int>("DemoFileWorkerStatus")
+                        .HasColumnType("int");
 
                     b.Property<string>("DemoFileWorkerVersion")
                         .HasColumnType("longtext CHARACTER SET utf8mb4");
@@ -44,8 +46,8 @@ namespace Database.Migrations
                     b.Property<string>("FilePath")
                         .HasColumnType("longtext");
 
-                    b.Property<byte>("FileStatus")
-                        .HasColumnType("tinyint unsigned");
+                    b.Property<int>("FileStatus")
+                        .HasColumnType("int");
 
                     b.Property<byte>("Frames")
                         .HasColumnType("tinyint unsigned");
@@ -65,8 +67,8 @@ namespace Database.Migrations
                     b.Property<DateTime>("UploadDate")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<byte>("UploadStatus")
-                        .HasColumnType("tinyint unsigned");
+                    b.Property<int>("UploadStatus")
+                        .HasColumnType("int");
 
                     b.Property<byte>("UploadType")
                         .HasColumnType("tinyint unsigned");

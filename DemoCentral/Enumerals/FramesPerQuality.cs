@@ -6,7 +6,7 @@ using Database.Enumerals;
 
 namespace DemoCentral.Enumerals
 {
-    public static class FramesPerSubscription
+    public static class FramesPerQuality
     {
         public static Dictionary<AnalyzerQuality, byte> Frames = new Dictionary<AnalyzerQuality, byte>
         {

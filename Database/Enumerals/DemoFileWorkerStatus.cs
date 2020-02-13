@@ -1,6 +1,6 @@
 ﻿namespace DataBase.Enumerals
 {
-    public enum DemoFileWorkerStatus
+    public enum DemoFileWorkerStatus : byte
     {
         New = 1,
         InQueue = 2,

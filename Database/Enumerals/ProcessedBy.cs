@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Database.Enumerals
 {
-    public enum ProcessedBy
+    public enum ProcessedBy : byte
     {
         DemoDownloader,
         DemoFileWorker,

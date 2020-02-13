@@ -175,7 +175,7 @@ namespace DemoCentral
                     return false;
 
                 demo.Quality = currentQuality;
-                demo.Frames = FramesPerSubscription.Frames[currentQuality];
+                demo.Frames = FramesPerQuality.Frames[currentQuality];
                 _context.SaveChanges();
 
                 _inQueueDBInterface.Add(matchId, model.MatchDate, model.Source, model.UploaderId);
@@ -184,7 +184,7 @@ namespace DemoCentral
 
             demo = Demo.FromGatherTransferModel(model);
             demo.Quality = currentQuality;
-            demo.Frames = FramesPerSubscription.Frames[currentQuality];
+            demo.Frames = FramesPerQuality.Frames[currentQuality];
 
             _context.Demo.Add(demo);
 
