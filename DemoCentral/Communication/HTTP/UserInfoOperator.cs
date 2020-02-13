@@ -1,5 +1,6 @@
 ﻿using Database.Enumerals;
 using DemoCentral.Enumerals;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,12 +17,15 @@ namespace DemoCentral.Communication.HTTP
     public class UserInfoOperator : IUserInfoOperator
     {
         private string _http_USER_SUBSCRIPTION;
+        private readonly ILogger<UserInfoOperator> _logger;
         private readonly HttpClient Client;
 
 
-        public UserInfoOperator(string http_user_subscription)
+        public UserInfoOperator(string http_user_subscription, ILogger<UserInfoOperator> logger)
         {
             _http_USER_SUBSCRIPTION = http_user_subscription;
+            _logger = logger;
+            Client = new HttpClient();
         }
 
         /// <summary>
@@ -39,9 +43,10 @@ namespace DemoCentral.Communication.HTTP
             if (!response.IsSuccessStatusCode)
             {
                 var msg = $"Getting user subscription plan failed for query [ {queryString} ]. Response: {response}";
-                throw new HttpRequestException(msg);
+                _logger.LogInformation(msg);
+
+                return AnalyzerQuality.Low;
             }
-            response.EnsureSuccessStatusCode();
 
             var userSubscriptionString = await response.Content.ReadAsStringAsync();
 

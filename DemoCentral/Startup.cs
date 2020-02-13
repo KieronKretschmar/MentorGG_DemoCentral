@@ -102,7 +102,7 @@ namespace DemoCentral
 
             services.AddSingleton<IUserInfoOperator, UserInfoOperator>(services =>
             {
-                return new UserInfoOperator(HTTP_USER_SUBSCRIPTION);
+                return new UserInfoOperator(HTTP_USER_SUBSCRIPTION, services.GetRequiredService<ILogger<UserInfoOperator>>());
             });
 
             services.AddHostedService<IDemoDownloader>(p => p.GetRequiredService<IDemoDownloader>());
