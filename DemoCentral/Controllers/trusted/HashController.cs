@@ -34,7 +34,7 @@ namespace DemoCentral.Controllers.trusted
         //POST api/trusted/Hash/CreateHash?matchId=XXXX&hash=YYYYY
         public ActionResult CreateHash(long matchId,byte framesPerSecond, string hash)
         {
-            bool duplicateHash = _dbInterface.IsDuplicateHashWithHigherFPS(hash, out long duplicateMatchId, framesPerSecond);
+            bool duplicateHash = _dbInterface.ReAnalysisRequired(hash, out long duplicateMatchId, framesPerSecond);
 
             if (duplicateHash)
             {
