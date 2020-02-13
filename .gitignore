@@ -358,4 +358,3 @@ MigrationBackup/
 # secret files
 DemoCentral/appsettings.json
 DemoCentral/Properties/launchSettings.json
-DemoCentral/*.json
