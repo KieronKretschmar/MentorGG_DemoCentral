@@ -3,14 +3,16 @@ using System;
 using DataBase.DatabaseClasses;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Database.Migrations
 {
     [DbContext(typeof(DemoCentralContext))]
-    partial class DemoCentralContextModelSnapshot : ModelSnapshot
+    [Migration("20200212154818_add analyzer quality and frames")]
+    partial class addanalyzerqualityandframes
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -26,8 +28,8 @@ namespace Database.Migrations
                     b.Property<string>("DatabaseVersion")
                         .HasColumnType("longtext CHARACTER SET utf8mb4");
 
-                    b.Property<byte>("DemoFileWorkerStatus")
-                        .HasColumnType("tinyint unsigned");
+                    b.Property<sbyte>("DemoFileWorkerStatus")
+                        .HasColumnType("tinyint(3)");
 
                     b.Property<string>("DemoFileWorkerVersion")
                         .HasColumnType("longtext CHARACTER SET utf8mb4");
@@ -44,11 +46,11 @@ namespace Database.Migrations
                     b.Property<string>("FilePath")
                         .HasColumnType("longtext");
 
-                    b.Property<byte>("FileStatus")
-                        .HasColumnType("tinyint unsigned");
+                    b.Property<sbyte>("FileStatus")
+                        .HasColumnType("tinyint(3)");
 
-                    b.Property<byte>("FramesPerSecond")
-                        .HasColumnType("tinyint unsigned");
+                    b.Property<sbyte>("Frames")
+                        .HasColumnType("tinyint(3)");
 
                     b.Property<DateTime>("MatchDate")
                         .HasColumnType("datetime(6)");
@@ -56,20 +58,20 @@ namespace Database.Migrations
                     b.Property<string>("Md5hash")
                         .HasColumnType("longtext");
 
-                    b.Property<byte>("Quality")
-                        .HasColumnType("tinyint unsigned");
+                    b.Property<sbyte>("Quality")
+                        .HasColumnType("tinyint(3)");
 
-                    b.Property<byte>("Source")
-                        .HasColumnType("tinyint unsigned");
+                    b.Property<sbyte>("Source")
+                        .HasColumnType("tinyint(3)");
 
                     b.Property<DateTime>("UploadDate")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<byte>("UploadStatus")
-                        .HasColumnType("tinyint unsigned");
+                    b.Property<sbyte>("UploadStatus")
+                        .HasColumnType("tinyint(3)");
 
-                    b.Property<byte>("UploadType")
-                        .HasColumnType("tinyint unsigned");
+                    b.Property<sbyte>("UploadType")
+                        .HasColumnType("tinyint(3)");
 
                     b.Property<long>("UploaderId")
                         .HasColumnType("bigint(20)");

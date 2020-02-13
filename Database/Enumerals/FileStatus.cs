@@ -1,6 +1,6 @@
 ﻿namespace DataBase.Enumerals
 {
-    public enum FileStatus
+    public enum FileStatus : byte
     {
         NEW = 0,
         DOWNLOADED = 20,

@@ -32,9 +32,9 @@ namespace DemoCentral.Controllers.trusted
         /// <returns>Conflict or Ok if hash is known or not</returns>
         [HttpPost("[action]")]
         //POST api/trusted/Hash/CreateHash?matchId=XXXX&hash=YYYYY
-        public ActionResult CreateHash(long matchId, string hash)
+        public ActionResult CreateHash(long matchId,byte framesPerSecond, string hash)
         {
-            bool duplicateHash = _dbInterface.IsDuplicateHash(hash, out long duplicateMatchId);
+            bool duplicateHash = _dbInterface.ReAnalysisRequired(hash, out long duplicateMatchId, framesPerSecond);
 
             if (duplicateHash)
             {

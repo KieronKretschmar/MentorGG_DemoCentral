@@ -9,6 +9,7 @@ using DemoCentral.RabbitCommunication;
 using RabbitTransfer.Queues;
 using Microsoft.Extensions.Logging;
 using System;
+using DemoCentral.Communication.HTTP;
 
 namespace DemoCentral
 {
@@ -25,7 +26,7 @@ namespace DemoCentral
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<DemoCentralContext>(options =>
-                options.UseMySql(Configuration.GetConnectionString("DemoCentralDB")), ServiceLifetime.Singleton, ServiceLifetime.Singleton);
+                options.UseMySql(Configuration.GetValue<string>("CONNECTION_STRING")), ServiceLifetime.Singleton, ServiceLifetime.Singleton);
 
             services.AddControllers();
 
@@ -65,6 +66,8 @@ namespace DemoCentral
             var AMQP_MATCHDBI = Configuration.GetValue<string>("AMQP_MATCHDBI");
             var matchDBI_queue = new QueueConnection(AMQP_URI, AMQP_MATCHDBI);
 
+            var HTTP_USER_SUBSCRIPTION = Configuration.GetValue<string>("HTTP_USER_SUBSCRIPTION");
+
             //Add services, 
             //if 3 or more are required to initialize another one, just pass the service provider
             services.AddHostedService<MatchDBI>(services =>
@@ -96,11 +99,17 @@ namespace DemoCentral
             {
                 return new DemoDownloader(demo_downloader_rpc_queue, services);
             });
+
+            services.AddSingleton<IUserInfoOperator, UserInfoOperator>(services =>
+            {
+                return new UserInfoOperator(HTTP_USER_SUBSCRIPTION, services.GetRequiredService<ILogger<UserInfoOperator>>());
+            });
+
             services.AddHostedService<IDemoDownloader>(p => p.GetRequiredService<IDemoDownloader>());
 
             services.AddHostedService<Gatherer>(services =>
             {
-                return new Gatherer(gatherer_queue, services.GetRequiredService<IDemoCentralDBInterface>(), services.GetRequiredService<IDemoDownloader>(), services.GetRequiredService<ILogger<Gatherer>>());
+                return new Gatherer(gatherer_queue, services.GetRequiredService<IDemoCentralDBInterface>(), services.GetRequiredService<IDemoDownloader>(),services.GetRequiredService<IUserInfoOperator>(), services.GetRequiredService<ILogger<Gatherer>>());
             });
         }
 
