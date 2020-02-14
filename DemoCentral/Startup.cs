@@ -13,6 +13,15 @@ using DemoCentral.Communication.HTTP;
 
 namespace DemoCentral
 {
+    /// <summary>
+    /// DemoCentral orchestrates the entire demo acquisition and analysis.
+    /// 
+    /// 
+    /// Required environment variables
+    /// [AMQP_URI,AMQP_DEMODOWNLOADER, AMQP_DEMODOWNLOADER_REPLY,
+    ///     AMQP_DEMOFILEWORKER, AMQP_DEMOFILEWORKER_REPLY, AMQP_GATHERER,
+    ///     AMQP_SITUATIONSOPERATOR, AMQP_MATCHDBI, HTTP_USER_SUBSCRIPTION]
+    /// </summary>
     public class Startup
     {
         public Startup(IConfiguration configuration)
@@ -21,6 +30,7 @@ namespace DemoCentral
         }
 
         public IConfiguration Configuration { get; }
+
 
         //// This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)

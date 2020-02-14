@@ -46,7 +46,6 @@ namespace DataBase.DatabaseClasses
                 DemoFileWorkerStatus = DemoFileWorkerStatus.New,
                 DemoFileWorkerVersion = "",
                 UploadDate = DateTime.UtcNow,
-                //TODO MANDATORY get event?
             };
         }
     }

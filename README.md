@@ -5,16 +5,17 @@ DemoCentral orchestrates the entire CS:GO demo analysis.
 # Setup
 Set all the required environment variables, see `Startup.cs`  
 
-- `MYSQL_CONNECTION_STRING` : Connection string to democentral DB[*]
+- `MYSQL_CONNECTION_STRING` : Connection string to [DemoCentral DataBase](/DataBase/README.md)
 		<b> Set the connection string inside the `appsettings.json`
-- `AMQP_URI` : URI to the rabbit cluster [*]
-- `AMQP_DEMODOWNLOADER` : Rabbit queue's name for producing messages to DemoDownloader[*]
-- `AMQP_DEMODOWNLOADER_REPLY` : Rabbit queue's name for consuming messages from DemoDownloader[*] 
-- `AMQP_DEMOFILEWORKER` : Rabbit queue's name for producing messages to DemoFileWorker[*]
-- `AMQP_DEMOFILEWORKER_REPLY` : Rabbit queue's name for consuming messages from DemoFileWorker[*]
+- `AMQP_URI` : URI to the [rabbit cluster](/RabbitCommunicationLib/README.md)
+- `AMQP_DEMODOWNLOADER` : Rabbit queue's name for producing messages to [DemoDownloader] (https://gitlab.com/mentorgg/csgo/demodownloader.git)
+- `AMQP_DEMODOWNLOADER_REPLY` : Rabbit queue's name for consuming messages from [DemoDownloader] (https://gitlab.com/mentorgg/csgo/demodownloader.git)
+- `AMQP_DEMOFILEWORKER` : Rabbit queue's name for producing messages to [DemoFileWorker](https://gitlab.com/mentorgg/csgo/demofileworker.git)
+- `AMQP_DEMOFILEWORKER_REPLY` : Rabbit queue's name for consuming messages from [DemoFileWorker](https://gitlab.com/mentorgg/csgo/demofileworker.git)
 - `AMQP_GATHERER` : Rabbit queue's name for consuming messages from a Gatherer[*]
 - `AMQP_SITUATIONSOPERATOR` : Rabbit queue's name for consuming messages from SituationsOperator[*]
-- `AMQP_MATCHDBI` :  Rabbit queue's name for consuming messages from MatchDBI[*]
+- `AMQP_MATCHDBI` :  Rabbit queue's name for consuming messages from [MatchDBI](https://gitlab.com/mentorgg/csgo/matchdb.git)
+- `HTTP_USER_SUBSCRIPTION` : HTTP URL to the endpoint responsible for the current user subscription
 
 # Flow
 General flow of demo aquisition 
@@ -23,9 +24,9 @@ General flow of demo aquisition
 graph LR
 	Input[...] .-> G[Gatherer]
 	G -. "[ DownloadUrl]" .-> DC[DemoCentral]
-    DC -. "[ MatchID, DownloadUrl]" .-> DD[DemoDownloader]
+    DC -. "[ MatchID, DownloadUrl]" .-> DD[[DemoDownloader] (https://gitlab.com/mentorgg/csgo/demodownloader.git)]
 	DD -. "[ IsSuccess, DemoFileLocation]" .-> DC
-    DC -. "[ DemoFileLocation, MatchID ]" .-> DFW[DemoFileWorker]
+    DC -. "[ DemoFileLocation, MatchID ]" .-> DFW[[DemoFileWorker](https://gitlab.com/mentorgg/csgo/demofileworker.git)]
     DFW -. "[IsSuccess ]" .-> DC
     
     DFW .-> FanOut[...]
