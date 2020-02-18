@@ -25,7 +25,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Database\Database.csproj" />
-    <ProjectReference Include="..\RabbitCommunicationLib\RabbitTransfer.csproj" />
+    <ProjectReference Include="..\RabbitCommunicationLib\RabbitCommunicationLib.csproj" />
   </ItemGroup>
 
 </Project>

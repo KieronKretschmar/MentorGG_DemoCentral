@@ -19,6 +19,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Database\Database.csproj" />
     <ProjectReference Include="..\DemoCentral\DemoCentral.csproj" />
+    <ProjectReference Include="..\RabbitCommunicationLib\RabbitCommunicationLib.csproj" />
   </ItemGroup>
 
 </Project>
