@@ -1,6 +1,7 @@
 ﻿using Database.Enumerals;
 using DemoCentral.Enumerals;
 using Microsoft.Extensions.Logging;
+using RabbitCommunicationLib.Enumerals;
 using System;
 using System.Collections.Generic;
 using System.Linq;

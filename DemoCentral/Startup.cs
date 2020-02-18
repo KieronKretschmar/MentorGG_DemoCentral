@@ -6,7 +6,7 @@ using Microsoft.Extensions.Hosting;
 using DataBase.DatabaseClasses;
 using Microsoft.EntityFrameworkCore;
 using DemoCentral.RabbitCommunication;
-using RabbitTransfer.Queues;
+using RabbitCommunicationLib.Queues;
 using Microsoft.Extensions.Logging;
 using System;
 using DemoCentral.Communication.HTTP;

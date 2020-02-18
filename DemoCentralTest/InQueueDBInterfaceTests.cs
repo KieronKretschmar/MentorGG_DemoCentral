@@ -5,7 +5,7 @@ using System;
 using DataBase.DatabaseClasses;
 using Moq;
 using Microsoft.EntityFrameworkCore;
-using RabbitTransfer.Enums;
+using RabbitCommunicationLib.Enums;
 using System.Linq;
 using Database.Enumerals;
 using System.Collections.Generic;

@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Pomelo.EntityFrameworkCore.MySql;
-using RabbitTransfer.Enums;
+using RabbitCommunicationLib.Enums;
 using DataBase.Enumerals;
 
 namespace DataBase.DatabaseClasses

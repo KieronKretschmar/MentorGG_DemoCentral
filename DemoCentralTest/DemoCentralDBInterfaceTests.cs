@@ -1,16 +1,17 @@
 using Database.Enumerals;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using RabbitTransfer.TransferModels;
+using RabbitCommunicationLib.TransferModels;
 using DemoCentral;
 using Moq;
 using Microsoft.EntityFrameworkCore;
 using DataBase.DatabaseClasses;
 using System.Linq;
 using System;
-using RabbitTransfer.Enums;
+using RabbitCommunicationLib.Enums;
 using DataBase.Enumerals;
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
+using RabbitCommunicationLib.Enumerals;
 
 namespace DemoCentralTests
 {
@@ -54,7 +55,7 @@ namespace DemoCentralTests
         {
             long matchId;
 
-            GathererTransferModel model = new GathererTransferModel
+            DemoEntryInstructions model = new DemoEntryInstructions
             {
                 MatchDate = default(DateTime),
                 DownloadUrl = "1234",
@@ -93,7 +94,7 @@ namespace DemoCentralTests
             var downloadUrl = "xyz";
             var uploaderId = 1234;
 
-            GathererTransferModel model = new GathererTransferModel
+            DemoEntryInstructions model = new DemoEntryInstructions
             {
                 MatchDate = matchDate,
                 DownloadUrl = downloadUrl,
@@ -127,7 +128,7 @@ namespace DemoCentralTests
             var uploaderId = 1234;
             var quality = AnalyzerQuality.Low;
 
-            GathererTransferModel model = new GathererTransferModel
+            DemoEntryInstructions model = new DemoEntryInstructions
             {
                 MatchDate = matchDate,
                 DownloadUrl = downloadUrl,
@@ -163,7 +164,7 @@ namespace DemoCentralTests
             var downloadUrl = "xyz";
             var uploaderId = 1234;
 
-            GathererTransferModel model = new GathererTransferModel
+            DemoEntryInstructions model = new DemoEntryInstructions
             {
                 MatchDate = matchDate,
                 DownloadUrl = downloadUrl,
@@ -223,7 +224,7 @@ namespace DemoCentralTests
         {
 
             long matchId;
-            DC2DFWModel assertModel;
+            DemoAnalyzerInstructions assertModel;
             Demo demo = CopyDemo(_standardDemo);
             demo.FilePath = "abc";
             demo.Event = "TESTING";
@@ -239,7 +240,6 @@ namespace DemoCentralTests
             }
 
             Assert.AreEqual(demo.FilePath, assertModel.ZippedFilePath);
-            Assert.AreEqual(demo.Event, assertModel.Event);
             Assert.AreEqual(demo.Source, assertModel.Source);
         }
 

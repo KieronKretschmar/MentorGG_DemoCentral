@@ -1,9 +1,8 @@
 ﻿using System;
-using RabbitTransfer.Enums;
+using RabbitCommunicationLib.Enums;
 using DataBase.Enumerals;
-using System.Collections.Generic;
-using RabbitTransfer.TransferModels;
-using Database.Enumerals;
+using RabbitCommunicationLib.Enumerals;
+using RabbitCommunicationLib.TransferModels;
 
 namespace DataBase.DatabaseClasses
 {
@@ -29,7 +28,7 @@ namespace DataBase.DatabaseClasses
         public string Event {get; set; }
 
 
-        public static Demo FromGatherTransferModel(GathererTransferModel model)
+        public static Demo FromGatherTransferModel(DemoEntryInstructions model)
         {
             return new Demo
             {
