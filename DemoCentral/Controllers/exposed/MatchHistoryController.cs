@@ -29,5 +29,13 @@ namespace DemoCentral.Controllers.exposed
             _logger.LogInformation($"Received request for player#{uploaderId} to get {recentMatches} last matches, offset {offset}");
             return MatchHistoryModel.FromRecentMatches(uploaderId, recentMatches, offset, _dbInterface);
         }
+
+        [HttpGet]
+        //GET api/exposed/matchhistory?playerId=XXXX&recentMatches=YYYY&offset=0
+        public MatchHistoryModel GetFailedMatchesFromMostRecent(long uploaderId, int recentMatches, int offset)
+        {
+            _logger.LogInformation($"Received request for player#{uploaderId} to get {recentMatches} failed matches, offset {offset}");
+            return MatchHistoryModel.FromRecentFailedMatches(uploaderId, recentMatches, offset, _dbInterface);
+        }
     }
 }

@@ -31,6 +31,14 @@ namespace DemoCentral.Models
 
         }
 
+        public static MatchHistoryModel FromRecentFailedMatches(long playerId, int recentMatches, int offset, IDemoCentralDBInterface dBInterface)
+        {
+            var res = FromRecentMatches(playerId, recentMatches, offset, dBInterface);
+            res.Entries = res.Entries.Where(x => x.Status == DemoFileWorkerStatus.Failed).ToList();
+            return res;
+        }
+
+
         public class MatchHistoryEntry
         {
             public long MatchId { get; set; }
