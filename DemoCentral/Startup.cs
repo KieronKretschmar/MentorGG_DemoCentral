@@ -83,6 +83,11 @@ namespace DemoCentral
                 throw new ArgumentNullException("The environment variable AMQP_MATCHDBI has not been set.");
             var matchDBI_queue = new QueueConnection(AMQP_URI, AMQP_MATCHDBI);
 
+            var AMQP_MANUALDEMODOWNLOAD = Configuration.GetValue<string>("AMQP_MANUALDEMODOWNLOAD") ??
+                throw new ArgumentNullException("The environment variable AMQP_MANUALDEMODOWNLOAD has not been set.");
+            var manualDemoDownload_queue = new QueueConnection(AMQP_URI, AMQP_MANUALDEMODOWNLOAD);
+
+
             var HTTP_USER_SUBSCRIPTION = Configuration.GetValue<string>("HTTP_USER_SUBSCRIPTION") ??
                 throw new ArgumentNullException("The environment variable HTTP_USER_SUBSCRIPTION has not been set.");
 
@@ -128,6 +133,11 @@ namespace DemoCentral
             services.AddHostedService<Gatherer>(services =>
             {
                 return new Gatherer(gatherer_queue, services.GetRequiredService<IDemoCentralDBInterface>(), services.GetRequiredService<IDemoDownloader>(),services.GetRequiredService<IUserInfoOperator>(), services.GetRequiredService<ILogger<Gatherer>>());
+            });
+
+            services.AddHostedService<ManualUploadReceived>(services =>
+            {
+                return new ManualUploadReceived(manualDemoDownload_queue, services.GetRequiredService<IDemoFileWorker>(), services.GetRequiredService<IDemoCentralDBInterface>(), services.GetRequiredService<IUserInfoOperator>());
             });
         }
 
