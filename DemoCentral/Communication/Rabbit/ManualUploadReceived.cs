@@ -15,12 +15,14 @@ namespace DemoCentral.RabbitCommunication
         private readonly IDemoFileWorker _demoFileWorker;
         private readonly IDemoCentralDBInterface _dBInterface;
         private readonly IUserInfoOperator _userInfoOperator;
+        private readonly IInQueueDBInterface _inQueueDBInterface;
 
-        public ManualUploadReceived(IQueueConnection queueConnection, IDemoFileWorker demoFileWorker, IDemoCentralDBInterface dBInterface, IUserInfoOperator userInfoOperator) : base(queueConnection)
+        public ManualUploadReceived(IQueueConnection queueConnection, IDemoFileWorker demoFileWorker, IDemoCentralDBInterface dBInterface, IUserInfoOperator userInfoOperator, IInQueueDBInterface inQueueDBInterface) : base(queueConnection)
         {
             _demoFileWorker = demoFileWorker;
             _dBInterface = dBInterface;
             _userInfoOperator = userInfoOperator;
+            _inQueueDBInterface = inQueueDBInterface;
         }
 
         public async override void HandleMessage(IBasicProperties properties, GathererTransferModel model)
@@ -28,8 +30,10 @@ namespace DemoCentral.RabbitCommunication
             var requestedAnalyzerQuality = await _userInfoOperator.GetAnalyzerQualityAsync(model.UploaderId);
             if (_dBInterface.TryCreateNewDemoEntryFromGatherer(model, requestedAnalyzerQuality, out long matchId))
             {
+                _inQueueDBInterface.Add(matchId, model.MatchDate, model.Source, model.UploaderId);
                 var dfwModel = _dBInterface.CreateDemoFileWorkerModel(matchId);
-                dfwModel.BlobURI = dfwModel.DownloadUrl;
+                dfwModel.ZippedFilePath = dfwModel.DownloadUrl;
+
 
                 _demoFileWorker.SendMessageAndUpdateQueueStatus(matchId.ToString(), dfwModel);
             }

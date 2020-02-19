@@ -85,35 +85,6 @@ namespace DemoCentralTests
         }
 
         [TestMethod]
-        public void TryCreateNewDemoEntryFromGathererAddsDemoToQueueTable()
-        {
-            long matchId;
-            Mock<IInQueueDBInterface> mockInQueueDB = new Mock<IInQueueDBInterface>();
-            var mockedObject = mockInQueueDB.Object;
-            var matchDate = default(DateTime);
-            var downloadUrl = "xyz";
-            var uploaderId = 1234;
-
-            DemoEntryInstructions model = new DemoEntryInstructions
-            {
-                MatchDate = matchDate,
-                DownloadUrl = downloadUrl,
-                UploaderId = uploaderId,
-                Source = Source.Unknown,
-                UploadType = UploadType.Unknown,
-            };
-
-            using (var context = new DemoCentralContext(_test_config))
-            {
-                var test = new DemoCentralDBInterface(context, mockedObject, _mockILogger);
-
-                test.TryCreateNewDemoEntryFromGatherer(model,AnalyzerQuality.High, out matchId);
-            }
-
-            mockInQueueDB.Verify(mockedObject => mockedObject.Add(matchId, matchDate, Source.Unknown, uploaderId), Times.Once());
-        }
-
-        [TestMethod]
         public void TryCreateNewDemoEntryFromGathererReturnsFalseOnKnownDemoWithSameQuality()
         {
 

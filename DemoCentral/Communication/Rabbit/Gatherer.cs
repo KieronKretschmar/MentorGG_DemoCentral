@@ -21,13 +21,15 @@ namespace DemoCentral.RabbitCommunication
         private readonly IDemoDownloader _demoDownloader;
         private readonly ILogger<Gatherer> _logger;
         private IUserInfoOperator _userInfoOperator;
+        private IInQueueDBInterface _inQueueDBInterface;
 
-        public Gatherer(IQueueConnection queueConnection, IDemoCentralDBInterface dbInterface, IDemoDownloader demoDownloader,IUserInfoOperator userInfoOperator, ILogger<Gatherer> logger) : base(queueConnection)
+        public Gatherer(IQueueConnection queueConnection, IDemoCentralDBInterface dbInterface, IDemoDownloader demoDownloader,IUserInfoOperator userInfoOperator, ILogger<Gatherer> logger, IInQueueDBInterface inQueueDBInterface) : base(queueConnection)
         {
 
             _dbInterface = dbInterface;
             _demoDownloader = demoDownloader;
             _userInfoOperator = userInfoOperator;
+            _inQueueDBInterface = inQueueDBInterface;
             _logger = logger;
         }
 
@@ -46,6 +48,9 @@ namespace DemoCentral.RabbitCommunication
                 {
                     DownloadUrl = model.DownloadUrl
                 };
+
+                _inQueueDBInterface.Add(matchId, model.MatchDate, model.Source, model.UploaderId);
+
                 _demoDownloader.SendMessageAndUpdateStatus(matchId.ToString(), forwardModel);
 
                 _logger.LogInformation($"Demo#{matchId} assigned to {model.DownloadUrl}");

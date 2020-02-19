@@ -132,12 +132,12 @@ namespace DemoCentral
 
             services.AddHostedService<Gatherer>(services =>
             {
-                return new Gatherer(gatherer_queue, services.GetRequiredService<IDemoCentralDBInterface>(), services.GetRequiredService<IDemoDownloader>(),services.GetRequiredService<IUserInfoOperator>(), services.GetRequiredService<ILogger<Gatherer>>());
+                return new Gatherer(gatherer_queue, services.GetRequiredService<IDemoCentralDBInterface>(), services.GetRequiredService<IDemoDownloader>(),services.GetRequiredService<IUserInfoOperator>(), services.GetRequiredService<ILogger<Gatherer>>(), services.GetRequiredService<IInQueueDBInterface>());
             });
 
             services.AddHostedService<ManualUploadReceived>(services =>
             {
-                return new ManualUploadReceived(manualDemoDownload_queue, services.GetRequiredService<IDemoFileWorker>(), services.GetRequiredService<IDemoCentralDBInterface>(), services.GetRequiredService<IUserInfoOperator>());
+                return new ManualUploadReceived(manualDemoDownload_queue, services.GetRequiredService<IDemoFileWorker>(), services.GetRequiredService<IDemoCentralDBInterface>(), services.GetRequiredService<IUserInfoOperator>(), services.GetRequiredService<IInQueueDBInterface>());
             });
         }
 
