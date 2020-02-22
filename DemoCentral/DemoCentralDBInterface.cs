@@ -1,5 +1,5 @@
 ﻿using DataBase.DatabaseClasses;
-using RabbitTransfer.TransferModels;
+using RabbitCommunicationLib.TransferModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,6 +7,7 @@ using DataBase.Enumerals;
 using Microsoft.Extensions.Logging;
 using Database.Enumerals;
 using DemoCentral.Enumerals;
+using RabbitCommunicationLib.Enumerals;
 
 namespace DemoCentral
 {
@@ -16,7 +17,7 @@ namespace DemoCentral
     public interface IDemoCentralDBInterface
     {
         void SetFilePath(long matchId, string zippedFilePath);
-        DC2DFWModel CreateDemoFileWorkerModel(long matchId);
+        DemoAnalyzerInstructions CreateDemoFileWorkerModel(long matchId);
         /// <summary>
         /// Returns the player matches in queue , empty list if none found
         /// </summary>
@@ -34,7 +35,7 @@ namespace DemoCentral
         /// </summary>
         /// <param name="matchId">Return either a new matchId or the one of the found demo if the download url is known</param>
         /// <returns>true, if downloadUrl is unique</returns>
-        bool TryCreateNewDemoEntryFromGatherer(GathererTransferModel model, AnalyzerQuality requestedQuality, out long matchId);
+        bool TryCreateNewDemoEntryFromGatherer(DemoEntryInstructions model, AnalyzerQuality requestedQuality, out long matchId);
         void SetHash(long matchId, string hash);
         void SetFrames(long matchId, int framesPerSecond);
     }
@@ -75,13 +76,12 @@ namespace DemoCentral
             _context.SaveChanges();
         }
 
-        public DC2DFWModel CreateDemoFileWorkerModel(long matchId)
+        public DemoAnalyzerInstructions CreateDemoFileWorkerModel(long matchId)
         {
             var demo = GetDemoById(matchId);
 
-            var model = new DC2DFWModel
+            var model = new DemoAnalyzerInstructions
             {
-                Event = demo.Event,
                 Source = demo.Source,
                 MatchDate = demo.MatchDate,
                 ZippedFilePath = demo.FilePath,
@@ -162,7 +162,7 @@ namespace DemoCentral
         }
 
 
-        public bool TryCreateNewDemoEntryFromGatherer(GathererTransferModel model, AnalyzerQuality requestedQuality, out long matchId)
+        public bool TryCreateNewDemoEntryFromGatherer(DemoEntryInstructions model, AnalyzerQuality requestedQuality, out long matchId)
         {
             //checkdownloadurl
             var demo = _context.Demo.Where(x => x.DownloadUrl.Equals(model.DownloadUrl)).SingleOrDefault();

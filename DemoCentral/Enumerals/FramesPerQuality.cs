@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Database.Enumerals;
+using RabbitCommunicationLib.Enumerals;
 
 namespace DemoCentral.Enumerals
 {

@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Linq;
-using RabbitTransfer.Enums;
+using RabbitCommunicationLib.Enums;
 using DataBase.DatabaseClasses;
 using Database.Enumerals;
 using System.Collections.Generic;

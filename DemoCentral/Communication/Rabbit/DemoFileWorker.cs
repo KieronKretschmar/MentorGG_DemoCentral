@@ -1,13 +1,14 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using RabbitMQ.Client;
-using RabbitTransfer.Interfaces;
-using RabbitTransfer.RPC;
-using RabbitTransfer.TransferModels;
+using RabbitCommunicationLib.Interfaces;
+using RabbitCommunicationLib.RPC;
+using RabbitCommunicationLib.TransferModels;
 using System;
 using Database.Enumerals;
 using DataBase.Enumerals;
 using Microsoft.Extensions.Logging;
+using System.Threading.Tasks;
 
 namespace DemoCentral.RabbitCommunication
 {
@@ -19,15 +20,15 @@ namespace DemoCentral.RabbitCommunication
         /// remove entirely if duplicate, 
         /// remove from queue if unzip failed 
         /// </summary>
-        void HandleMessage(IBasicProperties properties, DFW2DCModel consumeModel);
+        Task HandleMessageAsync(IBasicProperties properties, DemoAnalyzerReport consumeModel);
 
         /// <summary>
         /// Send a downloaded demo to the demoFileWorker and update the queue status
         /// </summary>
-        void SendMessageAndUpdateQueueStatus(string correlationId, DC2DFWModel model);
+        void SendMessageAndUpdateQueueStatus(string correlationId, DemoAnalyzerInstructions model);
     }
 
-    public class DemoFileWorker : RPCClient<DC2DFWModel, DFW2DCModel>, IDemoFileWorker
+    public class DemoFileWorker : RPCClient<DemoAnalyzerInstructions, DemoAnalyzerReport>, IDemoFileWorker
     {
         private readonly IDemoCentralDBInterface _demoDBInterface;
         private readonly IInQueueDBInterface _inQueueDBInterface;
@@ -40,14 +41,14 @@ namespace DemoCentral.RabbitCommunication
             _logger = provider.GetRequiredService<ILogger<DemoFileWorker>>();
         }
 
-        public void SendMessageAndUpdateQueueStatus(string correlationId, DC2DFWModel model)
+        public void SendMessageAndUpdateQueueStatus(string correlationId, DemoAnalyzerInstructions model)
         {
             long matchId = long.Parse(correlationId);
             _inQueueDBInterface.UpdateProcessStatus(matchId, ProcessedBy.DemoFileWorker, true);
             PublishMessage(correlationId, model);
         }
 
-        private void UpdateDBEntryFromFileWorkerResponse(long matchId, DFW2DCModel response)
+        private void UpdateDBEntryFromFileWorkerResponse(long matchId, DemoAnalyzerReport response)
         {
             if (!response.Unzipped)
             {
@@ -98,10 +99,12 @@ namespace DemoCentral.RabbitCommunication
             _logger.LogError("Could not handle response from DemoFileWorker");
         }
 
-    public override void HandleMessage(IBasicProperties properties, DFW2DCModel consumeModel)
-    {
-        long matchId = long.Parse(properties.CorrelationId);
-        UpdateDBEntryFromFileWorkerResponse(matchId, consumeModel);
+        public override Task HandleMessageAsync(IBasicProperties properties, DemoAnalyzerReport consumeModel)
+        {
+            long matchId = long.Parse(properties.CorrelationId);
+            UpdateDBEntryFromFileWorkerResponse(matchId, consumeModel);
+            return Task.CompletedTask;
+
+        }
     }
-}
 }
