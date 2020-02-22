@@ -86,6 +86,7 @@ namespace DemoCentral
                 MatchDate = demo.MatchDate,
                 ZippedFilePath = demo.FilePath,
                 FramesPerSecond = demo.FramesPerSecond,
+                Quality = demo.Quality,
             };
 
             return model;
