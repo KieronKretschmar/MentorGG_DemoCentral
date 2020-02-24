@@ -38,6 +38,7 @@ namespace DemoCentral
         bool TryCreateNewDemoEntryFromGatherer(DemoEntryInstructions model, AnalyzerQuality requestedQuality, out long matchId);
         void SetHash(long matchId, string hash);
         void SetFrames(long matchId, int framesPerSecond);
+        void SetDemoFileWorkerStatus(long matchId, bool v);
     }
 
     /// <summary>
@@ -214,6 +215,13 @@ namespace DemoCentral
             Demo demo = GetDemoById(matchId);
 
             demo.FramesPerSecond = (byte) framesPerSecond;
+            _context.SaveChanges();
+        }
+
+        public void SetDemoFileWorkerStatus(long matchId, bool success)
+        {
+            Demo demo = GetDemoById(matchId);
+            demo.DemoFileWorkerStatus = success? DemoFileWorkerStatus.Finished: DemoFileWorkerStatus.Failed;
             _context.SaveChanges();
         }
     }
