@@ -29,6 +29,7 @@ namespace DemoCentral
         void SetFileStatus(long matchId, FileStatus status);
         void SetUploadStatus(long matchId, bool success);
         void SetDatabaseVersion(long matchId, string databaseVersion);
+        void SetFileWorkerStatus(long matchId, DemoFileWorkerStatus status);
 
         /// <summary>
         /// try to create a new entry in the demo table. Returns false and the matchId of the match, if the downloadUrl is already known, return true otherwise
@@ -38,7 +39,6 @@ namespace DemoCentral
         bool TryCreateNewDemoEntryFromGatherer(DemoEntryInstructions model, AnalyzerQuality requestedQuality, out long matchId);
         void SetHash(long matchId, string hash);
         void SetFrames(long matchId, int framesPerSecond);
-        void SetDemoFileWorkerStatus(long matchId, bool v);
     }
 
     /// <summary>
@@ -125,7 +125,7 @@ namespace DemoCentral
         public void SetUploadStatus(long matchId, bool success)
         {
             var demo = GetDemoById(matchId);
-            demo.UploadStatus = success ? UploadStatus.FINISHED : UploadStatus.FAILED;
+            demo.UploadStatus = success ? UploadStatus.Finished : UploadStatus.Failed;
             _context.SaveChanges();
 
         }
@@ -142,7 +142,7 @@ namespace DemoCentral
         {
             var demo = GetDemoById(matchId);
 
-            demo.FileStatus = FileStatus.DOWNLOAD_RETRYING;
+            demo.FileStatus = FileStatus.DownloadRetrying;
             string downloadUrl = demo.DownloadUrl;
             _context.SaveChanges();
 
@@ -216,10 +216,11 @@ namespace DemoCentral
             _context.SaveChanges();
         }
 
-        public void SetDemoFileWorkerStatus(long matchId, bool success)
+        public void SetFileWorkerStatus(long matchId, DemoFileWorkerStatus status)
         {
             Demo demo = GetDemoById(matchId);
-            demo.DemoFileWorkerStatus = success? DemoFileWorkerStatus.Finished: DemoFileWorkerStatus.Failed;
+
+            demo.DemoFileWorkerStatus = status;
             _context.SaveChanges();
         }
     }

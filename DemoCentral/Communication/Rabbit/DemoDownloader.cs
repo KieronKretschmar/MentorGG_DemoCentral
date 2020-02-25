@@ -8,6 +8,7 @@ using Microsoft.Extensions.Hosting;
 using Database.Enumerals;
 using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
+using DataBase.Enumerals;
 
 namespace DemoCentral.RabbitCommunication
 {
@@ -46,7 +47,7 @@ namespace DemoCentral.RabbitCommunication
         public void SendMessageAndUpdateStatus(string correlationId, DemoDownloadInstructions produceModel)
         {
             long matchId = long.Parse(correlationId);
-            _demoCentralDBInterface.SetFileStatus(matchId,DataBase.Enumerals.FileStatus.DOWNLOADING);
+            _demoCentralDBInterface.SetFileStatus(matchId, FileStatus.Downloading);
             _inQueueDBInterface.UpdateProcessStatus(matchId,ProcessedBy.DemoDownloader, true);
 
             PublishMessage(correlationId, produceModel);
@@ -61,7 +62,7 @@ namespace DemoCentral.RabbitCommunication
             {
                 _demoCentralDBInterface.SetFilePath(matchId, consumeModel.DemoUrl);
 
-                _demoCentralDBInterface.SetFileStatus(matchId, DataBase.Enumerals.FileStatus.DOWNLOADED);
+                _demoCentralDBInterface.SetFileStatus(matchId, FileStatus.InBlobStorage);
 
                 _inQueueDBInterface.UpdateProcessStatus(matchId,ProcessedBy.DemoDownloader, false);
 
