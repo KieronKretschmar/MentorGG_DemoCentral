@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 using System.Web;
 using System.Net;
 
-namespace DemoCentral.Controllers.@public
+namespace DemoCentral.Controllers
 {
     [ApiVersion("1")]
     [Route("v{version:apiVersion}/public")]

@@ -20,7 +20,7 @@ namespace DemoCentral.Controllers
 
         [HttpGet("history/{steamId}")]
         //GET v1/public/history/{steamId}?recentMatches=YYYY&offset=0
-        public MatchHistoryModel GetMatchHistory(long uploaderId, int recentMatches, int offset)
+        public MatchHistoryModel GetFailedMatchHistory(long uploaderId, int recentMatches, int offset)
         {
             _logger.LogInformation($"Received request for player#{uploaderId} to get {recentMatches} failed matches, offset {offset}");
             return MatchHistoryModel.FromRecentFailedMatches(uploaderId, recentMatches, offset, _dbInterface);
