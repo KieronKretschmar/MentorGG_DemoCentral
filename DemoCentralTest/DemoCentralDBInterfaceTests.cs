@@ -31,7 +31,7 @@ namespace DemoCentralTests
             _standardDemo = new Demo
             {
                 DownloadUrl = "xyz",
-                FileStatus = (byte) FileStatus.NEW,
+                FileStatus = (byte) FileStatus.New,
                 UploadDate = DateTime.UtcNow,
                 UploadType = UploadType.Unknown,
                 MatchDate = default(DateTime),
@@ -320,7 +320,7 @@ namespace DemoCentralTests
 
 
         [TestMethod]
-        public void SetFileStatusZippedSetsCorrectStatus()
+        public void SetFileStatusInBlobStorageSetsCorrectStatus()
         {
             Demo demo = CopyDemo(_standardDemo);
 
@@ -329,26 +329,10 @@ namespace DemoCentralTests
                 DemoCentralDBInterface test = new DemoCentralDBInterface(context, _mockInQueueDb, _mockILogger);
                 AddDemoToDB(demo, context);
 
-                test.SetFileStatus(demo.MatchId, FileStatus.UNZIPPED);
+                test.SetFileStatus(demo.MatchId, FileStatus.InBlobStorage);
             }
 
-            Assert.IsTrue(demo.FileStatus == FileStatus.UNZIPPED);
-        }
-
-        [TestMethod]
-        public void SetFileStatusDownloadedSetsCorrectStatus()
-        {
-            Demo demo = CopyDemo(_standardDemo);
-
-            using (var context = new DemoCentralContext(_test_config))
-            {
-                DemoCentralDBInterface test = new DemoCentralDBInterface(context, _mockInQueueDb, _mockILogger);
-                AddDemoToDB(demo, context);
-
-                test.SetFileStatus(demo.MatchId, FileStatus.DOWNLOADED);
-            }
-
-            Assert.IsTrue(demo.FileStatus == FileStatus.DOWNLOADED);
+            Assert.IsTrue(demo.FileStatus == FileStatus.InBlobStorage);
         }
 
         [TestMethod]
@@ -402,7 +386,7 @@ namespace DemoCentralTests
                 test.SetUploadStatus(demo.MatchId, true);
             }
 
-            Assert.IsTrue(demo.UploadStatus == UploadStatus.FINISHED);
+            Assert.IsTrue(demo.UploadStatus == UploadStatus.Finished);
         }
 
         [TestMethod]
@@ -522,7 +506,7 @@ namespace DemoCentralTests
                 test.SetDownloadRetryingAndGetDownloadPath(demo.MatchId);
             }
 
-            Assert.AreEqual(demo.FileStatus, FileStatus.DOWNLOAD_RETRYING);
+            Assert.AreEqual(demo.FileStatus, FileStatus.DownloadRetrying);
         }
 
 
