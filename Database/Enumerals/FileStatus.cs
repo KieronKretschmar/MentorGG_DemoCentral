@@ -1,5 +1,8 @@
 ﻿namespace DataBase.Enumerals
 {
+    /// <summary>
+    /// This enum contains the options for a demo file unrelated to demoFileWorker
+    /// </summary>
     public enum FileStatus : byte
     {
         New = 0,

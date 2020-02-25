@@ -1,5 +1,8 @@
 ﻿namespace DataBase.Enumerals
 {
+    /// <summary>
+    /// This enum contains all possible values from demofileworker
+    /// </summary>
     public enum DemoFileWorkerStatus : byte
     {
         New = 0,
