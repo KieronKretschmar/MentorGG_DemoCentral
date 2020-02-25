@@ -1,8 +1,8 @@
 ﻿using DemoCentral.Communication.HTTP;
 using RabbitMQ.Client;
-using RabbitTransfer.Consumer;
-using RabbitTransfer.Interfaces;
-using RabbitTransfer.TransferModels;
+using RabbitCommunicationLib.Consumer;
+using RabbitCommunicationLib.Interfaces;
+using RabbitCommunicationLib.TransferModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace DemoCentral.RabbitCommunication
 {
-    public class ManualUploadReceiver : Consumer<GathererTransferModel>
+    public class ManualUploadReceiver : Consumer<DemoEntryInstructions>
     {
         private readonly IDemoFileWorker _demoFileWorker;
         private readonly IDemoCentralDBInterface _dBInterface;
@@ -25,17 +25,17 @@ namespace DemoCentral.RabbitCommunication
             _inQueueDBInterface = inQueueDBInterface;
         }
 
-        public async override void HandleMessage(IBasicProperties properties, GathererTransferModel model)
+        public async override Task HandleMessageAsync(IBasicProperties properties, DemoEntryInstructions model)
         {
             var requestedAnalyzerQuality = await _userInfoOperator.GetAnalyzerQualityAsync(model.UploaderId);
             if (_dBInterface.TryCreateNewDemoEntryFromGatherer(model, requestedAnalyzerQuality, out long matchId))
             {
                 _inQueueDBInterface.Add(matchId, model.MatchDate, model.Source, model.UploaderId);
-                var dfwModel = _dBInterface.CreateDemoFileWorkerModel(matchId);
-                dfwModel.ZippedFilePath = dfwModel.DownloadUrl;
+                var analyzeInstructions = _dBInterface.CreateAnalyzeInstructions(matchId);
+                analyzeInstructions.BlobURI = model.DownloadUrl;
 
 
-                _demoFileWorker.SendMessageAndUpdateQueueStatus(matchId.ToString(), dfwModel);
+                _demoFileWorker.SendMessageAndUpdateQueueStatus(matchId.ToString(), analyzeInstructions);
             }
         }
     }

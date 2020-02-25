@@ -6,7 +6,7 @@ using RabbitCommunicationLib.Consumer;
 using RabbitCommunicationLib.Interfaces;
 using RabbitCommunicationLib.TransferModels;
 using System.Threading.Tasks;
-using RabbitCommunicationLib.Enumerals;
+using RabbitCommunicationLib.Enums;
 
 namespace DemoCentral.RabbitCommunication
 {

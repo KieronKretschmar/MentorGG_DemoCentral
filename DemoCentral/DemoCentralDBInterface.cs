@@ -7,7 +7,7 @@ using DataBase.Enumerals;
 using Microsoft.Extensions.Logging;
 using Database.Enumerals;
 using DemoCentral.Enumerals;
-using RabbitCommunicationLib.Enumerals;
+using RabbitCommunicationLib.Enums;
 
 namespace DemoCentral
 {
@@ -17,7 +17,7 @@ namespace DemoCentral
     public interface IDemoCentralDBInterface
     {
         void SetFilePath(long matchId, string zippedFilePath);
-        DemoAnalyzerInstructions CreateDemoFileWorkerModel(long matchId);
+        DemoAnalyzeInstructions CreateAnalyzeInstructions(long matchId);
         /// <summary>
         /// Returns the player matches in queue , empty list if none found
         /// </summary>
@@ -76,15 +76,15 @@ namespace DemoCentral
             _context.SaveChanges();
         }
 
-        public DemoAnalyzerInstructions CreateDemoFileWorkerModel(long matchId)
+        public DemoAnalyzeInstructions CreateAnalyzeInstructions(long matchId)
         {
             var demo = GetDemoById(matchId);
 
-            var model = new DemoAnalyzerInstructions
+            var model = new DemoAnalyzeInstructions
             {
                 Source = demo.Source,
                 MatchDate = demo.MatchDate,
-                ZippedFilePath = demo.FilePath,
+                BlobURI = demo.FilePath,
                 FramesPerSecond = demo.FramesPerSecond,
                 Quality = demo.Quality,
             };

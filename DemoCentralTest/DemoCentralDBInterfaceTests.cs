@@ -11,7 +11,6 @@ using RabbitCommunicationLib.Enums;
 using DataBase.Enumerals;
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
-using RabbitCommunicationLib.Enumerals;
 
 namespace DemoCentralTests
 {
@@ -195,7 +194,7 @@ namespace DemoCentralTests
         {
 
             long matchId;
-            DemoAnalyzerInstructions assertModel;
+            DemoAnalyzeInstructions assertModel;
             Demo demo = CopyDemo(_standardDemo);
             demo.FilePath = "abc";
             demo.Event = "TESTING";
@@ -207,10 +206,10 @@ namespace DemoCentralTests
                 AddDemoToDB(demo, context);
 
                 matchId = demo.MatchId;
-                assertModel = test.CreateDemoFileWorkerModel(matchId);
+                assertModel = test.CreateAnalyzeInstructions(matchId);
             }
 
-            Assert.AreEqual(demo.FilePath, assertModel.ZippedFilePath);
+            Assert.AreEqual(demo.FilePath, assertModel.BlobURI);
             Assert.AreEqual(demo.Source, assertModel.Source);
         }
 

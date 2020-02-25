@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Database", "Database\Databa
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DemoCentralTests", "DemoCentralTest\DemoCentralTests.csproj", "{CC0F7FD2-C194-4CCB-9063-DA81D1BD4E64}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RabbitCommunicationLib", "RabbitCommunicationLib\RabbitCommunicationLib.csproj", "{8668315E-6F9A-4030-97E5-39C972974971}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RabbitCommunicationLib", "RabbitCommunicationLib\RabbitCommunicationLib.csproj", "{5C004B53-EE66-415B-B83B-ABB067AB747C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,10 +29,10 @@ Global
 		{CC0F7FD2-C194-4CCB-9063-DA81D1BD4E64}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CC0F7FD2-C194-4CCB-9063-DA81D1BD4E64}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CC0F7FD2-C194-4CCB-9063-DA81D1BD4E64}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8668315E-6F9A-4030-97E5-39C972974971}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8668315E-6F9A-4030-97E5-39C972974971}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8668315E-6F9A-4030-97E5-39C972974971}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8668315E-6F9A-4030-97E5-39C972974971}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5C004B53-EE66-415B-B83B-ABB067AB747C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5C004B53-EE66-415B-B83B-ABB067AB747C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5C004B53-EE66-415B-B83B-ABB067AB747C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5C004B53-EE66-415B-B83B-ABB067AB747C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

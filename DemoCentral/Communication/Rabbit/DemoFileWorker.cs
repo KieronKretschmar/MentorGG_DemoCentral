@@ -20,15 +20,15 @@ namespace DemoCentral.RabbitCommunication
         /// remove entirely if duplicate, 
         /// remove from queue if unzip failed 
         /// </summary>
-        Task HandleMessageAsync(IBasicProperties properties, DemoAnalyzerReport consumeModel);
+        Task HandleMessageAsync(IBasicProperties properties, DemoAnalyzeReport consumeModel);
 
         /// <summary>
         /// Send a downloaded demo to the demoFileWorker and update the queue status
         /// </summary>
-        void SendMessageAndUpdateQueueStatus(string correlationId, DemoAnalyzerInstructions model);
+        void SendMessageAndUpdateQueueStatus(string correlationId, DemoAnalyzeInstructions model);
     }
 
-    public class DemoFileWorker : RPCClient<DemoAnalyzerInstructions, DemoAnalyzerReport>, IDemoFileWorker
+    public class DemoFileWorker : RPCClient<DemoAnalyzeInstructions, DemoAnalyzeReport>, IDemoFileWorker
     {
         private readonly IDemoCentralDBInterface _demoDBInterface;
         private readonly IInQueueDBInterface _inQueueDBInterface;
@@ -41,14 +41,14 @@ namespace DemoCentral.RabbitCommunication
             _logger = provider.GetRequiredService<ILogger<DemoFileWorker>>();
         }
 
-        public void SendMessageAndUpdateQueueStatus(string correlationId, DemoAnalyzerInstructions model)
+        public void SendMessageAndUpdateQueueStatus(string correlationId, DemoAnalyzeInstructions model)
         {
             long matchId = long.Parse(correlationId);
             _inQueueDBInterface.UpdateProcessStatus(matchId, ProcessedBy.DemoFileWorker, true);
             PublishMessage(correlationId, model);
         }
 
-        private void UpdateDBEntryFromFileWorkerResponse(long matchId, DemoAnalyzerReport response)
+        private void UpdateDBEntryFromFileWorkerResponse(long matchId, DemoAnalyzeReport response)
         {
             if (!response.Unzipped)
             {
@@ -99,7 +99,7 @@ namespace DemoCentral.RabbitCommunication
             _logger.LogError("Could not handle response from DemoFileWorker");
         }
 
-        public override Task HandleMessageAsync(IBasicProperties properties, DemoAnalyzerReport consumeModel)
+        public override Task HandleMessageAsync(IBasicProperties properties, DemoAnalyzeReport consumeModel)
         {
             long matchId = long.Parse(properties.CorrelationId);
             UpdateDBEntryFromFileWorkerResponse(matchId, consumeModel);

@@ -65,7 +65,7 @@ namespace DemoCentral.RabbitCommunication
 
                 _inQueueDBInterface.UpdateProcessStatus(matchId,ProcessedBy.DemoDownloader, false);
 
-                var model = _demoCentralDBInterface.CreateDemoFileWorkerModel(matchId);
+                var model = _demoCentralDBInterface.CreateAnalyzeInstructions(matchId);
 
                 _demoFileWorker.SendMessageAndUpdateQueueStatus(properties.CorrelationId, model);
 

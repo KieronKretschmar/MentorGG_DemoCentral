@@ -1,7 +1,6 @@
 ﻿using System;
 using RabbitCommunicationLib.Enums;
 using DataBase.Enumerals;
-using RabbitCommunicationLib.Enumerals;
 using RabbitCommunicationLib.TransferModels;
 
 namespace DataBase.DatabaseClasses
