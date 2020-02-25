@@ -1,5 +1,5 @@
 ﻿using DataBase.DatabaseClasses;
-using DemoCentral.Controllers.trusted;
+using DemoCentral.Controllers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;

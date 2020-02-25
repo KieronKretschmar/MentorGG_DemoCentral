@@ -7,10 +7,11 @@ using Microsoft.Extensions.Logging;
 using System.Web;
 using System.Net;
 
-namespace DemoCentral.Controllers.exposed
+namespace DemoCentral.Controllers.@public
 {
+    [ApiVersion("1")]
+    [Route("v{version:apiVersion}/public")]
     [ApiController]
-    [Route("api/exposed/[controller]")]
     public class QueueController : ControllerBase
     {
         private readonly IInQueueDBInterface _dbInterface;
@@ -27,8 +28,8 @@ namespace DemoCentral.Controllers.exposed
         /// </summary>
         /// <param name="matchId">id of the certain demo</param>
         /// <returns>either int or BadRequest if the demo could not be found</returns>
-        [HttpGet("{matchId}")]
-        // GET /api/exposed/queue/1
+        [HttpGet("queue/match/{matchId}")]
+        //GET /v1/public/queue/match/1234551112
         public ActionResult<int> QueuePosition(long matchId)
         {
             _logger.LogInformation($"Received request for queue position of Demo#{matchId}");
@@ -49,8 +50,8 @@ namespace DemoCentral.Controllers.exposed
         /// Get the number of enqueued matches for a certain player 
         /// </summary>
         /// <param name="playerId">steamid of the certain player</param>
-        [HttpGet("[action]/{playerId:long}")]
-        // GET /api/exposed/queue/numberplayermatches/1
+        [HttpGet("queue/matchesInQueue/{playerId:long}")]
+        // GET /v1/public/queue/matchesInQueue/11231331131
         public ActionResult<int> NumberPlayerMatches(long playerId)
         {
             _logger.LogInformation($"Received request for matches of player#{playerId}");
