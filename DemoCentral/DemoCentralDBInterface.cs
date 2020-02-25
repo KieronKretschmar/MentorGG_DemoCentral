@@ -7,7 +7,7 @@ using DataBase.Enumerals;
 using Microsoft.Extensions.Logging;
 using Database.Enumerals;
 using DemoCentral.Enumerals;
-using RabbitCommunicationLib.Enumerals;
+using RabbitCommunicationLib.Enums;
 
 namespace DemoCentral
 {
@@ -17,7 +17,7 @@ namespace DemoCentral
     public interface IDemoCentralDBInterface
     {
         void SetFilePath(long matchId, string zippedFilePath);
-        DemoAnalyzerInstructions CreateDemoFileWorkerModel(long matchId);
+        DemoAnalyzeInstructions CreateAnalyzeInstructions(long matchId);
         /// <summary>
         /// Returns the player matches in queue , empty list if none found
         /// </summary>
@@ -31,7 +31,7 @@ namespace DemoCentral
         void SetDatabaseVersion(long matchId, string databaseVersion);
 
         /// <summary>
-        /// try to create a new entry in the demo table. Returns false and the matchId of the match, if the downloadUrl is already known. If not, the task is forwarded to downloader and true is returned.
+        /// try to create a new entry in the demo table. Returns false and the matchId of the match, if the downloadUrl is already known, return true otherwise
         /// </summary>
         /// <param name="matchId">Return either a new matchId or the one of the found demo if the download url is known</param>
         /// <returns>true, if downloadUrl is unique</returns>
@@ -77,15 +77,15 @@ namespace DemoCentral
             _context.SaveChanges();
         }
 
-        public DemoAnalyzerInstructions CreateDemoFileWorkerModel(long matchId)
+        public DemoAnalyzeInstructions CreateAnalyzeInstructions(long matchId)
         {
             var demo = GetDemoById(matchId);
 
-            var model = new DemoAnalyzerInstructions
+            var model = new DemoAnalyzeInstructions
             {
                 Source = demo.Source,
                 MatchDate = demo.MatchDate,
-                ZippedFilePath = demo.FilePath,
+                BlobURI = demo.FilePath,
                 FramesPerSecond = demo.FramesPerSecond,
                 Quality = demo.Quality,
             };
@@ -180,7 +180,6 @@ namespace DemoCentral
                 demo.FramesPerSecond = FramesPerQuality.Frames[requestedQuality];
                 _context.SaveChanges();
 
-                _inQueueDBInterface.Add(matchId, model.MatchDate, model.Source, model.UploaderId);
                 return true;
             }
 
@@ -193,7 +192,6 @@ namespace DemoCentral
             _context.SaveChanges();
 
             matchId = demo.MatchId;
-            _inQueueDBInterface.Add(matchId, model.MatchDate, model.Source, model.UploaderId);
 
             return true;
         }

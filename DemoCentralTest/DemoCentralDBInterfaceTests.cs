@@ -11,7 +11,6 @@ using RabbitCommunicationLib.Enums;
 using DataBase.Enumerals;
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
-using RabbitCommunicationLib.Enumerals;
 
 namespace DemoCentralTests
 {
@@ -82,35 +81,6 @@ namespace DemoCentralTests
                 Assert.AreEqual(model.DownloadUrl, demo.DownloadUrl);
                 Assert.AreEqual(model.Source, demo.Source);
             }
-        }
-
-        [TestMethod]
-        public void TryCreateNewDemoEntryFromGathererAddsDemoToQueueTable()
-        {
-            long matchId;
-            Mock<IInQueueDBInterface> mockInQueueDB = new Mock<IInQueueDBInterface>();
-            var mockedObject = mockInQueueDB.Object;
-            var matchDate = default(DateTime);
-            var downloadUrl = "xyz";
-            var uploaderId = 1234;
-
-            DemoEntryInstructions model = new DemoEntryInstructions
-            {
-                MatchDate = matchDate,
-                DownloadUrl = downloadUrl,
-                UploaderId = uploaderId,
-                Source = Source.Unknown,
-                UploadType = UploadType.Unknown,
-            };
-
-            using (var context = new DemoCentralContext(_test_config))
-            {
-                var test = new DemoCentralDBInterface(context, mockedObject, _mockILogger);
-
-                test.TryCreateNewDemoEntryFromGatherer(model,AnalyzerQuality.High, out matchId);
-            }
-
-            mockInQueueDB.Verify(mockedObject => mockedObject.Add(matchId, matchDate, Source.Unknown, uploaderId), Times.Once());
         }
 
         [TestMethod]
@@ -224,7 +194,7 @@ namespace DemoCentralTests
         {
 
             long matchId;
-            DemoAnalyzerInstructions assertModel;
+            DemoAnalyzeInstructions assertModel;
             Demo demo = CopyDemo(_standardDemo);
             demo.FilePath = "abc";
             demo.Event = "TESTING";
@@ -236,10 +206,10 @@ namespace DemoCentralTests
                 AddDemoToDB(demo, context);
 
                 matchId = demo.MatchId;
-                assertModel = test.CreateDemoFileWorkerModel(matchId);
+                assertModel = test.CreateAnalyzeInstructions(matchId);
             }
 
-            Assert.AreEqual(demo.FilePath, assertModel.ZippedFilePath);
+            Assert.AreEqual(demo.FilePath, assertModel.BlobURI);
             Assert.AreEqual(demo.Source, assertModel.Source);
         }
 

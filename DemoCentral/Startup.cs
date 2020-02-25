@@ -20,7 +20,7 @@ namespace DemoCentral
     /// Required environment variables
     /// [AMQP_URI,AMQP_DEMODOWNLOADER, AMQP_DEMODOWNLOADER_REPLY,
     ///     AMQP_DEMOFILEWORKER, AMQP_DEMOFILEWORKER_REPLY, AMQP_GATHERER,
-    ///     AMQP_SITUATIONSOPERATOR, AMQP_MATCHDBI, HTTP_USER_SUBSCRIPTION]
+    ///     AMQP_SITUATIONSOPERATOR, AMQP_MATCHDBI,AMQP_MANUALDEMODOWNLOAD, HTTP_USER_SUBSCRIPTION]
     /// </summary>
     public class Startup
     {
@@ -63,25 +63,30 @@ namespace DemoCentral
                 throw new ArgumentNullException("The environment variable AMQP_DEMODOWNLOADER has not been set.");
             var AMQP_DEMODOWNLOADER_REPLY = Configuration.GetValue<string>("AMQP_DEMODOWNLOADER_REPLY") ??
                 throw new ArgumentNullException("The environment variable AMQP_DEMODOWNLOADER_REPLY has not been set.");
-            var demo_downloader_rpc_queue = new RPCQueueConnections(AMQP_URI, AMQP_DEMODOWNLOADER_REPLY, AMQP_DEMODOWNLOADER);
+            var demoDownloaderRpcQueue = new RPCQueueConnections(AMQP_URI, AMQP_DEMODOWNLOADER_REPLY, AMQP_DEMODOWNLOADER);
 
             var AMQP_DEMOFILEWORKER = Configuration.GetValue<string>("AMQP_DEMOFILEWORKER") ??
                 throw new ArgumentNullException("The environment variable AMQP_DEMOFILEWORKER has not been set.");
             var AMQP_DEMOFILEWORKER_REPLY = Configuration.GetValue<string>("AMQP_DEMOFILEWORKER_REPLY") ??
                 throw new ArgumentNullException("The environment variable AMQP_DEMOFILEWORKER_REPLY has not been set.");
-            var demo_fileworker_rpc_queue = new RPCQueueConnections(AMQP_URI, AMQP_DEMOFILEWORKER_REPLY, AMQP_DEMOFILEWORKER);
+            var demoFileworkerRpcQueue = new RPCQueueConnections(AMQP_URI, AMQP_DEMOFILEWORKER_REPLY, AMQP_DEMOFILEWORKER);
 
             var AMQP_GATHERER = Configuration.GetValue<string>("AMQP_GATHERER") ??
                 throw new ArgumentNullException("The environment variable AMQP_GATHERER has not been set.");
-            var gatherer_queue = new QueueConnection(AMQP_URI, AMQP_GATHERER);
+            var gathererQueue = new QueueConnection(AMQP_URI, AMQP_GATHERER);
 
             var AMQP_SITUATIONSOPERATOR = Configuration.GetValue<string>("AMQP_SITUATIONSOPERATOR") ??
                 throw new ArgumentNullException("The environment variable AMQP_SITUATIONSOPERATOR has not been set.");
-            var so_queue = new QueueConnection(AMQP_URI, AMQP_SITUATIONSOPERATOR);
+            var soQueue = new QueueConnection(AMQP_URI, AMQP_SITUATIONSOPERATOR);
 
             var AMQP_MATCHDBI = Configuration.GetValue<string>("AMQP_MATCHDBI") ??
                 throw new ArgumentNullException("The environment variable AMQP_MATCHDBI has not been set.");
-            var matchDBI_queue = new QueueConnection(AMQP_URI, AMQP_MATCHDBI);
+            var matchDBIQueue = new QueueConnection(AMQP_URI, AMQP_MATCHDBI);
+
+            var AMQP_MANUALDEMODOWNLOAD = Configuration.GetValue<string>("AMQP_MANUALDEMODOWNLOAD") ??
+                throw new ArgumentNullException("The environment variable AMQP_MANUALDEMODOWNLOAD has not been set.");
+            var manualDemoDownloadQueue = new QueueConnection(AMQP_URI, AMQP_MANUALDEMODOWNLOAD);
+
 
             var HTTP_USER_SUBSCRIPTION = Configuration.GetValue<string>("HTTP_USER_SUBSCRIPTION") ??
                 throw new ArgumentNullException("The environment variable HTTP_USER_SUBSCRIPTION has not been set.");
@@ -90,12 +95,12 @@ namespace DemoCentral
             //if 3 or more are required to initialize another one, just pass the service provider
             services.AddHostedService<MatchDBI>(services =>
             {
-                return new MatchDBI(matchDBI_queue, services.GetRequiredService<IDemoCentralDBInterface>(),services.GetRequiredService<ILogger<MatchDBI>>());
+                return new MatchDBI(matchDBIQueue, services.GetRequiredService<IDemoCentralDBInterface>(),services.GetRequiredService<ILogger<MatchDBI>>());
             });
 
             services.AddHostedService<SituationsOperator>(services =>
             {
-                return new SituationsOperator(so_queue, services.GetRequiredService<IInQueueDBInterface>(),services.GetRequiredService<ILogger<SituationsOperator>>());
+                return new SituationsOperator(soQueue, services.GetRequiredService<IInQueueDBInterface>(),services.GetRequiredService<ILogger<SituationsOperator>>());
             });
 
             //WORKAROUND for requesting a hostedService
@@ -104,7 +109,7 @@ namespace DemoCentral
             // from https://github.com/aspnet/Extensions/issues/553
             services.AddSingleton<IDemoFileWorker,DemoFileWorker>(services =>
             {
-                return new DemoFileWorker(demo_fileworker_rpc_queue, services);
+                return new DemoFileWorker(demoFileworkerRpcQueue, services);
             });
             services.AddHostedService<IDemoFileWorker>(p => p.GetRequiredService<IDemoFileWorker>());
 
@@ -115,7 +120,7 @@ namespace DemoCentral
             //from https://github.com/aspnet/Extensions/issues/553
             services.AddSingleton<IDemoDownloader,DemoDownloader>(services =>
             {
-                return new DemoDownloader(demo_downloader_rpc_queue, services);
+                return new DemoDownloader(demoDownloaderRpcQueue, services);
             });
 
             services.AddSingleton<IUserInfoOperator, UserInfoOperator>(services =>
@@ -127,7 +132,12 @@ namespace DemoCentral
 
             services.AddHostedService<Gatherer>(services =>
             {
-                return new Gatherer(gatherer_queue, services.GetRequiredService<IDemoCentralDBInterface>(), services.GetRequiredService<IDemoDownloader>(),services.GetRequiredService<IUserInfoOperator>(), services.GetRequiredService<ILogger<Gatherer>>());
+                return new Gatherer(gathererQueue, services.GetRequiredService<IDemoCentralDBInterface>(), services.GetRequiredService<IDemoDownloader>(),services.GetRequiredService<IUserInfoOperator>(), services.GetRequiredService<ILogger<Gatherer>>(), services.GetRequiredService<IInQueueDBInterface>());
+            });
+
+            services.AddHostedService<ManualUploadReceiver>(services =>
+            {
+                return new ManualUploadReceiver(manualDemoDownloadQueue, services.GetRequiredService<IDemoFileWorker>(), services.GetRequiredService<IDemoCentralDBInterface>(), services.GetRequiredService<IUserInfoOperator>(), services.GetRequiredService<IInQueueDBInterface>());
             });
         }
 
