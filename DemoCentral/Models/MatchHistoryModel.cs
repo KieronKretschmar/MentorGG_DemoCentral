@@ -10,7 +10,7 @@ namespace DemoCentral.Models
     {
         public List<MatchHistoryEntry> Entries { get; set; }
 
-        public static MatchHistoryModel FromRecentMatches(long playerId, int recentMatches, int offset, IDemoCentralDBInterface dBInterface)
+        public static MatchHistoryModel FromRecentFailedMatches(long playerId, int recentMatches, int offset, IDemoCentralDBInterface dBInterface)
         {
             var matches = dBInterface.GetRecentMatches(playerId, recentMatches, offset);
             List<MatchHistoryEntry> matchHistoryEntries = new List<MatchHistoryEntry>();
@@ -20,22 +20,22 @@ namespace DemoCentral.Models
                 {
                     MatchId = match.MatchId,
                     MatchDate = match.MatchDate,
-                    Status = match.DemoFileWorkerStatus
+                    Success = match.DemoFileWorkerStatus == DemoFileWorkerStatus.Finished
                 });
             }
 
             return new MatchHistoryModel
             {
-                Entries = matchHistoryEntries
+                Entries = matchHistoryEntries.Where(x => x.Success).ToList(),
             };
-
         }
+
 
         public class MatchHistoryEntry
         {
             public long MatchId { get; set; }
             public DateTime MatchDate { get; set; }
-            public DemoFileWorkerStatus Status { get; set; }
+            public bool Success { get; set; }
         }
     }
 

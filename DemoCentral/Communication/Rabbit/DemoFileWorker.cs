@@ -54,6 +54,8 @@ namespace DemoCentral.RabbitCommunication
             {
                 //Remove demo from queue and set file status to unzip failed
                 _demoDBInterface.SetFileStatus(matchId, FileStatus.UNZIPFAILED);
+                _demoDBInterface.SetUploadStatus(matchId, false);
+                _demoDBInterface.SetDemoFileWorkerStatus(matchId, false);
                 _inQueueDBInterface.RemoveDemoFromQueue(matchId);
                 _logger.LogWarning($"Demo#{matchId} could not be unzipped");
                 return;
@@ -65,6 +67,8 @@ namespace DemoCentral.RabbitCommunication
                 //they may or may not be duplicates, the check itself failed for any reason
                 _inQueueDBInterface.RemoveDemoFromQueue(matchId);
                 _demoDBInterface.SetFileStatus(matchId, FileStatus.DUPLICATECHECKFAILED);
+                _demoDBInterface.SetDemoFileWorkerStatus(matchId, false);
+                _demoDBInterface.SetUploadStatus(matchId, false);
                 _logger.LogWarning($"Demo#{matchId} was not duplicate checked");
                 return;
             }
@@ -88,6 +92,7 @@ namespace DemoCentral.RabbitCommunication
 
                 _demoDBInterface.SetFileStatus(matchId, FileStatus.UNZIPPED);
                 _demoDBInterface.SetFrames(matchId, response.FramesPerSecond);
+                _demoDBInterface.SetDemoFileWorkerStatus(matchId, true);
                 _inQueueDBInterface.UpdateProcessStatus(matchId, ProcessedBy.DemoFileWorker, false);
                 _logger.LogInformation($"Demo#{matchId} was successfully handled by DemoFileWorker");
                 return;

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using DemoCentral.Models;
 using Microsoft.Extensions.Logging;
 
@@ -24,10 +19,10 @@ namespace DemoCentral.Controllers.exposed
 
         [HttpGet]
         //GET api/exposed/matchhistory?playerId=XXXX&recentMatches=YYYY&offset=0
-        public MatchHistoryModel GetMatchHistory(long uploaderId, int recentMatches, int offset)
+        public MatchHistoryModel GetFailedMatchesFromMostRecent(long uploaderId, int recentMatches, int offset)
         {
-            _logger.LogInformation($"Received request for player#{uploaderId} to get {recentMatches} last matches, offset {offset}");
-            return MatchHistoryModel.FromRecentMatches(uploaderId, recentMatches, offset, _dbInterface);
+            _logger.LogInformation($"Received request for player#{uploaderId} to get {recentMatches} failed matches, offset {offset}");
+            return MatchHistoryModel.FromRecentFailedMatches(uploaderId, recentMatches, offset, _dbInterface);
         }
     }
 }
