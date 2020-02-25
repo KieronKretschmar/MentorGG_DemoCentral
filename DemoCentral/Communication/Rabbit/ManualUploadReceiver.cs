@@ -10,14 +10,14 @@ using System.Threading.Tasks;
 
 namespace DemoCentral.RabbitCommunication
 {
-    public class ManualUploadReceived : Consumer<GathererTransferModel>
+    public class ManualUploadReceiver : Consumer<GathererTransferModel>
     {
         private readonly IDemoFileWorker _demoFileWorker;
         private readonly IDemoCentralDBInterface _dBInterface;
         private readonly IUserInfoOperator _userInfoOperator;
         private readonly IInQueueDBInterface _inQueueDBInterface;
 
-        public ManualUploadReceived(IQueueConnection queueConnection, IDemoFileWorker demoFileWorker, IDemoCentralDBInterface dBInterface, IUserInfoOperator userInfoOperator, IInQueueDBInterface inQueueDBInterface) : base(queueConnection)
+        public ManualUploadReceiver(IQueueConnection queueConnection, IDemoFileWorker demoFileWorker, IDemoCentralDBInterface dBInterface, IUserInfoOperator userInfoOperator, IInQueueDBInterface inQueueDBInterface) : base(queueConnection)
         {
             _demoFileWorker = demoFileWorker;
             _dBInterface = dBInterface;
