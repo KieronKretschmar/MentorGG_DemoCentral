@@ -31,8 +31,8 @@ namespace DemoCentral.Controllers
         /// <param name="matchId">id of the match to potentially create</param>
         /// <param name="hash">hash to check</param>
         /// <returns>Conflict or Ok if hash is known or not</returns>
-        [HttpPost("hash")]
-        //POST v1/trusted/hash?matchId=XXXX&framesPerSecond=YYYY?hash=ZZZZZ
+        [HttpPost("match/{matchId}/duplicatecheck")]
+        //POST v1/trusted/match/{matchId}/duplicatecheck?framesPerSecond=YYYY?hash=ZZZZZ
         public ActionResult CreateHash(long matchId,byte framesPerSecond, string hash)
         {
             bool duplicateHash = _dbInterface.ReAnalysisRequired(hash, out long duplicateMatchId, framesPerSecond);

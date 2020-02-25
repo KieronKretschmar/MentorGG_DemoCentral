@@ -28,8 +28,8 @@ namespace DemoCentral.Controllers
         /// </summary>
         /// <param name="matchId">id of the certain demo</param>
         /// <returns>either int or BadRequest if the demo could not be found</returns>
-        [HttpGet("queue/match/{matchId}")]
-        //GET /v1/public/queue/match/1234551112
+        [HttpGet("match/{matchId}/queueposition")]
+        //GET /v1/public/match/1234551112/queueposition
         public ActionResult<int> QueuePosition(long matchId)
         {
             _logger.LogInformation($"Received request for queue position of Demo#{matchId}");
@@ -50,8 +50,8 @@ namespace DemoCentral.Controllers
         /// Get the number of enqueued matches for a certain player 
         /// </summary>
         /// <param name="playerId">steamid of the certain player</param>
-        [HttpGet("queue/matchesInQueue/{playerId:long}")]
-        // GET /v1/public/queue/matchesInQueue/11231331131
+        [HttpGet("single/{playerId}/matchesinqueue")]
+        // GET /v1/public/single/11231331131/matchesinqueue
         public ActionResult<int> NumberPlayerMatches(long playerId)
         {
             _logger.LogInformation($"Received request for matches of player#{playerId}");
