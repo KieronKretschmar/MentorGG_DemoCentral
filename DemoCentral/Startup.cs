@@ -10,6 +10,9 @@ using RabbitCommunicationLib.Queues;
 using Microsoft.Extensions.Logging;
 using System;
 using DemoCentral.Communication.HTTP;
+using Microsoft.OpenApi.Models;
+using System.Reflection;
+using System.IO;
 
 namespace DemoCentral
 {
@@ -51,6 +54,20 @@ namespace DemoCentral
                 Console.WriteLine("IS_MIGRATING is true! ARE YOU STILL MIGRATING?");
                 return;
             }
+
+            #region Swagger
+            services.AddSwaggerGen(options =>
+            {
+                OpenApiInfo interface_info = new OpenApiInfo { Title = "[DemoCentral]", Version = "v1", };
+                options.SwaggerDoc("v1", interface_info);
+
+                // Generate documentation based on the XML Comments provided.
+                var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+                options.IncludeXmlComments(xmlPath);
+            });
+            #endregion
+
 
             services.AddSingleton<IInQueueDBInterface, InQueueDBInterface>();
             services.AddSingleton<IDemoCentralDBInterface, DemoCentralDBInterface>();
@@ -148,6 +165,15 @@ namespace DemoCentral
             {
                 app.UseDeveloperExceptionPage();
             }
+
+            #region Swagger
+            app.UseSwagger();
+            app.UseSwaggerUI(options =>
+            {
+                options.RoutePrefix = "swagger";
+                options.SwaggerEndpoint("/swagger/v1/swagger.json", "[DemoCentral]");
+            });
+            #endregion
 
             app.UseHttpsRedirection();
 
