@@ -4,6 +4,7 @@ using RabbitCommunicationLib.Consumer;
 using RabbitCommunicationLib.Interfaces;
 using RabbitCommunicationLib.TransferModels;
 using System.Threading.Tasks;
+using RabbitMQ.Client.Events;
 
 namespace DemoCentral.RabbitCommunication
 {
@@ -21,9 +22,9 @@ namespace DemoCentral.RabbitCommunication
         /// <summary>
         /// Handle response from  MatchDBI, update upload status, set database version
         /// </summary>
-        public override Task HandleMessageAsync(IBasicProperties properties, TaskCompletedReport model)
+        public override Task HandleMessageAsync(BasicDeliverEventArgs ea, TaskCompletedReport model)
         {
-            long matchId = long.Parse(properties.CorrelationId);
+            long matchId = long.Parse(ea.BasicProperties.CorrelationId);
             _dbInterface.SetUploadStatus(matchId, model.Success);
 
             if (model.Success)
