@@ -2,9 +2,10 @@
 using DemoCentral.Models;
 using Microsoft.Extensions.Logging;
 
-namespace DemoCentral.Controllers.exposed
+namespace DemoCentral.Controllers
 {
-    [Route("api/exposed/[controller]")]
+    [ApiVersion("1")]
+    [Route("v{version:apiVersion}/public")]
     [ApiController]
     public class MatchHistoryController : ControllerBase
     {
@@ -17,9 +18,9 @@ namespace DemoCentral.Controllers.exposed
             _logger = logger;
         }
 
-        [HttpGet]
-        //GET api/exposed/matchhistory?playerId=XXXX&recentMatches=YYYY&offset=0
-        public MatchHistoryModel GetFailedMatchesFromMostRecent(long uploaderId, int recentMatches, int offset)
+        [HttpGet("single/{steamId}/failedmatches")]
+        //GET v1/public/single/{steamId}/failedmatches?recentMatches=YYYY&offset=0
+        public MatchHistoryModel GetFailedMatchHistory(long uploaderId, int recentMatches, int offset)
         {
             _logger.LogInformation($"Received request for player#{uploaderId} to get {recentMatches} failed matches, offset {offset}");
             return MatchHistoryModel.FromRecentFailedMatches(uploaderId, recentMatches, offset, _dbInterface);

@@ -9,9 +9,10 @@ using DataBase.DatabaseClasses;
 using System.Net;
 using Microsoft.Extensions.Logging;
 
-namespace DemoCentral.Controllers.trusted
+namespace DemoCentral.Controllers
 {
-    [Route("api/trusted/[controller]")]
+    [ApiVersion("1")]
+    [Route("v{version:apiVersion}/trusted")]
     [ApiController]
     public class HashController : ControllerBase
     {
@@ -30,8 +31,8 @@ namespace DemoCentral.Controllers.trusted
         /// <param name="matchId">id of the match to potentially create</param>
         /// <param name="hash">hash to check</param>
         /// <returns>Conflict or Ok if hash is known or not</returns>
-        [HttpPost("[action]")]
-        //POST api/trusted/Hash/CreateHash?matchId=XXXX&hash=YYYYY
+        [HttpPost("match/{matchId}/duplicatecheck")]
+        //POST v1/trusted/match/{matchId}/duplicatecheck?framesPerSecond=YYYY?hash=ZZZZZ
         public ActionResult CreateHash(long matchId,byte framesPerSecond, string hash)
         {
             bool duplicateHash = _dbInterface.ReAnalysisRequired(hash, out long duplicateMatchId, framesPerSecond);
