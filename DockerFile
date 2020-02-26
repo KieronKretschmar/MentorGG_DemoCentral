@@ -29,7 +29,7 @@ COPY ./RabbitCommunicationLib/ ./RabbitCommunicationLib
 COPY ./Database ./Database
 COPY ./$PROJ ./$PROJ
 
-RUN dotnet publish DemoCentral/ -c Release -o out
+RUN dotnet publish $PROJ/ -c Release -o out
 
 # ===============
 # RUNTIME IMAGE
