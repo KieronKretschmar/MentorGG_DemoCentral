@@ -4,6 +4,9 @@
 FROM mcr.microsoft.com/dotnet/core/sdk:3.1 AS build
 WORKDIR /app
 
+
+ENV PROJ "DemoCentral"
+
 # Copy csproj and restore as distinct layers
 
 WORKDIR /app/RabbitCommunicationLib
@@ -16,15 +19,15 @@ WORKDIR /app/Database
 COPY ./Database/*.csproj ./
 RUN dotnet restore
 
-WORKDIR /app/DemoCentral
-COPY ./DemoCentral/*.csproj ./
+WORKDIR /app/$PROJ
+COPY ./$PROJ/*.csproj ./
 RUN dotnet restore
 
 # Copy everything else and build
 WORKDIR /app
 COPY ./RabbitCommunicationLib/ ./RabbitCommunicationLib
 COPY ./Database ./Database
-COPY ./DemoCentral ./DemoCentral
+COPY ./$PROJ ./$PROJ
 
 RUN dotnet publish DemoCentral/ -c Release -o out
 
