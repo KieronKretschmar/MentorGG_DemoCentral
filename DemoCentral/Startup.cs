@@ -10,6 +10,10 @@ using RabbitCommunicationLib.Queues;
 using Microsoft.Extensions.Logging;
 using System;
 using DemoCentral.Communication.HTTP;
+using Microsoft.OpenApi.Models;
+using System.Reflection;
+using System.IO;
+using Microsoft.AspNetCore.Mvc;
 
 namespace DemoCentral
 {
@@ -49,6 +53,32 @@ namespace DemoCentral
             if (Configuration.GetValue<bool>("IS_MIGRATING"))
             {
                 Console.WriteLine("IS_MIGRATING is true! ARE YOU STILL MIGRATING?");
+                return;
+            }
+
+            services.AddApiVersioning(o => {
+                o.ReportApiVersions = true;
+                o.AssumeDefaultVersionWhenUnspecified = true;
+                o.DefaultApiVersion = new ApiVersion(1, 0);
+            });
+
+
+            #region Swagger
+            services.AddSwaggerGen(options =>
+            {
+                OpenApiInfo interface_info = new OpenApiInfo { Title = "[DemoCentral]", Version = "v1", };
+                options.SwaggerDoc("v1", interface_info);
+
+                // Generate documentation based on the XML Comments provided.
+                var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+                options.IncludeXmlComments(xmlPath);
+            });
+            #endregion
+
+            if (Configuration.GetValue<bool>("DOC_GEN"))
+            {
+                Console.WriteLine("DOC_GEN is true! ARE YOU JUST TRYING TO BUILD THE DOCS?");
                 return;
             }
 
@@ -148,6 +178,15 @@ namespace DemoCentral
             {
                 app.UseDeveloperExceptionPage();
             }
+
+            #region Swagger
+            app.UseSwagger();
+            app.UseSwaggerUI(options =>
+            {
+                options.RoutePrefix = "swagger";
+                options.SwaggerEndpoint("/swagger/v1/swagger.json", "[DemoCentral]");
+            });
+            #endregion
 
             app.UseHttpsRedirection();
 
