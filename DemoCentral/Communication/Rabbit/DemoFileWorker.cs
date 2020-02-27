@@ -9,6 +9,7 @@ using Database.Enumerals;
 using DataBase.Enumerals;
 using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
+using RabbitMQ.Client.Events;
 
 namespace DemoCentral.RabbitCommunication
 {
@@ -20,7 +21,7 @@ namespace DemoCentral.RabbitCommunication
         /// remove entirely if duplicate, 
         /// remove from queue if unzip failed 
         /// </summary>
-        Task HandleMessageAsync(IBasicProperties properties, DemoAnalyzeReport consumeModel);
+        Task HandleMessageAsync(BasicDeliverEventArgs ea, DemoAnalyzeReport consumeModel);
 
         /// <summary>
         /// Send a downloaded demo to the demoFileWorker and update the queue status
@@ -82,10 +83,7 @@ namespace DemoCentral.RabbitCommunication
 
             if (response.Success)
             {
-                //Successful handled in demo fileworker
-                //store filepath, set status to unzipped, remove from queue
-                _demoDBInterface.SetFilePath(matchId, response.zippedFilePath);
-
+                //Successfully handled in demo fileworker
                 _demoDBInterface.SetFileWorkerStatus(matchId, DemoFileWorkerStatus.Finished);
                 _demoDBInterface.SetFileStatus(matchId, FileStatus.InBlobStorage);
                 _demoDBInterface.SetFrames(matchId, response.FramesPerSecond);
@@ -101,9 +99,9 @@ namespace DemoCentral.RabbitCommunication
             _logger.LogError("Could not handle response from DemoFileWorker");
         }
 
-        public override Task HandleMessageAsync(IBasicProperties properties, DemoAnalyzeReport consumeModel)
+        public override Task HandleMessageAsync(BasicDeliverEventArgs ea, DemoAnalyzeReport consumeModel)
         {
-            long matchId = long.Parse(properties.CorrelationId);
+            long matchId = long.Parse(ea.BasicProperties.CorrelationId);
             UpdateDBEntryFromFileWorkerResponse(matchId, consumeModel);
             return Task.CompletedTask;
 

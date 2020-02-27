@@ -9,6 +9,7 @@ using Database.Enumerals;
 using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
 using DataBase.Enumerals;
+using RabbitMQ.Client.Events;
 
 namespace DemoCentral.RabbitCommunication
 {
@@ -18,7 +19,7 @@ namespace DemoCentral.RabbitCommunication
         /// <summary>
         /// Handle the response from DemoDownloader, set the corresponding FileStatus, update the QueueStatus and check the retries, eventually remove the demo
         /// </summary>
-        Task HandleMessageAsync(IBasicProperties properties, DownloadReport consumeModel);
+        Task HandleMessageAsync(BasicDeliverEventArgs ea, DownloadReport consumeModel);
 
         /// <summary>
         /// Send a downloadUrl to the DemoDownloader, set the FileStatus to Downloading, and update the DemoDownloaderQueue Status
@@ -53,8 +54,9 @@ namespace DemoCentral.RabbitCommunication
             PublishMessage(correlationId, produceModel);
         }
 
-        public override Task HandleMessageAsync(IBasicProperties properties, DownloadReport consumeModel)
+        public override Task HandleMessageAsync(BasicDeliverEventArgs ea, DownloadReport consumeModel)
         {
+            var properties = ea.BasicProperties;
             long matchId = long.Parse(properties.CorrelationId);
 
 

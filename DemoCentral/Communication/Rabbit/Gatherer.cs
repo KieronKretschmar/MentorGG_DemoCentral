@@ -7,6 +7,7 @@ using RabbitCommunicationLib.Interfaces;
 using RabbitCommunicationLib.TransferModels;
 using System.Threading.Tasks;
 using RabbitCommunicationLib.Enums;
+using RabbitMQ.Client.Events;
 
 namespace DemoCentral.RabbitCommunication
 {
@@ -36,7 +37,7 @@ namespace DemoCentral.RabbitCommunication
         /// <summary>
         /// Handle downloadUrl from GathererQueue, create new entry and send to downloader if unique, else delete and forget
         /// </summary>
-        public async override Task HandleMessageAsync(IBasicProperties properties, DemoEntryInstructions model)
+        public async override Task HandleMessageAsync(BasicDeliverEventArgs ea, DemoEntryInstructions model)
         {
             AnalyzerQuality requestedQuality = await _userInfoOperator.GetAnalyzerQualityAsync(model.UploaderId);
             //TODO OPTIONAL FEATURE handle duplicate entry

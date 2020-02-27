@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using RabbitMQ.Client.Events;
 
 namespace DemoCentral.RabbitCommunication
 {
@@ -25,7 +26,7 @@ namespace DemoCentral.RabbitCommunication
             _inQueueDBInterface = inQueueDBInterface;
         }
 
-        public async override Task HandleMessageAsync(IBasicProperties properties, DemoEntryInstructions model)
+        public async override Task HandleMessageAsync(BasicDeliverEventArgs ea, DemoEntryInstructions model)
         {
             var requestedAnalyzerQuality = await _userInfoOperator.GetAnalyzerQualityAsync(model.UploaderId);
             if (_dBInterface.TryCreateNewDemoEntryFromGatherer(model, requestedAnalyzerQuality, out long matchId))
