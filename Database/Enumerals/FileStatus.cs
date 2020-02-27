@@ -1,15 +1,15 @@
 ﻿namespace DataBase.Enumerals
 {
-    public enum FileStatus
+    /// <summary>
+    /// This enum contains the options for a demo file unrelated to demoFileWorker
+    /// </summary>
+    public enum FileStatus : byte
     {
-        NEW = 0,
-        DOWNLOADED = 20,
-        DOWNLOADFAILED = 21,
-        DOWNLOAD_RETRYING = 22,
-        DOWNLOADING = 23,
-        DUPLICATECHECKFAILED=31,
-        UNZIPPED = 40,
-        UNZIPFAILED = 41,
-        REMOVED = 50
+        New = 0,
+        Downloading = 10,
+        DownloadRetrying = 11,
+        DownloadFailed = 12,
+        InBlobStorage = 30,
+        Removed = 50
     }
 }

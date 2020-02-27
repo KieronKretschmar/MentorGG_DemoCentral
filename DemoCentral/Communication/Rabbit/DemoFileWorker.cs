@@ -1,13 +1,15 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using RabbitMQ.Client;
-using RabbitTransfer.Interfaces;
-using RabbitTransfer.RPC;
-using RabbitTransfer.TransferModels;
+using RabbitCommunicationLib.Interfaces;
+using RabbitCommunicationLib.RPC;
+using RabbitCommunicationLib.TransferModels;
 using System;
 using Database.Enumerals;
 using DataBase.Enumerals;
 using Microsoft.Extensions.Logging;
+using System.Threading.Tasks;
+using RabbitMQ.Client.Events;
 
 namespace DemoCentral.RabbitCommunication
 {
@@ -19,15 +21,15 @@ namespace DemoCentral.RabbitCommunication
         /// remove entirely if duplicate, 
         /// remove from queue if unzip failed 
         /// </summary>
-        void HandleMessage(IBasicProperties properties, DFW2DCModel consumeModel);
+        Task HandleMessageAsync(BasicDeliverEventArgs ea, DemoAnalyzeReport consumeModel);
 
         /// <summary>
         /// Send a downloaded demo to the demoFileWorker and update the queue status
         /// </summary>
-        void SendMessageAndUpdateQueueStatus(string correlationId, DC2DFWModel model);
+        void SendMessageAndUpdateQueueStatus(string correlationId, DemoAnalyzeInstructions model);
     }
 
-    public class DemoFileWorker : RPCClient<DC2DFWModel, DFW2DCModel>, IDemoFileWorker
+    public class DemoFileWorker : RPCClient<DemoAnalyzeInstructions, DemoAnalyzeReport>, IDemoFileWorker
     {
         private readonly IDemoCentralDBInterface _demoDBInterface;
         private readonly IInQueueDBInterface _inQueueDBInterface;
@@ -40,19 +42,19 @@ namespace DemoCentral.RabbitCommunication
             _logger = provider.GetRequiredService<ILogger<DemoFileWorker>>();
         }
 
-        public void SendMessageAndUpdateQueueStatus(string correlationId, DC2DFWModel model)
+        public void SendMessageAndUpdateQueueStatus(string correlationId, DemoAnalyzeInstructions model)
         {
             long matchId = long.Parse(correlationId);
             _inQueueDBInterface.UpdateProcessStatus(matchId, ProcessedBy.DemoFileWorker, true);
             PublishMessage(correlationId, model);
         }
 
-        private void UpdateDBEntryFromFileWorkerResponse(long matchId, DFW2DCModel response)
+        private void UpdateDBEntryFromFileWorkerResponse(long matchId, DemoAnalyzeReport response)
         {
             if (!response.Unzipped)
             {
                 //Remove demo from queue and set file status to unzip failed
-                _demoDBInterface.SetFileStatus(matchId, FileStatus.UNZIPFAILED);
+                _demoDBInterface.SetFileWorkerStatus(matchId, DemoFileWorkerStatus.UnzipFailed);
                 _inQueueDBInterface.RemoveDemoFromQueue(matchId);
                 _logger.LogWarning($"Demo#{matchId} could not be unzipped");
                 return;
@@ -63,7 +65,7 @@ namespace DemoCentral.RabbitCommunication
                 //Keep track of demos for which the duplicate check itself failed,
                 //they may or may not be duplicates, the check itself failed for any reason
                 _inQueueDBInterface.RemoveDemoFromQueue(matchId);
-                _demoDBInterface.SetFileStatus(matchId, FileStatus.DUPLICATECHECKFAILED);
+                _demoDBInterface.SetFileWorkerStatus(matchId, DemoFileWorkerStatus.DuplicateCheckFailed);
                 _logger.LogWarning($"Demo#{matchId} was not duplicate checked");
                 return;
             }
@@ -81,11 +83,10 @@ namespace DemoCentral.RabbitCommunication
 
             if (response.Success)
             {
-                //Successful handled in demo fileworker
-                //store filepath, set status to unzipped, remove from queue
-                _demoDBInterface.SetFilePath(matchId, response.zippedFilePath);
-
-                _demoDBInterface.SetFileStatus(matchId, FileStatus.UNZIPPED);
+                //Successfully handled in demo fileworker
+                _demoDBInterface.SetFileWorkerStatus(matchId, DemoFileWorkerStatus.Finished);
+                _demoDBInterface.SetFileStatus(matchId, FileStatus.InBlobStorage);
+                _demoDBInterface.SetFrames(matchId, response.FramesPerSecond);
 
                 _inQueueDBInterface.UpdateProcessStatus(matchId, ProcessedBy.DemoFileWorker, false);
                 _logger.LogInformation($"Demo#{matchId} was successfully handled by DemoFileWorker");
@@ -98,10 +99,12 @@ namespace DemoCentral.RabbitCommunication
             _logger.LogError("Could not handle response from DemoFileWorker");
         }
 
-    public override void HandleMessage(IBasicProperties properties, DFW2DCModel consumeModel)
-    {
-        long matchId = long.Parse(properties.CorrelationId);
-        UpdateDBEntryFromFileWorkerResponse(matchId, consumeModel);
+        public override Task HandleMessageAsync(BasicDeliverEventArgs ea, DemoAnalyzeReport consumeModel)
+        {
+            long matchId = long.Parse(ea.BasicProperties.CorrelationId);
+            UpdateDBEntryFromFileWorkerResponse(matchId, consumeModel);
+            return Task.CompletedTask;
+
+        }
     }
-}
 }

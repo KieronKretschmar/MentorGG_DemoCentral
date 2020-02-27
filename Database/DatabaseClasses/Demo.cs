@@ -1,8 +1,7 @@
 ﻿using System;
-using RabbitTransfer.Enums;
+using RabbitCommunicationLib.Enums;
 using DataBase.Enumerals;
-using System.Collections.Generic;
-using RabbitTransfer.TransferModels;
+using RabbitCommunicationLib.TransferModels;
 
 namespace DataBase.DatabaseClasses
 {
@@ -19,6 +18,8 @@ namespace DataBase.DatabaseClasses
         public string FilePath { get; set; }
         public string Md5hash { get; set; }
         public FileStatus FileStatus { get; set; }
+        public AnalyzerQuality Quality { get; set; }
+        public byte FramesPerSecond { get; set; }
         public DemoFileWorkerStatus DemoFileWorkerStatus { get; set; }
         public string DemoFileWorkerVersion { get; set; }
         public string DatabaseVersion { get; set; }
@@ -26,24 +27,23 @@ namespace DataBase.DatabaseClasses
         public string Event {get; set; }
 
 
-        public static Demo FromGatherTransferModel(GathererTransferModel model)
+        public static Demo FromGatherTransferModel(DemoEntryInstructions model)
         {
             return new Demo
             {
                 MatchDate = model.MatchDate,
                 UploaderId = model.UploaderId,
                 UploadType = model.UploadType,
-                UploadStatus = UploadStatus.NEW,
+                UploadStatus = UploadStatus.New,
                 Source = model.Source,
                 DownloadUrl = model.DownloadUrl,
                 FileName = "",
                 FilePath = "",
                 Md5hash = "",
-                FileStatus = FileStatus.NEW,
+                FileStatus = FileStatus.New,
                 DemoFileWorkerStatus = DemoFileWorkerStatus.New,
                 DemoFileWorkerVersion = "",
                 UploadDate = DateTime.UtcNow,
-                //TODO MANDATORY get event?
             };
         }
     }

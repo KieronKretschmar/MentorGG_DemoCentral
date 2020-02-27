@@ -4,10 +4,10 @@ using System.Text;
 
 namespace Database.Enumerals
 {
-    public enum ProcessedBy
+    public enum ProcessedBy : byte
     {
-        DemoDownloader,
-        DemoFileWorker,
-        SituationsOperator,
+        DemoDownloader = 10,
+        DemoFileWorker = 20,
+        SituationsOperator = 30,
     }
 }

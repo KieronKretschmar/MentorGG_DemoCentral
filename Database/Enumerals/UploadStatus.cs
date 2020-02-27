@@ -1,10 +1,9 @@
 ﻿namespace DataBase.Enumerals
 {
-    public enum UploadStatus
+    public enum UploadStatus : byte
     {
-
-        NEW = 0,
-        FINISHED = 10,
-        FAILED = 20,
+        New = 0,
+        Finished = 10,
+        Failed = 20,
     }
 }

@@ -1,0 +1,194 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>DemoCentral</name>
+    </assembly>
+    <members>
+        <member name="M:DemoCentral.Communication.HTTP.UserInfoOperator.GetAnalyzerQualityAsync(System.Int64)">
+            <summary>
+            Gets the analyzer quality associated with a users subscription plan
+            </summary>
+            <exception cref="T:System.Net.Http.HttpRequestException"></exception>
+            <param name="steamId"></param>
+            <returns></returns>
+        </member>
+        <member name="M:DemoCentral.RabbitCommunication.IDemoDownloader.HandleMessageAsync(RabbitMQ.Client.IBasicProperties,RabbitCommunicationLib.TransferModels.DownloadReport)">
+            <summary>
+            Handle the response from DemoDownloader, set the corresponding FileStatus, update the QueueStatus and check the retries, eventually remove the demo
+            </summary>
+        </member>
+        <member name="M:DemoCentral.RabbitCommunication.IDemoDownloader.SendMessageAndUpdateStatus(System.String,RabbitCommunicationLib.TransferModels.DemoDownloadInstructions)">
+            <summary>
+            Send a downloadUrl to the DemoDownloader, set the FileStatus to Downloading, and update the DemoDownloaderQueue Status
+            </summary>
+        </member>
+        <member name="M:DemoCentral.RabbitCommunication.IDemoFileWorker.HandleMessageAsync(RabbitMQ.Client.IBasicProperties,RabbitCommunicationLib.TransferModels.DemoAnalyzeReport)">
+            <summary>
+            Handle response fromm DemoFileWorker, update filepath,filestatus and queue status if success,
+            remove entirely if duplicate, 
+            remove from queue if unzip failed 
+            </summary>
+        </member>
+        <member name="M:DemoCentral.RabbitCommunication.IDemoFileWorker.SendMessageAndUpdateQueueStatus(System.String,RabbitCommunicationLib.TransferModels.DemoAnalyzeInstructions)">
+            <summary>
+            Send a downloaded demo to the demoFileWorker and update the queue status
+            </summary>
+        </member>
+        <member name="T:DemoCentral.RabbitCommunication.Gatherer">
+            <summary>
+            Consumer for the Gatherer queue
+            If a message is received , <see cref="!:HandleMessage(IBasicProperties, GathererTransferModel)"/> is called
+            and the message is forwarded to the demodownloader
+            </summary>
+        </member>
+        <member name="M:DemoCentral.RabbitCommunication.Gatherer.HandleMessageAsync(RabbitMQ.Client.IBasicProperties,RabbitCommunicationLib.TransferModels.DemoEntryInstructions)">
+            <summary>
+            Handle downloadUrl from GathererQueue, create new entry and send to downloader if unique, else delete and forget
+            </summary>
+        </member>
+        <member name="M:DemoCentral.RabbitCommunication.MatchDBI.HandleMessageAsync(RabbitMQ.Client.IBasicProperties,RabbitCommunicationLib.TransferModels.TaskCompletedReport)">
+            <summary>
+            Handle response from  MatchDBI, update upload status, set database version
+            </summary>
+        </member>
+        <member name="M:DemoCentral.RabbitCommunication.SituationsOperator.HandleMessageAsync(RabbitMQ.Client.IBasicProperties,RabbitCommunicationLib.TransferModels.TaskCompletedReport)">
+            <summary>
+            Handle response from SituationsOperator, update queue status
+            </summary>
+        </member>
+        <member name="T:DemoCentral.Controllers.MatchHistoryController">
+            <summary>
+            Handle requests for the match history with information stored in democentral. This mostly consists of demo meta-data.
+            </summary>
+        </member>
+        <member name="M:DemoCentral.Controllers.MatchHistoryController.GetFailedMatchHistory(System.Int64,System.Int32,System.Int32)">
+            <summary>
+            Get the failed matches for a uploader id
+            </summary>
+            <response code="200"> the request was processed. Keep in mind that this can still be an empty list</response>
+            <param name="steamId">id of the uploader</param>
+            <param name="recentMatches">the number of matches to search through</param>
+            <param name="offset">the number of matches to skip from the beginning</param>
+            <example> GET v1/public/single/1777771112451/failedmatches?recentMatches=10&amp;offset=2 </example>
+        </member>
+        <member name="T:DemoCentral.Controllers.QueueController">
+            <summary>
+            Handles requests for the queue status. All of this requests are GET-only.
+            </summary>
+        </member>
+        <member name="M:DemoCentral.Controllers.QueueController.QueuePosition(System.Int64)">
+            <summary>
+            Get the position in queue for a certain demo 
+            </summary>
+            <param name="matchId">id of the certain demo</param>
+            <response code="200">the position the demo is at</response> 
+            <response code="404">the demo was not in queue</response> 
+            <returns>either int or 404 if the demo could not be found</returns>
+            <example>GET /v1/public/match/1234551112/queueposition</example>
+        </member>
+        <member name="M:DemoCentral.Controllers.QueueController.NumberPlayerMatches(System.Int64)">
+            <summary>
+            Get the number of enqueued matches for a certain player 
+            </summary>
+            <response code="200">number of matches in queue for a certain player</response>
+            <param name="steamId">steamid of the certain player</param>
+            <example>GET /v1/public/single/11231331131/matchesinqueue</example>
+        </member>
+        <member name="T:DemoCentral.Controllers.HashController">
+            <summary>
+            Handles duplicate checks via MD5 hash
+            </summary>
+        </member>
+        <member name="M:DemoCentral.Controllers.HashController.CreateHash(System.Int64,System.Byte,System.String)">
+            <summary>
+            Check if the hash is already in the database, create if not
+            </summary>
+            <param name="matchId">id of the match to potentially create</param>
+            <param name="framesPerSecond">the requested amount of frames for the analysis</param>
+            <param name="hash">hash to check</param>
+            <response code="200">the request analysis of the demo was required and the has is set</response>
+            <response code="409">the request demo is a duplicate</response>
+            <returns>Conflict or Ok if reANalysis is required or not</returns>
+            <example>POST v1/trusted/match/123456789/duplicatecheck?framesPerSecond=1&amp;hash=mdHash123451a</example>
+        </member>
+        <member name="T:DemoCentral.IDemoCentralDBInterface">
+            <summary>
+            Interface for the Demo table of the database
+            </summary>
+        </member>
+        <member name="M:DemoCentral.IDemoCentralDBInterface.GetRecentMatches(System.Int64,System.Int32,System.Int32)">
+            <summary>
+            Returns the player matches in queue , empty list if none found
+            </summary>
+        </member>
+        <member name="M:DemoCentral.IDemoCentralDBInterface.TryCreateNewDemoEntryFromGatherer(RabbitCommunicationLib.TransferModels.DemoEntryInstructions,RabbitCommunicationLib.Enums.AnalyzerQuality,System.Int64@)">
+            <summary>
+            try to create a new entry in the demo table. Returns false and the matchId of the match, if the downloadUrl is already known, return true otherwise
+            </summary>
+            <param name="matchId">Return either a new matchId or the one of the found demo if the download url is known</param>
+            <returns>true, if downloadUrl is unique</returns>
+        </member>
+        <member name="T:DemoCentral.DemoCentralDBInterface">
+            <summary>
+            Basic implementation of the <see cref="T:DemoCentral.IDemoCentralDBInterface"/>
+            </summary>
+        </member>
+        <member name="M:DemoCentral.DemoCentralDBInterface.ReAnalysisRequired(System.String,System.Int64@,System.Byte)">
+            <summary>
+            Checks if a hash is already in the database, and analyzed with more frames than the requested amount \n
+            if so the out parameter is the matchId of the original demo, else -1
+            </summary>
+            <param name="matchId">id of the original match or -1 if hash is unique</param>
+        </member>
+        <member name="T:DemoCentral.Enumerals.UserSubscription">
+            <summary>
+            Also used in other repos. Please update accordingly.
+            </summary>
+        </member>
+        <member name="T:DemoCentral.IInQueueDBInterface">
+            <summary>
+            Interface for the InQueueDemo table of the database
+            </summary>
+        </member>
+        <member name="M:DemoCentral.IInQueueDBInterface.Add(System.Int64,System.DateTime,RabbitCommunicationLib.Enums.Source,System.Int64)">
+            <summary>
+            Add a new demo to the queue, and set all queue status to false
+            </summary>
+        </member>
+        <member name="M:DemoCentral.IInQueueDBInterface.GetPlayerMatchesInQueue(System.Int64)">
+            <summary>
+            Get a list of all<see cref="T:DataBase.DatabaseClasses.InQueueDemo"/> for a certain player
+            </summary>
+        </member>
+        <member name="M:DemoCentral.IInQueueDBInterface.UpdateProcessStatus(System.Int64,Database.Enumerals.ProcessedBy,System.Boolean)">
+            <summary>
+            Update the status for a certain queue
+            </summary>
+            <remarks>if all queues are set to false after execution the demo gets removed from the table</remarks>
+            <param name="inQueue">bool if it is in that queue</param>
+        </member>
+        <member name="T:DemoCentral.InQueueDBInterface">
+            <summary>
+            Basic implementation of the <see cref="T:DemoCentral.IInQueueDBInterface"/>
+            </summary>
+        </member>
+        <member name="M:DemoCentral.InQueueDBInterface.IncrementRetry(System.Int64)">
+            <summary>
+            Increments the number of retries for this demo and return the new number
+            </summary>
+            <param name="matchId"></param>
+            <returns></returns>
+        </member>
+        <member name="T:DemoCentral.Startup">
+            <summary>
+            DemoCentral orchestrates the entire demo acquisition and analysis.
+            
+            
+            Required environment variables
+            [AMQP_URI,AMQP_DEMODOWNLOADER, AMQP_DEMODOWNLOADER_REPLY,
+                AMQP_DEMOFILEWORKER, AMQP_DEMOFILEWORKER_REPLY, AMQP_GATHERER,
+                AMQP_SITUATIONSOPERATOR, AMQP_MATCHDBI,AMQP_MANUALDEMODOWNLOAD, HTTP_USER_SUBSCRIPTION]
+            </summary>
+        </member>
+    </members>
+</doc>

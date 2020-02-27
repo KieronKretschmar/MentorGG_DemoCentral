@@ -9,9 +9,13 @@ using DataBase.DatabaseClasses;
 using System.Net;
 using Microsoft.Extensions.Logging;
 
-namespace DemoCentral.Controllers.trusted
+namespace DemoCentral.Controllers
 {
-    [Route("api/trusted/[controller]")]
+    /// <summary>
+    /// Handles duplicate checks via MD5 hash
+    /// </summary>
+    [ApiVersion("1")]
+    [Route("v{version:apiVersion}/trusted")]
     [ApiController]
     public class HashController : ControllerBase
     {
@@ -28,37 +32,30 @@ namespace DemoCentral.Controllers.trusted
         /// Check if the hash is already in the database, create if not
         /// </summary>
         /// <param name="matchId">id of the match to potentially create</param>
+        /// <param name="framesPerSecond">the requested amount of frames for the analysis</param>
         /// <param name="hash">hash to check</param>
-        /// <returns>Conflict or Ok if hash is known or not</returns>
-        [HttpPost("[action]")]
-        //POST api/trusted/Hash/CreateHash?matchId=XXXX&hash=YYYYY
-        public ActionResult CreateHash(long matchId, string hash)
+        /// <response code="200">The analysis of the demo was requested and the provided hash has been set.</response>
+        /// <response code="409">the request demo is a duplicate</response>
+        /// <returns>Conflict or Ok if reANalysis is required or not</returns>
+        /// <example>POST v1/trusted/match/123456789/duplicatecheck?framesPerSecond=1&amp;hash=mdHash123451a</example>
+        [HttpPost("match/{matchId}/duplicatecheck")]
+        public ActionResult CreateHash(long matchId,byte framesPerSecond, string hash)
         {
-            bool duplicateHash = _dbInterface.IsDuplicateHash(hash, out long duplicateMatchId);
-            try
-            {
-                if (duplicateHash)
-                {
-                    string error = $"Demo#{matchId} was duplicate of Demo#{duplicateMatchId} via MD5Hash";
-                    _logger.LogInformation(error);
-                    return Conflict(error);
-                }
-                else
-                {
-                    _logger.LogInformation($"Demo#{matchId} is unique");
-                    _dbInterface.SetHash(matchId, hash);
+            bool duplicateHash = _dbInterface.ReAnalysisRequired(hash, out long duplicateMatchId, framesPerSecond);
 
-                    return Ok();
-                }
-            }
-            catch (InvalidOperationException)
+            if (duplicateHash)
             {
-                string critical = $"Requested hash update for non-existing demo#{matchId} \n " +
-                    $"One should have been created by DemoCentral on first receiving the demo from the Gatherer";
-                _logger.LogCritical(critical);
-                throw new InvalidOperationException(critical);
+                string error = $"Demo#{matchId} was duplicate of Demo#{duplicateMatchId} via MD5Hash";
+                _logger.LogInformation(error);
+                return Conflict(error);
+            }
+            else
+            {
+                _logger.LogInformation($"Demo#{matchId} is unique");
+                _dbInterface.SetHash(matchId, hash);
+
+                return Ok();
             }
         }
-
     }
 }

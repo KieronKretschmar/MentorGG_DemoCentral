@@ -1,12 +1,14 @@
 ﻿using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
-using RabbitTransfer.Consumer;
-using RabbitTransfer.Interfaces;
-using RabbitTransfer.TransferModels;
+using RabbitCommunicationLib.Consumer;
+using RabbitCommunicationLib.Interfaces;
+using RabbitCommunicationLib.TransferModels;
+using System.Threading.Tasks;
+using RabbitMQ.Client.Events;
 
 namespace DemoCentral.RabbitCommunication
 {
-    public class MatchDBI : Consumer<AnalyzerTransferModel>
+    public class MatchDBI : Consumer<TaskCompletedReport>
     {
         private readonly IDemoCentralDBInterface _dbInterface;
         private readonly ILogger<MatchDBI> _logger;
@@ -20,18 +22,20 @@ namespace DemoCentral.RabbitCommunication
         /// <summary>
         /// Handle response from  MatchDBI, update upload status, set database version
         /// </summary>
-        public override void HandleMessage(IBasicProperties properties, AnalyzerTransferModel model)
+        public override Task HandleMessageAsync(BasicDeliverEventArgs ea, TaskCompletedReport model)
         {
-            long matchId = long.Parse(properties.CorrelationId);
+            long matchId = long.Parse(ea.BasicProperties.CorrelationId);
             _dbInterface.SetUploadStatus(matchId, model.Success);
 
             if (model.Success)
             {
-                _dbInterface.SetDatabaseVersion(matchId, model.AnalyzerVersion);
+                _dbInterface.SetDatabaseVersion(matchId, model.Version);
             }
 
             string log = model.Success ? "was uploaded" : "failed upload";
             _logger.LogInformation($"Demo#{matchId} " + log);
+
+            return Task.CompletedTask;
         }
     }
 }

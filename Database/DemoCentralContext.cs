@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Pomelo.EntityFrameworkCore.MySql;
-using RabbitTransfer.Enums;
+using RabbitCommunicationLib.Enums;
 using DataBase.Enumerals;
 
 namespace DataBase.DatabaseClasses
@@ -45,15 +45,6 @@ namespace DataBase.DatabaseClasses
                 entity.Property(e => e.FileName).HasColumnType("longtext");
 
                 entity.Property(e => e.FilePath).HasColumnType("longtext");
-
-                //Ensure that an enum is stored as a byte inside the database, while still allowing for enum use in DB model
-                //Otherwise the enum would fail
-                entity.Property(e => e.FileStatus).HasColumnType("tinyint(3)").HasConversion<byte>();
-                entity.Property(e => e.UploadType).HasColumnType("tinyint(3)").HasConversion<byte>();
-                entity.Property(e => e.DemoFileWorkerStatus).HasColumnType("tinyint(3)").HasConversion<byte>();
-                entity.Property(e => e.UploadStatus).HasColumnType("tinyint(3)").HasConversion<byte>();
-                entity.Property(e => e.Source).HasColumnType("tinyint(3)").HasConversion<byte>();
-
 
                 entity.Property(e => e.Md5hash)
                     .HasColumnType("longtext");

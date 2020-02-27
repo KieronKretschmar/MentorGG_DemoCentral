@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Linq;
-using RabbitTransfer.Enums;
+using RabbitCommunicationLib.Enums;
 using DataBase.DatabaseClasses;
 using Database.Enumerals;
 using System.Collections.Generic;
@@ -20,7 +20,7 @@ namespace DemoCentral
         /// <summary>
         /// Get a list of all<see cref="InQueueDemo"/> for a certain player
         /// </summary>
-        List<InQueueDemo> GetPlayerMatchesInQueue(long playerId);
+        List<InQueueDemo> GetPlayerMatchesInQueue(long steamId);
         int GetQueuePosition(long matchId);
         int GetTotalQueueLength();
         int IncrementRetry(long matchId);

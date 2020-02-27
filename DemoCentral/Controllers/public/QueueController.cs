@@ -7,10 +7,14 @@ using Microsoft.Extensions.Logging;
 using System.Web;
 using System.Net;
 
-namespace DemoCentral.Controllers.exposed
+namespace DemoCentral.Controllers
 {
+    /// <summary>
+    /// Handles requests for the queue status. All of this requests are GET-only.
+    /// </summary>
+    [ApiVersion("1")]
+    [Route("v{version:apiVersion}/public")]
     [ApiController]
-    [Route("api/exposed/[controller]")]
     public class QueueController : ControllerBase
     {
         private readonly IInQueueDBInterface _dbInterface;
@@ -26,9 +30,11 @@ namespace DemoCentral.Controllers.exposed
         /// Get the position in queue for a certain demo 
         /// </summary>
         /// <param name="matchId">id of the certain demo</param>
-        /// <returns>either int or BadRequest if the demo could not be found</returns>
-        [HttpGet("{matchId}")]
-        // GET /api/exposed/queue/1
+        /// <response code="200">the position the demo is at</response> 
+        /// <response code="404">the demo was not in queue</response> 
+        /// <returns>either int or 404 if the demo could not be found</returns>
+        /// <example>GET /v1/public/match/1234551112/queueposition</example>
+        [HttpGet("match/{matchId}/queueposition")]
         public ActionResult<int> QueuePosition(long matchId)
         {
             _logger.LogInformation($"Received request for queue position of Demo#{matchId}");
@@ -40,7 +46,7 @@ namespace DemoCentral.Controllers.exposed
             {
                 string error = $"Demo#{matchId} not in queue";
 
-                _logger.LogWarning(error);
+                _logger.LogInformation(error);
                 return NotFound(error);
             }
         }
@@ -48,13 +54,14 @@ namespace DemoCentral.Controllers.exposed
         /// <summary>
         /// Get the number of enqueued matches for a certain player 
         /// </summary>
-        /// <param name="playerId">steamid of the certain player</param>
-        [HttpGet("[action]/{playerId:long}")]
-        // GET /api/exposed/queue/numberplayermatches/1
-        public ActionResult<int> NumberPlayerMatches(long playerId)
+        /// <response code="200">number of matches in queue for a certain player</response>
+        /// <param name="steamId">steamid of the certain player</param>
+        /// <example>GET /v1/public/single/11231331131/matchesinqueue</example>
+        [HttpGet("single/{steamId}/matchesinqueue")]
+        public ActionResult<int> NumberPlayerMatches(long steamId)
         {
-            _logger.LogInformation($"Received request for matches of player#{playerId}");
-            return _dbInterface.GetPlayerMatchesInQueue(playerId).Count;
+            _logger.LogInformation($"Received request for matches of player#{steamId}");
+            return _dbInterface.GetPlayerMatchesInQueue(steamId).Count;
         }
     }
 
