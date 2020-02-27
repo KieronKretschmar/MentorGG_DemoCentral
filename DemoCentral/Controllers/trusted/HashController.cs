@@ -34,7 +34,7 @@ namespace DemoCentral.Controllers
         /// <param name="matchId">id of the match to potentially create</param>
         /// <param name="framesPerSecond">the requested amount of frames for the analysis</param>
         /// <param name="hash">hash to check</param>
-        /// <response code="200">the request analysis of the demo was required and the has is set</response>
+        /// <response code="200">The analysis of the demo was requested and the provided hash has been set.</response>
         /// <response code="409">the request demo is a duplicate</response>
         /// <returns>Conflict or Ok if reANalysis is required or not</returns>
         /// <example>POST v1/trusted/match/123456789/duplicatecheck?framesPerSecond=1&amp;hash=mdHash123451a</example>
