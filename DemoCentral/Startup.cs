@@ -13,6 +13,7 @@ using DemoCentral.Communication.HTTP;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
 using System.IO;
+using Microsoft.AspNetCore.Mvc;
 
 namespace DemoCentral
 {
@@ -55,6 +56,13 @@ namespace DemoCentral
                 return;
             }
 
+            services.AddApiVersioning(o => {
+                o.ReportApiVersions = true;
+                o.AssumeDefaultVersionWhenUnspecified = true;
+                o.DefaultApiVersion = new ApiVersion(1, 0);
+            });
+
+
             #region Swagger
             services.AddSwaggerGen(options =>
             {
@@ -68,6 +76,11 @@ namespace DemoCentral
             });
             #endregion
 
+            if (Configuration.GetValue<bool>("DOC_GEN"))
+            {
+                Console.WriteLine("DOC_GEN is true! ARE YOU JUST TRYING TO BUILD THE DOCS?");
+                return;
+            }
 
             services.AddSingleton<IInQueueDBInterface, InQueueDBInterface>();
             services.AddSingleton<IDemoCentralDBInterface, DemoCentralDBInterface>();
