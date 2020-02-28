@@ -39,8 +39,7 @@ namespace DemoCentral
         //// This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            string MYSQL_CONNECTION_STRING = Configuration.GetValue<string>("MYSQL_CONNECTION_STRING") ??
-                throw new ArgumentNullException("The environment variable MYSQL_CONNECTION_STRING has not been set.");
+            string MYSQL_CONNECTION_STRING = GetRequiredEnvironmentVariable<string>(Configuration, "MYSQL_CONNECTION_STRING");
 
             services.AddDbContext<DemoCentralContext>(options =>
                 options.UseMySql(MYSQL_CONNECTION_STRING), ServiceLifetime.Singleton, ServiceLifetime.Singleton);
@@ -90,39 +89,31 @@ namespace DemoCentral
 
 
             //Read environment variables
-            var AMQP_URI = Configuration.GetValue<string>("AMQP_URI");
+            var AMQP_URI = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_URI");
 
-            var AMQP_DEMODOWNLOADER = Configuration.GetValue<string>("AMQP_DEMODOWNLOADER") ??
-                throw new ArgumentNullException("The environment variable AMQP_DEMODOWNLOADER has not been set.");
-            var AMQP_DEMODOWNLOADER_REPLY = Configuration.GetValue<string>("AMQP_DEMODOWNLOADER_REPLY") ??
-                throw new ArgumentNullException("The environment variable AMQP_DEMODOWNLOADER_REPLY has not been set.");
+
+            var AMQP_DEMODOWNLOADER = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_DEMODOWNLOADER");
+            var AMQP_DEMODOWNLOADER_REPLY = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_DEMODOWNLOADER_REPLY");
             var demoDownloaderRpcQueue = new RPCQueueConnections(AMQP_URI, AMQP_DEMODOWNLOADER_REPLY, AMQP_DEMODOWNLOADER);
 
-            var AMQP_DEMOFILEWORKER = Configuration.GetValue<string>("AMQP_DEMOFILEWORKER") ??
-                throw new ArgumentNullException("The environment variable AMQP_DEMOFILEWORKER has not been set.");
-            var AMQP_DEMOFILEWORKER_REPLY = Configuration.GetValue<string>("AMQP_DEMOFILEWORKER_REPLY") ??
-                throw new ArgumentNullException("The environment variable AMQP_DEMOFILEWORKER_REPLY has not been set.");
+            var AMQP_DEMOFILEWORKER = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_DEMOFILEWORKER");
+            var AMQP_DEMOFILEWORKER_REPLY = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_DEMOFILEWORKER_REPLY");
             var demoFileworkerRpcQueue = new RPCQueueConnections(AMQP_URI, AMQP_DEMOFILEWORKER_REPLY, AMQP_DEMOFILEWORKER);
 
-            var AMQP_GATHERER = Configuration.GetValue<string>("AMQP_GATHERER") ??
-                throw new ArgumentNullException("The environment variable AMQP_GATHERER has not been set.");
+            var AMQP_GATHERER = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_GATHERER");
             var gathererQueue = new QueueConnection(AMQP_URI, AMQP_GATHERER);
 
-            var AMQP_SITUATIONSOPERATOR = Configuration.GetValue<string>("AMQP_SITUATIONSOPERATOR") ??
-                throw new ArgumentNullException("The environment variable AMQP_SITUATIONSOPERATOR has not been set.");
+            var AMQP_SITUATIONSOPERATOR = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_SITUATIONSOPERATOR");
             var soQueue = new QueueConnection(AMQP_URI, AMQP_SITUATIONSOPERATOR);
 
-            var AMQP_MATCHDBI = Configuration.GetValue<string>("AMQP_MATCHDBI") ??
-                throw new ArgumentNullException("The environment variable AMQP_MATCHDBI has not been set.");
+            var AMQP_MATCHDBI = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_MATCHDBI");
             var matchDBIQueue = new QueueConnection(AMQP_URI, AMQP_MATCHDBI);
 
-            var AMQP_MANUALDEMODOWNLOAD = Configuration.GetValue<string>("AMQP_MANUALDEMODOWNLOAD") ??
-                throw new ArgumentNullException("The environment variable AMQP_MANUALDEMODOWNLOAD has not been set.");
+            var AMQP_MANUALDEMODOWNLOAD = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_MANUALDEMODOWNLOAD");
             var manualDemoDownloadQueue = new QueueConnection(AMQP_URI, AMQP_MANUALDEMODOWNLOAD);
 
 
-            var HTTP_USER_SUBSCRIPTION = Configuration.GetValue<string>("HTTP_USER_SUBSCRIPTION") ??
-                throw new ArgumentNullException("The environment variable HTTP_USER_SUBSCRIPTION has not been set.");
+            var HTTP_USER_SUBSCRIPTION = GetRequiredEnvironmentVariable<string>(Configuration, "HTTP_USER_SUBSCRIPTION");
 
             //Add services, 
             //if 3 or more are required to initialize another one, just pass the service provider
@@ -203,6 +194,25 @@ namespace DemoCentral
             });
 
             services.GetRequiredService<DemoCentralContext>().Database.Migrate();
+        }
+
+        /// <summary>
+        /// Attempt to retrieve an Environment Variable
+        /// Throws ArgumentNullException is not found.
+        /// </summary>
+        /// <typeparam name="T">Type to retreive</typeparam>
+        private static T GetRequiredEnvironmentVariable<T>(IConfiguration config, string key)
+        {
+            T value = config.GetValue<T>(key);
+            if (value == null)
+            {
+                throw new ArgumentNullException(
+                    $"{key} is missing, Configure the `{key}` environment variable.");
+            }
+            else
+            {
+                return value;
+            }
         }
     }
 }
