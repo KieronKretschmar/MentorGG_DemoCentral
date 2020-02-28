@@ -39,8 +39,11 @@ namespace DemoCentral
         //// This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            string MYSQL_CONNECTION_STRING = Configuration.GetValue<string>("MYSQL_CONNECTION_STRING") ??
+                throw new ArgumentNullException("The environment variable MYSQL_CONNECTION_STRING has not been set.");
+
             services.AddDbContext<DemoCentralContext>(options =>
-                options.UseMySql(Configuration.GetValue<string>("CONNECTION_STRING")), ServiceLifetime.Singleton, ServiceLifetime.Singleton);
+                options.UseMySql(MYSQL_CONNECTION_STRING), ServiceLifetime.Singleton, ServiceLifetime.Singleton);
 
             services.AddControllers();
 
