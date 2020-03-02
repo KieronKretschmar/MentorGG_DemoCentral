@@ -47,13 +47,11 @@ namespace DemoCentral
     public class DemoCentralDBInterface : IDemoCentralDBInterface
     {
         private readonly DemoCentralContext _context;
-        private readonly IInQueueDBInterface _inQueueDBInterface;
         private readonly ILogger<DemoCentralDBInterface> _logger;
 
-        public DemoCentralDBInterface(DemoCentralContext context, IInQueueDBInterface inQueueDBInterface, ILogger<DemoCentralDBInterface> logger)
+        public DemoCentralDBInterface(DemoCentralContext context, ILogger<DemoCentralDBInterface> logger)
         {
             _context = context;
-            _inQueueDBInterface = inQueueDBInterface;
             _logger = logger;
         }
 
@@ -167,7 +165,7 @@ namespace DemoCentral
         public bool TryCreateNewDemoEntryFromGatherer(DemoEntryInstructions model, AnalyzerQuality requestedQuality, out long matchId)
         {
             //checkdownloadurl
-            var demo = _context.Demo.Where(x => x.DownloadUrl.Equals(model.DownloadUrl)).SingleOrDefault();
+            var demo = _context.Demo.SingleOrDefault(x => x.DownloadUrl.Equals(model.DownloadUrl));
             if (demo != null)
             {
                 matchId = demo.MatchId;
