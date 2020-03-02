@@ -38,7 +38,7 @@ namespace DataBase.DatabaseClasses
                 entity.HasKey(e => e.MatchId);
                 entity.ToTable("Demo");
 
-                entity.Property(e => e.MatchId).HasColumnType("int(11)").ValueGeneratedOnAdd();
+                entity.Property(e => e.MatchId).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.DownloadUrl).HasColumnType("longtext");
 
