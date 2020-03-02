@@ -30,13 +30,13 @@ namespace DataBase.DatabaseClasses
             modelBuilder.Entity<InQueueDemo>(entity =>
             {
                 entity.HasKey(e => e.MatchId);
-                entity.ToTable("InQueue", "democentral");
+                entity.ToTable("InQueue");
             });
 
             modelBuilder.Entity<Demo>(entity =>
             {
                 entity.HasKey(e => e.MatchId);
-                entity.ToTable("Demo", "democentral");
+                entity.ToTable("Demo");
 
                 entity.Property(e => e.MatchId).HasColumnType("int(11)").ValueGeneratedOnAdd();
 
@@ -56,7 +56,7 @@ namespace DataBase.DatabaseClasses
             {
                 entity.HasKey(e => e.MigrationId);
 
-                entity.ToTable("__efmigrationhistory", "democentral");
+                entity.ToTable("__efmigrationhistory");
 
                 entity.Property(e => e.MigrationId)
                     .HasMaxLength(150)
