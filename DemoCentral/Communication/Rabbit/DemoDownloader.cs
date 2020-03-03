@@ -59,16 +59,17 @@ namespace DemoCentral.RabbitCommunication
             var properties = ea.BasicProperties;
             long matchId = long.Parse(properties.CorrelationId);
             var inQueueDemo = _inQueueDBInterface.GetDemoById(matchId);
+            var dbDemo = _demoCentralDBInterface.GetDemoById(matchId);
 
             if (consumeModel.Success)
             {
-                _demoCentralDBInterface.SetFilePath(matchId, consumeModel.DemoUrl);
+                _demoCentralDBInterface.SetFilePath(dbDemo, consumeModel.DemoUrl);
 
-                _demoCentralDBInterface.SetFileStatus(matchId, FileStatus.InBlobStorage);
+                _demoCentralDBInterface.SetFileStatus(dbDemo, FileStatus.InBlobStorage);
 
                 _inQueueDBInterface.UpdateProcessStatus(inQueueDemo, ProcessedBy.DemoDownloader, false);
 
-                var model = _demoCentralDBInterface.CreateAnalyzeInstructions(matchId);
+                var model = _demoCentralDBInterface.CreateAnalyzeInstructions(dbDemo);
 
                 _demoFileWorker.SendMessageAndUpdateQueueStatus(properties.CorrelationId, model);
 
@@ -85,7 +86,8 @@ namespace DemoCentral.RabbitCommunication
                 }
                 else
                 {
-                    var downloadUrl = _demoCentralDBInterface.SetDownloadRetryingAndGetDownloadPath(matchId);
+                    _demoCentralDBInterface.SetFileStatus(dbDemo, FileStatus.DownloadRetrying);
+                    var downloadUrl = dbDemo.DownloadUrl;
 
                     var resendModel = new DemoDownloadInstructions
                     {

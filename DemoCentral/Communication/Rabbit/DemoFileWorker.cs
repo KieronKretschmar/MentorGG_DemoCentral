@@ -52,11 +52,12 @@ namespace DemoCentral.RabbitCommunication
         private void UpdateDBEntryFromFileWorkerResponse(long matchId, DemoAnalyzeReport response)
         {
             var inQueueDemo = _inQueueDBInterface.GetDemoById(matchId);
+            var dbDemo = _demoDBInterface.GetDemoById(matchId);
 
             if (!response.Unzipped)
             {
                 //Remove demo from queue and set file status to unzip failed
-                _demoDBInterface.SetFileWorkerStatus(matchId, DemoFileWorkerStatus.UnzipFailed);
+                _demoDBInterface.SetFileWorkerStatus(dbDemo, DemoFileWorkerStatus.UnzipFailed);
                 _inQueueDBInterface.RemoveDemoFromQueue(inQueueDemo);
                 _logger.LogWarning($"Demo#{matchId} could not be unzipped");
                 return;
@@ -67,7 +68,7 @@ namespace DemoCentral.RabbitCommunication
                 //Keep track of demos for which the duplicate check itself failed,
                 //they may or may not be duplicates, the check itself failed for any reason
                 _inQueueDBInterface.RemoveDemoFromQueue(inQueueDemo);
-                _demoDBInterface.SetFileWorkerStatus(matchId, DemoFileWorkerStatus.DuplicateCheckFailed);
+                _demoDBInterface.SetFileWorkerStatus(dbDemo, DemoFileWorkerStatus.DuplicateCheckFailed);
                 _logger.LogWarning($"Demo#{matchId} was not duplicate checked");
                 return;
             }
@@ -78,7 +79,7 @@ namespace DemoCentral.RabbitCommunication
                 //TODO OPTIONAL FEATURE handle duplicate entry 2
                 //Currently a hash-checked demo, which is duplicated just gets removed
                 //Maybe keep track of it or just report back ?
-                _demoDBInterface.RemoveDemo(matchId);
+                _demoDBInterface.RemoveDemo(dbDemo);
                 _logger.LogWarning($"Demo#{matchId} is duplicate via MD5Hash");
                 return;
             }
@@ -86,9 +87,9 @@ namespace DemoCentral.RabbitCommunication
             if (response.Success)
             {
                 //Successfully handled in demo fileworker
-                _demoDBInterface.SetFileWorkerStatus(matchId, DemoFileWorkerStatus.Finished);
-                _demoDBInterface.SetFileStatus(matchId, FileStatus.InBlobStorage);
-                _demoDBInterface.SetFrames(matchId, response.FramesPerSecond);
+                _demoDBInterface.SetFileWorkerStatus(dbDemo, DemoFileWorkerStatus.Finished);
+                _demoDBInterface.SetFileStatus(dbDemo, FileStatus.InBlobStorage);
+                _demoDBInterface.SetFrames(dbDemo, response.FramesPerSecond);
 
                 _inQueueDBInterface.UpdateProcessStatus(inQueueDemo, ProcessedBy.DemoFileWorker, false);
                 _inQueueDBInterface.RemoveDemoIfNotInAnyQueue(inQueueDemo);
