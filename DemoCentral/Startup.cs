@@ -42,7 +42,7 @@ namespace DemoCentral
             string MYSQL_CONNECTION_STRING = GetRequiredEnvironmentVariable<string>(Configuration, "MYSQL_CONNECTION_STRING");
 
             services.AddDbContext<DemoCentralContext>(options =>
-                options.UseMySql(MYSQL_CONNECTION_STRING), ServiceLifetime.Singleton, ServiceLifetime.Singleton);
+                options.UseMySql(MYSQL_CONNECTION_STRING), ServiceLifetime.Transient, ServiceLifetime.Transient);
 
             services.AddControllers();
 
@@ -84,8 +84,8 @@ namespace DemoCentral
                 return;
             }
 
-            services.AddSingleton<IInQueueDBInterface, InQueueDBInterface>();
-            services.AddSingleton<IDemoCentralDBInterface, DemoCentralDBInterface>();
+            services.AddTransient<IInQueueDBInterface, InQueueDBInterface>();
+            services.AddTransient<IDemoCentralDBInterface, DemoCentralDBInterface>();
 
 
             //Read environment variables
@@ -147,8 +147,11 @@ namespace DemoCentral
                 return new DemoDownloader(demoDownloaderRpcQueue, services);
             });
 
-            services.AddSingleton<IUserInfoOperator, UserInfoOperator>(services =>
+            services.AddSingleton<IUserInfoOperator>(services =>
             {
+                if (HTTP_USER_SUBSCRIPTION == "mock")
+                    return new MockUserInfoGatherer();
+
                 return new UserInfoOperator(HTTP_USER_SUBSCRIPTION, services.GetRequiredService<ILogger<UserInfoOperator>>());
             });
 
