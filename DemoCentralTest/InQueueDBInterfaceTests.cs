@@ -87,10 +87,11 @@ namespace DemoCentralTests
             {
                 InQueueDBInterface test = new InQueueDBInterface(context);
                 test.Add(matchId, new DateTime(), Source.Faceit, 1234);
+                var inQueueDemo = test.GetDemoById(matchId);
 
-                test.UpdateProcessStatus(matchId, ProcessedBy.DemoDownloader, true);
-                test.UpdateProcessStatus(matchId, ProcessedBy.DemoFileWorker, true);
-                test.UpdateProcessStatus(matchId, ProcessedBy.SituationsOperator, true);
+                test.UpdateProcessStatus(inQueueDemo, ProcessedBy.DemoDownloader, true);
+                test.UpdateProcessStatus(inQueueDemo, ProcessedBy.DemoFileWorker, true);
+                test.UpdateProcessStatus(inQueueDemo, ProcessedBy.SituationsOperator, true);
             }
 
             using (var context = new DemoCentralContext(_test_config))

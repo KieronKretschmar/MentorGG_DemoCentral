@@ -51,11 +51,13 @@ namespace DemoCentral.RabbitCommunication
 
         private void UpdateDBEntryFromFileWorkerResponse(long matchId, DemoAnalyzeReport response)
         {
+            var inQueueDemo = _inQueueDBInterface.GetDemoById(matchId);
+
             if (!response.Unzipped)
             {
                 //Remove demo from queue and set file status to unzip failed
                 _demoDBInterface.SetFileWorkerStatus(matchId, DemoFileWorkerStatus.UnzipFailed);
-                _inQueueDBInterface.RemoveDemoFromQueue(matchId);
+                _inQueueDBInterface.RemoveDemoFromQueue(inQueueDemo);
                 _logger.LogWarning($"Demo#{matchId} could not be unzipped");
                 return;
             }
@@ -64,7 +66,7 @@ namespace DemoCentral.RabbitCommunication
             {
                 //Keep track of demos for which the duplicate check itself failed,
                 //they may or may not be duplicates, the check itself failed for any reason
-                _inQueueDBInterface.RemoveDemoFromQueue(matchId);
+                _inQueueDBInterface.RemoveDemoFromQueue(inQueueDemo);
                 _demoDBInterface.SetFileWorkerStatus(matchId, DemoFileWorkerStatus.DuplicateCheckFailed);
                 _logger.LogWarning($"Demo#{matchId} was not duplicate checked");
                 return;
@@ -88,8 +90,8 @@ namespace DemoCentral.RabbitCommunication
                 _demoDBInterface.SetFileStatus(matchId, FileStatus.InBlobStorage);
                 _demoDBInterface.SetFrames(matchId, response.FramesPerSecond);
 
-                _inQueueDBInterface.UpdateProcessStatus(matchId, ProcessedBy.DemoFileWorker, false);
-                _inQueueDBInterface.RemoveDemoIfNotInAnyQueue(matchId);
+                _inQueueDBInterface.UpdateProcessStatus(inQueueDemo, ProcessedBy.DemoFileWorker, false);
+                _inQueueDBInterface.RemoveDemoIfNotInAnyQueue(inQueueDemo);
                 _logger.LogInformation($"Demo#{matchId} was successfully handled by DemoFileWorker");
                 return;
             }

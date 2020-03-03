@@ -58,7 +58,7 @@ namespace DemoCentral.RabbitCommunication
         {
             var properties = ea.BasicProperties;
             long matchId = long.Parse(properties.CorrelationId);
-
+            var inQueueDemo = _inQueueDBInterface.GetDemoById(matchId);
 
             if (consumeModel.Success)
             {
@@ -66,7 +66,7 @@ namespace DemoCentral.RabbitCommunication
 
                 _demoCentralDBInterface.SetFileStatus(matchId, FileStatus.InBlobStorage);
 
-                _inQueueDBInterface.UpdateProcessStatus(matchId,ProcessedBy.DemoDownloader, false);
+                _inQueueDBInterface.UpdateProcessStatus(inQueueDemo, ProcessedBy.DemoDownloader, false);
 
                 var model = _demoCentralDBInterface.CreateAnalyzeInstructions(matchId);
 
@@ -76,11 +76,11 @@ namespace DemoCentral.RabbitCommunication
             }
             else
             {
-                int attempts = _inQueueDBInterface.IncrementRetry(matchId);
+                int attempts = _inQueueDBInterface.IncrementRetry(inQueueDemo);
 
                 if (attempts > MAX_RETRIES)
                 {
-                    _inQueueDBInterface.RemoveDemoFromQueue(matchId);
+                    _inQueueDBInterface.RemoveDemoFromQueue(inQueueDemo);
                     _logger.LogError($"Demo#{matchId} failed download more than {MAX_RETRIES}, deleted");
                 }
                 else
@@ -98,7 +98,7 @@ namespace DemoCentral.RabbitCommunication
                 }
             }
 
-            _inQueueDBInterface.RemoveDemoIfNotInAnyQueue(matchId);
+            _inQueueDBInterface.RemoveDemoIfNotInAnyQueue(inQueueDemo);
             return Task.CompletedTask;
         }
     }
