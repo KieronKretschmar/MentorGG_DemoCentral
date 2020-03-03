@@ -89,6 +89,7 @@ namespace DemoCentral.RabbitCommunication
                 _demoDBInterface.SetFrames(matchId, response.FramesPerSecond);
 
                 _inQueueDBInterface.UpdateProcessStatus(matchId, ProcessedBy.DemoFileWorker, false);
+                _inQueueDBInterface.RemoveDemoIfNotInAnyQueue(matchId);
                 _logger.LogInformation($"Demo#{matchId} was successfully handled by DemoFileWorker");
                 return;
             }

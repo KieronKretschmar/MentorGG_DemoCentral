@@ -27,6 +27,7 @@ namespace DemoCentral.RabbitCommunication
         {
             long matchId = long.Parse(ea.BasicProperties.CorrelationId);
             _inQueueDBInterface.UpdateProcessStatus(matchId, ProcessedBy.SituationsOperator, model.Success);
+            _inQueueDBInterface.RemoveDemoIfNotInAnyQueue(matchId);
 
             string successString = model.Success ? "finished" : "failed";
             _logger.LogInformation($"Demo#{matchId} " + successString + "siutationsoperator");
