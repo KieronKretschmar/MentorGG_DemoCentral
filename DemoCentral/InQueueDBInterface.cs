@@ -25,6 +25,7 @@ namespace DemoCentral
         int GetTotalQueueLength();
         int IncrementRetry(long matchId);
         void RemoveDemoFromQueue(long matchId);
+        void RemoveDemoIfNotInAnyQueue(long matchId);
         /// <summary>
         /// Update the status for a certain queue
         /// </summary>
@@ -82,13 +83,18 @@ namespace DemoCentral
                     throw new InvalidOperationException("Unknown queue name");
             }
 
+            _context.SaveChanges();
+
+        }
+
+        public void RemoveDemoIfNotInAnyQueue(long matchId)
+        {
+            var demo = GetDemoById(matchId);
+
             if (!demo.InAnyQueue())
             {
                 _context.InQueueDemo.Remove(demo);
             }
-
-            _context.SaveChanges();
-
         }
 
         public List<InQueueDemo> GetPlayerMatchesInQueue(long playerId)

@@ -98,6 +98,7 @@ namespace DemoCentral.RabbitCommunication
                 }
             }
 
+            _inQueueDBInterface.RemoveDemoIfNotInAnyQueue(matchId);
             return Task.CompletedTask;
         }
     }
