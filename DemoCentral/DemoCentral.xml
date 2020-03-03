@@ -133,7 +133,7 @@
             Basic implementation of the <see cref="T:DemoCentral.IDemoCentralDBInterface"/>
             </summary>
         </member>
-        <member name="M:DemoCentral.DemoCentralDBInterface.ReAnalysisRequired(System.String,System.Int64@,System.Byte)">
+        <member name="M:DemoCentral.DemoCentralDBInterface.IsReanalysisRequired(System.String,System.Int64@,System.Byte)">
             <summary>
             Checks if a hash is already in the database, and analyzed with more frames than the requested amount \n
             if so the out parameter is the matchId of the original demo, else -1
@@ -167,7 +167,7 @@
             <remarks>if all queues are set to false after execution the demo gets removed from the table</remarks>
             <param name="inQueue">bool if it is in that queue</param>
         </member>
-        <member name="M:DemoCentral.IInQueueDBInterface.UpdateProcessStatus(Database.Enumerals.ProcessedBy,System.Boolean,DataBase.DatabaseClasses.InQueueDemo)">
+        <member name="M:DemoCentral.IInQueueDBInterface.UpdateProcessStatus(DataBase.DatabaseClasses.InQueueDemo,Database.Enumerals.ProcessedBy,System.Boolean)">
             <summary>
             Update the status for a certain queue
             </summary>

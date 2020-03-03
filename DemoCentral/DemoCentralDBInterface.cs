@@ -17,6 +17,7 @@ namespace DemoCentral
     public interface IDemoCentralDBInterface
     {
         DemoAnalyzeInstructions CreateAnalyzeInstructions(long matchId);
+        DemoAnalyzeInstructions CreateAnalyzeInstructions(Demo demo);
         Demo GetDemoById(long matchId);
         /// <summary>
         /// Returns the player matches in queue , empty list if none found
@@ -28,8 +29,6 @@ namespace DemoCentral
         void RemoveDemo(long matchId);
         void SetDatabaseVersion(Demo demo, string databaseVersion);
         void SetDatabaseVersion(long matchId, string databaseVersion);
-        string SetDownloadRetryingAndGetDownloadPath(Demo demo);
-        string SetDownloadRetryingAndGetDownloadPath(long matchId);
         void SetFilePath(Demo demo, string zippedFilePath);
         void SetFilePath(long matchId, string zippedFilePath);
         void SetFileStatus(Demo demo, FileStatus status);
@@ -96,7 +95,7 @@ namespace DemoCentral
             return CreateAnalyzeInstructions(demo);
         }
 
-        public static DemoAnalyzeInstructions CreateAnalyzeInstructions(Demo demo)
+        public DemoAnalyzeInstructions CreateAnalyzeInstructions(Demo demo)
         {
             return new DemoAnalyzeInstructions
             {
@@ -172,24 +171,6 @@ namespace DemoCentral
 
             return recentMatchesId;
         }
-
-        public string SetDownloadRetryingAndGetDownloadPath(long matchId)
-        {
-            var demo = GetDemoById(matchId);
-
-            return SetDownloadRetryingAndGetDownloadPath(demo);
-        }
-
-        public string SetDownloadRetryingAndGetDownloadPath(Demo demo)
-        {
-            demo.FileStatus = FileStatus.DownloadRetrying;
-            string downloadUrl = demo.DownloadUrl;
-            _context.SaveChanges();
-
-            return downloadUrl;
-        }
-
-
 
         /// <summary>
         /// Checks if a hash is already in the database, and analyzed with more frames than the requested amount \n
