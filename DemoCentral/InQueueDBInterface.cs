@@ -42,7 +42,7 @@ namespace DemoCentral
         /// </summary>
         /// <remarks>if all queues are set to false after execution the demo gets removed from the table</remarks>
         /// <param name="inQueue">bool if it is in that queue</param>
-        void UpdateProcessStatus(ProcessedBy process, bool processing, InQueueDemo demo);
+        void UpdateProcessStatus(InQueueDemo demo,ProcessedBy process, bool processing );
     }
 
     /// <summary>
@@ -79,10 +79,10 @@ namespace DemoCentral
         public void UpdateProcessStatus(long matchId, ProcessedBy process, bool processing)
         {
             InQueueDemo demo = GetDemoById(matchId);
-            UpdateProcessStatus(process, processing, demo);
+            UpdateProcessStatus(demo,process, processing);
         }
 
-        public void UpdateProcessStatus(ProcessedBy process, bool processing, InQueueDemo demo)
+        public void UpdateProcessStatus(InQueueDemo demo, ProcessedBy process, bool processing)
         {
             switch (process)
             {
