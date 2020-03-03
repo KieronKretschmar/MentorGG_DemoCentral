@@ -23,7 +23,7 @@ namespace DemoCentral
         /// </summary>
         List<Demo> GetRecentMatches(long playerId, int recentMatches, int offset = 0);
         List<long> GetRecentMatchIds(long playerId, int recentMatches, int offset = 0);
-        bool ReAnalysisRequired(string hash, out long matchId, byte framesPerSecond = 1);
+        bool IsReanalysisRequired(string hash, out long matchId, byte framesPerSecond = 1);
         void RemoveDemo(long matchId);
         string SetDownloadRetryingAndGetDownloadPath(long matchId);
         void SetFileStatus(long matchId, FileStatus status);
@@ -188,7 +188,7 @@ namespace DemoCentral
         /// if so the out parameter is the matchId of the original demo, else -1
         /// </summary>
         /// <param name="matchId">id of the original match or -1 if hash is unique</param>
-        public bool ReAnalysisRequired(string hash, out long matchId, byte framesPerSecond = 1)
+        public bool IsReanalysisRequired(string hash, out long matchId, byte framesPerSecond = 1)
         {
             var demo = _context.Demo.Where(x => x.Md5hash.Equals(hash)).SingleOrDefault();
 
