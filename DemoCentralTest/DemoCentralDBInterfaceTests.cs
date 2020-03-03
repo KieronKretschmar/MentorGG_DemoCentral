@@ -493,39 +493,6 @@ namespace DemoCentralTests
             }
         }
 
-        public void SetDownloadRetryingAndGetDownloadPathSetsDownloadRetrying()
-        {
-            Demo demo = CopyDemo(_standardDemo);
-
-            using (var context = new DemoCentralContext(_test_config))
-            {
-                var test = new DemoCentralDBInterface(context, _mockILogger);;
-                AddDemoToDB(demo, context);
-                test.SetDownloadRetryingAndGetDownloadPath(demo.MatchId);
-            }
-
-            Assert.AreEqual(demo.FileStatus, FileStatus.DownloadRetrying);
-        }
-
-
-        [TestMethod]
-        public void SetDownloadRetryingAndGetDownloadPathReturnsCorrectPath()
-        {
-            Demo demo = CopyDemo(_standardDemo);
-            demo.DownloadUrl = "test_download_url";
-            string returnPath;
-
-            using (var context = new DemoCentralContext(_test_config))
-            {
-                var test = new DemoCentralDBInterface(context, _mockILogger);;
-                AddDemoToDB(demo, context);
-                returnPath = test.SetDownloadRetryingAndGetDownloadPath(demo.MatchId);
-            }
-
-            Assert.AreEqual(demo.DownloadUrl, returnPath);
-
-        }
-
         [TestMethod]
         public void IsDuplicateHashOutputsTrueForDuplicate()
         {
