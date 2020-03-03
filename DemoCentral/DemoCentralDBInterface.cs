@@ -39,6 +39,7 @@ namespace DemoCentral
         bool TryCreateNewDemoEntryFromGatherer(DemoEntryInstructions model, AnalyzerQuality requestedQuality, out long matchId);
         void SetHash(long matchId, string hash);
         void SetFrames(long matchId, int framesPerSecond);
+        Demo GetDemoById(long matchId);
     }
 
     /// <summary>
@@ -71,6 +72,11 @@ namespace DemoCentral
                 throw new InvalidOperationException(critical, e);
             }
 
+            SetHash(demo, hash);
+        }
+
+        public void SetHash(Demo demo, string hash)
+        {
             demo.Md5hash = hash;
             _context.SaveChanges();
         }
@@ -79,7 +85,12 @@ namespace DemoCentral
         {
             var demo = GetDemoById(matchId);
 
-            var model = new DemoAnalyzeInstructions
+            return CreateAnalyzeInstructions(demo);
+        }
+
+        public static DemoAnalyzeInstructions CreateAnalyzeInstructions(Demo demo)
+        {
+            return new DemoAnalyzeInstructions
             {
                 Source = demo.Source,
                 MatchDate = demo.MatchDate,
@@ -87,8 +98,6 @@ namespace DemoCentral
                 FramesPerSecond = demo.FramesPerSecond,
                 Quality = demo.Quality,
             };
-
-            return model;
         }
 
         public List<long> GetRecentMatchIds(long playerId, int recentMatches, int offset = 0)
@@ -102,6 +111,11 @@ namespace DemoCentral
         public void SetFileStatus(long matchId, FileStatus status)
         {
             var demo = GetDemoById(matchId);
+            SetFileStatus(demo, status);
+        }
+
+        public void SetFileStatus(Demo demo, FileStatus status)
+        {
             demo.FileStatus = status;
             _context.SaveChanges();
         }
@@ -109,6 +123,11 @@ namespace DemoCentral
         public void SetFilePath(long matchId, string zippedFilePath)
         {
             var demo = GetDemoById(matchId);
+            SetFilePath(demo, zippedFilePath);
+        }
+
+        public void SetFilePath(Demo demo, string zippedFilePath)
+        {
             demo.FilePath = zippedFilePath;
             _context.SaveChanges();
         }
@@ -116,6 +135,11 @@ namespace DemoCentral
         public void RemoveDemo(long matchId)
         {
             var demo = GetDemoById(matchId);
+            RemoveDemo(demo);
+        }
+
+        public void RemoveDemo(Demo demo)
+        {
             _context.Demo.Remove(demo);
             _context.SaveChanges();
         }
@@ -123,9 +147,14 @@ namespace DemoCentral
         public void SetUploadStatus(long matchId, bool success)
         {
             var demo = GetDemoById(matchId);
+            SetUploadStatus(demo, success);
+
+        }
+
+        public void SetUploadStatus(Demo demo, bool success)
+        {
             demo.UploadStatus = success ? UploadStatus.Finished : UploadStatus.Failed;
             _context.SaveChanges();
-
         }
 
         public List<Demo> GetRecentMatches(long playerId, int recentMatches, int offset = 0)
@@ -140,12 +169,19 @@ namespace DemoCentral
         {
             var demo = GetDemoById(matchId);
 
+            return SetDownloadRetryingAndGetDownloadPath(demo);
+        }
+
+        public string SetDownloadRetryingAndGetDownloadPath(Demo demo)
+        {
             demo.FileStatus = FileStatus.DownloadRetrying;
             string downloadUrl = demo.DownloadUrl;
             _context.SaveChanges();
 
             return downloadUrl;
         }
+
+       
 
         /// <summary>
         /// Checks if a hash is already in the database, and analyzed with more frames than the requested amount \n
@@ -194,7 +230,7 @@ namespace DemoCentral
             return true;
         }
 
-        private Demo GetDemoById(long matchId)
+        public Demo GetDemoById(long matchId)
         {
             return _context.Demo.Single(x => x.MatchId == matchId);
         }
@@ -202,6 +238,11 @@ namespace DemoCentral
         public void SetDatabaseVersion(long matchId, string databaseVersion)
         {
             var demo = GetDemoById(matchId);
+            SetDatabaseVersion(demo, databaseVersion);
+        }
+
+        public void SetDatabaseVersion(Demo demo, string databaseVersion)
+        {
             demo.DatabaseVersion = databaseVersion;
             _context.SaveChanges();
         }
@@ -210,6 +251,11 @@ namespace DemoCentral
         {
             Demo demo = GetDemoById(matchId);
 
+            SetFrames(demo, framesPerSecond);
+        }
+
+        public void SetFrames(Demo demo, int framesPerSecond)
+        {
             demo.FramesPerSecond = (byte) framesPerSecond;
             _context.SaveChanges();
         }
@@ -217,7 +263,11 @@ namespace DemoCentral
         public void SetFileWorkerStatus(long matchId, DemoFileWorkerStatus status)
         {
             Demo demo = GetDemoById(matchId);
+            SetFileWorkerStatus(demo, status);
+        }
 
+        public void SetFileWorkerStatus(Demo demo, DemoFileWorkerStatus status)
+        {
             demo.DemoFileWorkerStatus = status;
             _context.SaveChanges();
         }
