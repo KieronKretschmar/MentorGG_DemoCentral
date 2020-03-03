@@ -167,6 +167,13 @@
             <remarks>if all queues are set to false after execution the demo gets removed from the table</remarks>
             <param name="inQueue">bool if it is in that queue</param>
         </member>
+        <member name="M:DemoCentral.IInQueueDBInterface.UpdateProcessStatus(Database.Enumerals.ProcessedBy,System.Boolean,DataBase.DatabaseClasses.InQueueDemo)">
+            <summary>
+            Update the status for a certain queue
+            </summary>
+            <remarks>if all queues are set to false after execution the demo gets removed from the table</remarks>
+            <param name="inQueue">bool if it is in that queue</param>
+        </member>
         <member name="T:DemoCentral.InQueueDBInterface">
             <summary>
             Basic implementation of the <see cref="T:DemoCentral.IInQueueDBInterface"/>
@@ -178,6 +185,11 @@
             </summary>
             <param name="matchId"></param>
             <returns></returns>
+        </member>
+        <member name="M:DemoCentral.InQueueDBInterface.IncrementRetry(DataBase.DatabaseClasses.InQueueDemo)">
+            <summary>
+            Increments the number of retries for this demo and return the new number
+            </summary>
         </member>
         <member name="T:DemoCentral.Startup">
             <summary>

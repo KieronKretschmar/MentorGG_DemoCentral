@@ -16,22 +16,33 @@ namespace DemoCentral
         /// <summary>
         /// Add a new demo to the queue, and set all queue status to false
         /// </summary>
-        void Add(long matchId, DateTime matchDate, Source source, long uploaderID);
+        void Add(long matchId, DateTime matchDate, Source source, long uploaderId);
+        InQueueDemo GetDemoById(long matchId);
         /// <summary>
         /// Get a list of all<see cref="InQueueDemo"/> for a certain player
         /// </summary>
-        List<InQueueDemo> GetPlayerMatchesInQueue(long steamId);
+        List<InQueueDemo> GetPlayerMatchesInQueue(long playerId);
+        int GetQueuePosition(InQueueDemo demo);
         int GetQueuePosition(long matchId);
         int GetTotalQueueLength();
+        int IncrementRetry(InQueueDemo demo);
         int IncrementRetry(long matchId);
+        void RemoveDemoFromQueue(InQueueDemo demo);
         void RemoveDemoFromQueue(long matchId);
+        void RemoveDemoIfNotInAnyQueue(InQueueDemo demo);
         void RemoveDemoIfNotInAnyQueue(long matchId);
         /// <summary>
         /// Update the status for a certain queue
         /// </summary>
         /// <remarks>if all queues are set to false after execution the demo gets removed from the table</remarks>
         /// <param name="inQueue">bool if it is in that queue</param>
-        void UpdateProcessStatus(long matchId, ProcessedBy QueueName, bool inQueue);
+        void UpdateProcessStatus(long matchId, ProcessedBy process, bool processing);
+        /// <summary>
+        /// Update the status for a certain queue
+        /// </summary>
+        /// <remarks>if all queues are set to false after execution the demo gets removed from the table</remarks>
+        /// <param name="inQueue">bool if it is in that queue</param>
+        void UpdateProcessStatus(ProcessedBy process, bool processing, InQueueDemo demo);
     }
 
     /// <summary>
@@ -68,6 +79,11 @@ namespace DemoCentral
         public void UpdateProcessStatus(long matchId, ProcessedBy process, bool processing)
         {
             InQueueDemo demo = GetDemoById(matchId);
+            UpdateProcessStatus(process, processing, demo);
+        }
+
+        public void UpdateProcessStatus(ProcessedBy process, bool processing, InQueueDemo demo)
+        {
             switch (process)
             {
                 case ProcessedBy.DemoDownloader:
@@ -84,17 +100,22 @@ namespace DemoCentral
             }
 
             _context.SaveChanges();
-
         }
 
         public void RemoveDemoIfNotInAnyQueue(long matchId)
         {
             var demo = GetDemoById(matchId);
 
+            RemoveDemoIfNotInAnyQueue(demo);
+        }
+
+        public void RemoveDemoIfNotInAnyQueue(InQueueDemo demo)
+        {
             if (!demo.InAnyQueue())
             {
                 _context.InQueueDemo.Remove(demo);
             }
+            _context.SaveChanges();
         }
 
         public List<InQueueDemo> GetPlayerMatchesInQueue(long playerId)
@@ -111,19 +132,28 @@ namespace DemoCentral
         {
             var demo = GetDemoById(matchId);
 
-            _context.InQueueDemo.Remove(demo);
+            RemoveDemoFromQueue(demo);
+        }
 
+        public void RemoveDemoFromQueue(InQueueDemo demo)
+        {
+            _context.InQueueDemo.Remove(demo);
             _context.SaveChanges();
         }
 
         public int GetQueuePosition(long matchId)
         {
             var demo = GetDemoById(matchId);
+            return GetQueuePosition(demo);
+        }
+
+        public int GetQueuePosition(InQueueDemo demo)
+        {
 
             //TODO OPTIONAL OPTIMIZATION queue position
             //Currently the same demos get checked for every method call, and their insert date gets compared
             //Maybe sort by insert date as the primary key? or add a rowindex which can be referenced ?
-            return _context.InQueueDemo.Count(x => x.InsertDate<demo.InsertDate);
+            return _context.InQueueDemo.Count(x => x.InsertDate < demo.InsertDate);
         }
 
         /// <summary>
@@ -134,6 +164,14 @@ namespace DemoCentral
         public int IncrementRetry(long matchId)
         {
             var demo = GetDemoById(matchId);
+            return IncrementRetry(demo);
+        }
+
+        /// <summary>
+        /// Increments the number of retries for this demo and return the new number
+        /// </summary>
+        public int IncrementRetry(InQueueDemo demo)
+        {
             var attempts = demo.Retries++;
 
             _context.SaveChanges();
@@ -144,7 +182,7 @@ namespace DemoCentral
         //Currently this method is private and every db interface method calls it seperately.
         //Make this method public and if someone needs multiple updates on the same demo, request it once 
         //and pass in the demo to every method
-        private InQueueDemo GetDemoById(long matchId)
+        public InQueueDemo GetDemoById(long matchId)
         {
             return _context.InQueueDemo.Single(x => x.MatchId == matchId);
         }
