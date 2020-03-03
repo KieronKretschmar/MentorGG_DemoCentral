@@ -24,7 +24,7 @@ namespace DemoCentral.RabbitCommunication
         private IUserInfoOperator _userInfoOperator;
         private IInQueueDBInterface _inQueueDBInterface;
 
-        public Gatherer(IQueueConnection queueConnection, IDemoCentralDBInterface dbInterface, IDemoDownloader demoDownloader,IUserInfoOperator userInfoOperator, ILogger<Gatherer> logger, IInQueueDBInterface inQueueDBInterface) : base(queueConnection)
+        public Gatherer(IQueueConnection queueConnection, IDemoCentralDBInterface dbInterface, IDemoDownloader demoDownloader, IUserInfoOperator userInfoOperator, ILogger<Gatherer> logger, IInQueueDBInterface inQueueDBInterface) : base(queueConnection)
         {
 
             _dbInterface = dbInterface;
@@ -43,7 +43,7 @@ namespace DemoCentral.RabbitCommunication
             //TODO OPTIONAL FEATURE handle duplicate entry
             //Currently not inserted into db and forgotten afterwards
             //Maybe saved to special table or keep track of it otherwise
-            if (_dbInterface.TryCreateNewDemoEntryFromGatherer(model,requestedQuality,  out long matchId))
+            if (_dbInterface.TryCreateNewDemoEntryFromGatherer(model, requestedQuality, out long matchId))
             {
                 var forwardModel = new DemoDownloadInstructions
                 {
@@ -56,7 +56,10 @@ namespace DemoCentral.RabbitCommunication
 
                 _logger.LogInformation($"Demo#{matchId} assigned to {model.DownloadUrl}");
             }
-            _logger.LogInformation($"DownloadUrl {model.DownloadUrl} was duplicate of Demo#{matchId}");
+            else
+            {
+                _logger.LogInformation($"DownloadUrl {model.DownloadUrl} was duplicate of Demo#{matchId}");
+            }
         }
     }
 }
