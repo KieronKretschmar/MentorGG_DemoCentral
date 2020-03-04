@@ -21,7 +21,7 @@ namespace DemoCentral
         /// <summary>
         /// Get a list of all<see cref="InQueueDemo"/> for a certain player
         /// </summary>
-        List<InQueueDemo> GetPlayerMatchesInQueue(long playerId);
+        List<InQueueDemo> GetPlayerMatchesInQueue(long uploaderId);
         int GetQueuePosition(InQueueDemo demo);
         int GetQueuePosition(long matchId);
         int GetTotalQueueLength();
@@ -118,9 +118,9 @@ namespace DemoCentral
             _context.SaveChanges();
         }
 
-        public List<InQueueDemo> GetPlayerMatchesInQueue(long playerId)
+        public List<InQueueDemo> GetPlayerMatchesInQueue(long uploaderId)
         {
-            return _context.InQueueDemo.Where(x => x.UploaderId == playerId).ToList();
+            return _context.InQueueDemo.Where(x => x.UploaderId == uploaderId).ToList();
         }
 
         public int GetTotalQueueLength()
