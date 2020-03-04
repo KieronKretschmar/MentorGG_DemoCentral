@@ -178,10 +178,6 @@ namespace DemoCentral
             return attempts;
         }
 
-        //TODO OPTIMIZATION make only one db call for the demo
-        //Currently this method is private and every db interface method calls it seperately.
-        //Make this method public and if someone needs multiple updates on the same demo, request it once 
-        //and pass in the demo to every method
         public InQueueDemo GetDemoById(long matchId)
         {
             return _context.InQueueDemo.Single(x => x.MatchId == matchId);
