@@ -26,10 +26,10 @@ namespace DemoCentral.RabbitCommunication
         /// <summary>
         /// Send a downloaded demo to the demoFileWorker and update the queue status
         /// </summary>
-        void SendMessageAndUpdateQueueStatus(string correlationId, DemoAnalyzeInstructions model);
+        void SendMessageAndUpdateQueueStatus(string correlationId, DemoAnalyzeInstruction model);
     }
 
-    public class DemoFileWorker : RPCClient<DemoAnalyzeInstructions, DemoAnalyzeReport>, IDemoFileWorker
+    public class DemoFileWorker : RPCClient<DemoAnalyzeInstruction, DemoAnalyzeReport>, IDemoFileWorker
     {
         private readonly IDemoCentralDBInterface _demoDBInterface;
         private readonly IInQueueDBInterface _inQueueDBInterface;
@@ -42,7 +42,7 @@ namespace DemoCentral.RabbitCommunication
             _logger = provider.GetRequiredService<ILogger<DemoFileWorker>>();
         }
 
-        public void SendMessageAndUpdateQueueStatus(string correlationId, DemoAnalyzeInstructions model)
+        public void SendMessageAndUpdateQueueStatus(string correlationId, DemoAnalyzeInstruction model)
         {
             long matchId = long.Parse(correlationId);
             _inQueueDBInterface.UpdateProcessStatus(matchId, ProcessedBy.DemoFileWorker, true);

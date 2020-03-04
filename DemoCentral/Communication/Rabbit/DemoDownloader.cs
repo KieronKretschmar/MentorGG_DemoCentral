@@ -19,15 +19,15 @@ namespace DemoCentral.RabbitCommunication
         /// <summary>
         /// Handle the response from DemoDownloader, set the corresponding FileStatus, update the QueueStatus and check the retries, eventually remove the demo
         /// </summary>
-        Task HandleMessageAsync(BasicDeliverEventArgs ea, DownloadReport consumeModel);
+        Task HandleMessageAsync(BasicDeliverEventArgs ea, DemoObtainReport consumeModel);
 
         /// <summary>
         /// Send a downloadUrl to the DemoDownloader, set the FileStatus to Downloading, and update the DemoDownloaderQueue Status
         /// </summary>
-        void SendMessageAndUpdateStatus(string correlationId, DemoDownloadInstructions produceModel);
+        void SendMessageAndUpdateStatus(string correlationId, DemoDownloadInstruction produceModel);
     }
 
-    public class DemoDownloader : RPCClient<DemoDownloadInstructions, DownloadReport>, IDemoDownloader
+    public class DemoDownloader : RPCClient<DemoDownloadInstruction, DemoObtainReport>, IDemoDownloader
     {
         private readonly IDemoCentralDBInterface _demoCentralDBInterface;
         private readonly IInQueueDBInterface _inQueueDBInterface;
@@ -45,7 +45,7 @@ namespace DemoCentral.RabbitCommunication
 
 
 
-        public void SendMessageAndUpdateStatus(string correlationId, DemoDownloadInstructions produceModel)
+        public void SendMessageAndUpdateStatus(string correlationId, DemoDownloadInstruction produceModel)
         {
             long matchId = long.Parse(correlationId);
             _demoCentralDBInterface.SetFileStatus(matchId, FileStatus.Downloading);
@@ -54,7 +54,7 @@ namespace DemoCentral.RabbitCommunication
             PublishMessage(correlationId, produceModel);
         }
 
-        public override Task HandleMessageAsync(BasicDeliverEventArgs ea, DownloadReport consumeModel)
+        public override Task HandleMessageAsync(BasicDeliverEventArgs ea, DemoObtainReport consumeModel)
         {
             var properties = ea.BasicProperties;
             long matchId = long.Parse(properties.CorrelationId);
@@ -63,7 +63,7 @@ namespace DemoCentral.RabbitCommunication
 
             if (consumeModel.Success)
             {
-                _demoCentralDBInterface.SetFilePath(dbDemo, consumeModel.DemoUrl);
+                _demoCentralDBInterface.SetFilePath(dbDemo, consumeModel.BlobUrl);
 
                 _demoCentralDBInterface.SetFileStatus(dbDemo, FileStatus.InBlobStorage);
 
@@ -89,7 +89,7 @@ namespace DemoCentral.RabbitCommunication
                     _demoCentralDBInterface.SetFileStatus(dbDemo, FileStatus.DownloadRetrying);
                     var downloadUrl = dbDemo.DownloadUrl;
 
-                    var resendModel = new DemoDownloadInstructions
+                    var resendModel = new DemoDownloadInstruction
                     {
                         DownloadUrl = downloadUrl,
                     };

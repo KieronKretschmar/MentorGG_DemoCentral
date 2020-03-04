@@ -16,7 +16,7 @@ namespace DemoCentral.RabbitCommunication
     /// If a message is received , <see cref="HandleMessage(IBasicProperties, GathererTransferModel)"/> is called
     /// and the message is forwarded to the demodownloader
     /// </summary>
-    public class Gatherer : Consumer<DemoEntryInstructions>
+    public class Gatherer : Consumer<DemoInsertInstruction>
     {
         private readonly IDemoCentralDBInterface _dbInterface;
         private readonly IDemoDownloader _demoDownloader;
@@ -37,7 +37,7 @@ namespace DemoCentral.RabbitCommunication
         /// <summary>
         /// Handle downloadUrl from GathererQueue, create new entry and send to downloader if unique, else delete and forget
         /// </summary>
-        public async override Task HandleMessageAsync(BasicDeliverEventArgs ea, DemoEntryInstructions model)
+        public async override Task HandleMessageAsync(BasicDeliverEventArgs ea, DemoInsertInstruction model)
         {
             AnalyzerQuality requestedQuality = await _userInfoOperator.GetAnalyzerQualityAsync(model.UploaderId);
             //TODO OPTIONAL FEATURE handle duplicate entry
@@ -45,7 +45,7 @@ namespace DemoCentral.RabbitCommunication
             //Maybe saved to special table or keep track of it otherwise
             if (_dbInterface.TryCreateNewDemoEntryFromGatherer(model, requestedQuality, out long matchId))
             {
-                var forwardModel = new DemoDownloadInstructions
+                var forwardModel = new DemoDownloadInstruction
                 {
                     DownloadUrl = model.DownloadUrl
                 };
