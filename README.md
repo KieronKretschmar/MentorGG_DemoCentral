@@ -16,6 +16,7 @@ Set all the required environment variables, see `Startup.cs`
 - `AMQP_SITUATIONSOPERATOR` : Rabbit queue's name for consuming messages from SituationsOperator[*]
 - `AMQP_MATCHDBI` :  Rabbit queue's name for consuming messages from MatchDBI[*]
 - `AMQP_MANUALDEMODOWNLOAD` : Rabbit queue's name for consuming messages from ManualDemoDownloader[*]
+- `AMQP_FANOUT_EXCHANGE_NAME` : Rabbit's exchange name for the producing messagesto the fanout[*]
 - `HTTP_USER_SUBSCRIPTION` : HTTP URL to the endpoint responsible for the current user subscription
 
 # Flow

@@ -50,5 +50,10 @@ namespace DemoCentralTests
         {
 
         }
+
+
+
+        private static readonly string successfulResponseJSON = 
+            "{\"Success\": true,  \"Version\": \"testVersion\",  \"BlobDownloadFailed\": false,  \"Unzipped\": true,  \"DuplicateChecked\": true,\"IsDuplicate\": false,  \"UploadedToRedis\": true,  \"FramesPerSecond\": 1,  \"Hash\": \"testHash\"}";
     }
 }

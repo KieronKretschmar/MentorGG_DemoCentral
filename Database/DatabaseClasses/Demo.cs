@@ -27,7 +27,7 @@ namespace DataBase.DatabaseClasses
         public string Event {get; set; }
 
 
-        public static Demo FromGatherTransferModel(DemoEntryInstructions model)
+        public static Demo FromGatherTransferModel(DemoInsertInstruction model)
         {
             return new Demo
             {

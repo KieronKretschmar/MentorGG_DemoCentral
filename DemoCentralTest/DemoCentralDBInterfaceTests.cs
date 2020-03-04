@@ -54,7 +54,7 @@ namespace DemoCentralTests
         {
             long matchId;
 
-            DemoEntryInstructions model = new DemoEntryInstructions
+            DemoInsertInstruction model = new DemoInsertInstruction
             {
                 MatchDate = default(DateTime),
                 DownloadUrl = "1234",
@@ -97,7 +97,7 @@ namespace DemoCentralTests
             var uploaderId = 1234;
             var quality = AnalyzerQuality.Low;
 
-            DemoEntryInstructions model = new DemoEntryInstructions
+            DemoInsertInstruction model = new DemoInsertInstruction
             {
                 MatchDate = matchDate,
                 DownloadUrl = downloadUrl,
@@ -132,7 +132,7 @@ namespace DemoCentralTests
             var downloadUrl = "xyz";
             var uploaderId = 1234;
 
-            DemoEntryInstructions model = new DemoEntryInstructions
+            DemoInsertInstruction model = new DemoInsertInstruction
             {
                 MatchDate = matchDate,
                 DownloadUrl = downloadUrl,
@@ -192,7 +192,7 @@ namespace DemoCentralTests
         {
 
             long matchId;
-            DemoAnalyzeInstructions assertModel;
+            DemoAnalyzeInstruction assertModel;
             Demo demo = CopyDemo(_standardDemo);
             demo.FilePath = "abc";
             demo.Event = "TESTING";
@@ -207,7 +207,7 @@ namespace DemoCentralTests
                 assertModel = test.CreateAnalyzeInstructions(matchId);
             }
 
-            Assert.AreEqual(demo.FilePath, assertModel.BlobURI);
+            Assert.AreEqual(demo.FilePath, assertModel.BlobUrl);
             Assert.AreEqual(demo.Source, assertModel.Source);
         }
 

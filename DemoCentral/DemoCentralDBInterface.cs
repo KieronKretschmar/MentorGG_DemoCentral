@@ -16,8 +16,8 @@ namespace DemoCentral
     /// </summary>
     public interface IDemoCentralDBInterface
     {
-        DemoAnalyzeInstructions CreateAnalyzeInstructions(long matchId);
-        DemoAnalyzeInstructions CreateAnalyzeInstructions(Demo demo);
+        DemoAnalyzeInstruction CreateAnalyzeInstructions(long matchId);
+        DemoAnalyzeInstruction CreateAnalyzeInstructions(Demo demo);
         Demo GetDemoById(long matchId);
         /// <summary>
         /// Returns the player matches in queue , empty list if none found
@@ -41,12 +41,17 @@ namespace DemoCentral
         void SetHash(long matchId, string hash);
         void SetUploadStatus(Demo demo, bool success);
         void SetUploadStatus(long matchId, bool success);
+        void SetDatabaseVersion(long matchId, string databaseVersion);
+        void SetFileWorkerStatus(long matchId, DemoFileWorkerStatus status);
+
         /// <summary>
         /// try to create a new entry in the demo table. Returns false and the matchId of the match, if the downloadUrl is already known, return true otherwise
         /// </summary>
         /// <param name="matchId">Return either a new matchId or the one of the found demo if the download url is known</param>
         /// <returns>true, if downloadUrl is unique</returns>
-        bool TryCreateNewDemoEntryFromGatherer(DemoEntryInstructions model, AnalyzerQuality requestedQuality, out long matchId);
+        bool TryCreateNewDemoEntryFromGatherer(DemoInsertInstruction model, AnalyzerQuality requestedQuality, out long matchId);
+        void SetHash(long matchId, string hash);
+        void SetFrames(long matchId, int framesPerSecond);
     }
 
     /// <summary>
@@ -88,20 +93,20 @@ namespace DemoCentral
             _context.SaveChanges();
         }
 
-        public DemoAnalyzeInstructions CreateAnalyzeInstructions(long matchId)
+        public DemoAnalyzeInstruction CreateAnalyzeInstructions(long matchId)
         {
             var demo = GetDemoById(matchId);
 
             return CreateAnalyzeInstructions(demo);
         }
 
-        public DemoAnalyzeInstructions CreateAnalyzeInstructions(Demo demo)
+        public DemoAnalyzeInstruction CreateAnalyzeInstructions(Demo demo)
         {
-            return new DemoAnalyzeInstructions
+            return new DemoAnalyzeInstruction
             {
                 Source = demo.Source,
                 MatchDate = demo.MatchDate,
-                BlobURI = demo.FilePath,
+                BlobUrl = demo.FilePath,
                 FramesPerSecond = demo.FramesPerSecond,
                 Quality = demo.Quality,
             };
@@ -187,7 +192,7 @@ namespace DemoCentral
         }
 
 
-        public bool TryCreateNewDemoEntryFromGatherer(DemoEntryInstructions model, AnalyzerQuality requestedQuality, out long matchId)
+        public bool TryCreateNewDemoEntryFromGatherer(DemoInsertInstruction model, AnalyzerQuality requestedQuality, out long matchId)
         {
             //checkdownloadurl
             var demo = _context.Demo.SingleOrDefault(x => x.DownloadUrl.Equals(model.DownloadUrl));
