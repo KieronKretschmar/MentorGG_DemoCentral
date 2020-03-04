@@ -510,7 +510,7 @@ namespace DemoCentralTests
                 var test = new DemoCentralDBInterface(context, _mockILogger);;
                 AddDemoToDB(demo, context);
 
-                isDuplicate = test.IsReanalysisRequired(duplicate_hash, out matchId);
+                isDuplicate = test.IsReanalysisRequired(duplicate_hash, out matchId,1);
             }
 
             Assert.IsTrue(isDuplicate);
@@ -536,7 +536,7 @@ namespace DemoCentralTests
                 var test = new DemoCentralDBInterface(context, _mockILogger);;
                 AddDemoToDB(demo, context);
 
-                isDuplicate = test.IsReanalysisRequired(second_hash, out matchId);
+                isDuplicate = test.IsReanalysisRequired(second_hash, out matchId,1);
             }
 
             Assert.AreNotEqual(first_hash, second_hash);

@@ -177,7 +177,7 @@ namespace DemoCentral
         /// if so the out parameter is the matchId of the original demo, else -1
         /// </summary>
         /// <param name="matchId">id of the original match or -1 if hash is unique</param>
-        public bool IsReanalysisRequired(string hash, out long matchId, byte framesPerSecond = 1)
+        public bool IsReanalysisRequired(string hash, out long matchId, byte framesPerSecond)
         {
             var demo = _context.Demo.Where(x => x.Md5hash.Equals(hash)).SingleOrDefault();
 
