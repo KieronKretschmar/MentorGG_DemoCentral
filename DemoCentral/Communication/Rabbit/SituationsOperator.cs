@@ -25,7 +25,7 @@ namespace DemoCentral.RabbitCommunication
         /// </summary>
         public override Task HandleMessageAsync(BasicDeliverEventArgs ea, TaskCompletedReport model)
         {
-            long matchId = long.Parse(ea.BasicProperties.CorrelationId);
+            long matchId = model.MatchId;
             _inQueueDBInterface.UpdateProcessStatus(matchId, ProcessedBy.SituationsOperator, model.Success);
             _inQueueDBInterface.RemoveDemoIfNotInAnyQueue(matchId);
 

@@ -47,7 +47,7 @@ namespace DemoCentral.RabbitCommunication
 
         public void SendMessageAndUpdateStatus(string correlationId, DemoDownloadInstruction produceModel)
         {
-            long matchId = long.Parse(correlationId);
+            long matchId = produceModel.MatchId;
             _demoCentralDBInterface.SetFileStatus(matchId, FileStatus.Downloading);
             _inQueueDBInterface.UpdateProcessStatus(matchId,ProcessedBy.DemoDownloader, true);
 
@@ -57,7 +57,7 @@ namespace DemoCentral.RabbitCommunication
         public override Task HandleMessageAsync(BasicDeliverEventArgs ea, DemoObtainReport consumeModel)
         {
             var properties = ea.BasicProperties;
-            long matchId = long.Parse(properties.CorrelationId);
+            long matchId = consumeModel.MatchId;
             var inQueueDemo = _inQueueDBInterface.GetDemoById(matchId);
             var dbDemo = _demoCentralDBInterface.GetDemoById(matchId);
 
