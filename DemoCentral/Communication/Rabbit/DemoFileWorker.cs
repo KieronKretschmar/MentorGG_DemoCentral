@@ -33,12 +33,14 @@ namespace DemoCentral.RabbitCommunication
     {
         private readonly IDemoCentralDBInterface _demoDBInterface;
         private readonly IInQueueDBInterface _inQueueDBInterface;
+        private readonly IProducer<RedisLocalizationInstruction> _fanoutSender;
         private readonly ILogger<DemoFileWorker> _logger;
 
         public DemoFileWorker(IRPCQueueConnections queueConnection, IServiceProvider provider, bool persistantMessageSending = true) : base(queueConnection, persistantMessageSending)
         {
             _demoDBInterface = provider.GetRequiredService<IDemoCentralDBInterface>();
             _inQueueDBInterface = provider.GetRequiredService<IInQueueDBInterface>();
+            _fanoutSender = provider.GetRequiredService<IProducer<RedisLocalizationInstruction>>();
             _logger = provider.GetRequiredService<ILogger<DemoFileWorker>>();
         }
 
@@ -94,6 +96,15 @@ namespace DemoCentral.RabbitCommunication
                 _inQueueDBInterface.UpdateProcessStatus(inQueueDemo, ProcessedBy.DemoFileWorker, false);
                 _inQueueDBInterface.RemoveDemoIfNotInAnyQueue(inQueueDemo);
                 _logger.LogInformation($"Demo#{matchId} was successfully handled by DemoFileWorker");
+
+                var forwardModel = new RedisLocalizationInstruction
+                {
+                    RedisKey = response.RedisKey,
+                    ExpiryDate = response.ExpiryDate,
+                };
+                _fanoutSender.PublishMessage(matchId.ToString(), forwardModel);
+
+                _logger.LogInformation($"Demo#{matchId} was sent to fanout");
                 return;
             }
 
