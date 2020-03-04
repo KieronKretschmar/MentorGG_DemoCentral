@@ -35,7 +35,7 @@ namespace DemoCentral.RabbitCommunication
                 var analyzeInstructions = _dBInterface.CreateAnalyzeInstructions(matchId);
                 analyzeInstructions.BlobUrl = model.DownloadUrl;
 
-                _demoFileWorker.SendMessageAndUpdateQueueStatus(matchId.ToString(), analyzeInstructions);
+                _demoFileWorker.SendMessageAndUpdateQueueStatus(analyzeInstructions);
             }
         }
     }

@@ -52,7 +52,7 @@ namespace DemoCentral.RabbitCommunication
 
                 _inQueueDBInterface.Add(matchId, model.MatchDate, model.Source, model.UploaderId);
 
-                _demoDownloader.SendMessageAndUpdateStatus(matchId.ToString(), forwardModel);
+                _demoDownloader.SendMessageAndUpdateStatus(forwardModel);
 
                 _logger.LogInformation($"Demo#{matchId} assigned to {model.DownloadUrl}");
             }

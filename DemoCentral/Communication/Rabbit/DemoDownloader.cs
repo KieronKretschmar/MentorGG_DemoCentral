@@ -24,7 +24,7 @@ namespace DemoCentral.RabbitCommunication
         /// <summary>
         /// Send a downloadUrl to the DemoDownloader, set the FileStatus to Downloading, and update the DemoDownloaderQueue Status
         /// </summary>
-        void SendMessageAndUpdateStatus(string correlationId, DemoDownloadInstruction produceModel);
+        void SendMessageAndUpdateStatus(DemoDownloadInstruction produceModel);
     }
 
     public class DemoDownloader : RPCClient<DemoDownloadInstruction, DemoObtainReport>, IDemoDownloader
@@ -45,13 +45,13 @@ namespace DemoCentral.RabbitCommunication
 
 
 
-        public void SendMessageAndUpdateStatus(string correlationId, DemoDownloadInstruction produceModel)
+        public void SendMessageAndUpdateStatus(DemoDownloadInstruction produceModel)
         {
             long matchId = produceModel.MatchId;
             _demoCentralDBInterface.SetFileStatus(matchId, FileStatus.Downloading);
             _inQueueDBInterface.UpdateProcessStatus(matchId,ProcessedBy.DemoDownloader, true);
 
-            PublishMessage(correlationId, produceModel);
+            PublishMessage(produceModel);
         }
 
         public override Task HandleMessageAsync(BasicDeliverEventArgs ea, DemoObtainReport consumeModel)
@@ -71,7 +71,7 @@ namespace DemoCentral.RabbitCommunication
 
                 var model = _demoCentralDBInterface.CreateAnalyzeInstructions(dbDemo);
 
-                _demoFileWorker.SendMessageAndUpdateQueueStatus(properties.CorrelationId, model);
+                _demoFileWorker.SendMessageAndUpdateQueueStatus(model);
 
                 _logger.LogInformation($"Demo#{matchId} successfully downloaded");
             }
@@ -94,7 +94,7 @@ namespace DemoCentral.RabbitCommunication
                         DownloadUrl = downloadUrl,
                     };
 
-                    SendMessageAndUpdateStatus(properties.CorrelationId, resendModel);
+                    SendMessageAndUpdateStatus(resendModel);
 
                     _logger.LogWarning($"Demo#{matchId} failed download, retrying");
                 }
