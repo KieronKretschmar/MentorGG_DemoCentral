@@ -104,27 +104,6 @@ namespace DemoCentralTests
         }
 
         [TestMethod]
-        public void UpdateQueueStatusRemovesDemoIfNotInAnyQueue()
-        {
-
-            long matchId = 1;
-            using (var context = new DemoCentralContext(_test_config))
-            {
-                InQueueDBInterface test = new InQueueDBInterface(context);
-                test.Add(matchId, new DateTime(), Source.Faceit, 1234);
-
-                test.UpdateProcessStatus(matchId, ProcessedBy.DemoDownloader, true);
-                test.UpdateProcessStatus(matchId, ProcessedBy.DemoDownloader, false);
-            }
-
-            using (var context = new DemoCentralContext(_test_config))
-            {
-                var demo = GetDemoByMatchId(context, matchId);
-                Assert.IsNull(demo);
-            }
-        }
-
-        [TestMethod]
         public void GetPlayerMatchesInQueueReturnsMatches()
         {
             long playerId = 1234;

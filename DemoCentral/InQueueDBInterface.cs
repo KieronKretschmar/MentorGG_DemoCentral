@@ -25,6 +25,7 @@ namespace DemoCentral
         int GetTotalQueueLength();
         int IncrementRetry(long matchId);
         void RemoveDemoFromQueue(long matchId);
+        void RemoveDemoIfNotInAnyQueue(long matchId);
         /// <summary>
         /// Update the status for a certain queue
         /// </summary>
@@ -82,13 +83,18 @@ namespace DemoCentral
                     throw new InvalidOperationException("Unknown queue name");
             }
 
+            _context.SaveChanges();
+
+        }
+
+        public void RemoveDemoIfNotInAnyQueue(long matchId)
+        {
+            var demo = GetDemoById(matchId);
+
             if (!demo.InAnyQueue())
             {
                 _context.InQueueDemo.Remove(demo);
             }
-
-            _context.SaveChanges();
-
         }
 
         public List<InQueueDemo> GetPlayerMatchesInQueue(long playerId)
@@ -134,7 +140,10 @@ namespace DemoCentral
             return attempts;
         }
 
-
+        //TODO OPTIMIZATION make only one db call for the demo
+        //Currently this method is private and every db interface method calls it seperately.
+        //Make this method public and if someone needs multiple updates on the same demo, request it once 
+        //and pass in the demo to every method
         private InQueueDemo GetDemoById(long matchId)
         {
             return _context.InQueueDemo.Single(x => x.MatchId == matchId);
