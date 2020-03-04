@@ -493,39 +493,6 @@ namespace DemoCentralTests
             }
         }
 
-        public void SetDownloadRetryingAndGetDownloadPathSetsDownloadRetrying()
-        {
-            Demo demo = CopyDemo(_standardDemo);
-
-            using (var context = new DemoCentralContext(_test_config))
-            {
-                var test = new DemoCentralDBInterface(context, _mockILogger);;
-                AddDemoToDB(demo, context);
-                test.SetDownloadRetryingAndGetDownloadPath(demo.MatchId);
-            }
-
-            Assert.AreEqual(demo.FileStatus, FileStatus.DownloadRetrying);
-        }
-
-
-        [TestMethod]
-        public void SetDownloadRetryingAndGetDownloadPathReturnsCorrectPath()
-        {
-            Demo demo = CopyDemo(_standardDemo);
-            demo.DownloadUrl = "test_download_url";
-            string returnPath;
-
-            using (var context = new DemoCentralContext(_test_config))
-            {
-                var test = new DemoCentralDBInterface(context, _mockILogger);;
-                AddDemoToDB(demo, context);
-                returnPath = test.SetDownloadRetryingAndGetDownloadPath(demo.MatchId);
-            }
-
-            Assert.AreEqual(demo.DownloadUrl, returnPath);
-
-        }
-
         [TestMethod]
         public void IsDuplicateHashOutputsTrueForDuplicate()
         {
@@ -543,7 +510,7 @@ namespace DemoCentralTests
                 var test = new DemoCentralDBInterface(context, _mockILogger);;
                 AddDemoToDB(demo, context);
 
-                isDuplicate = test.ReAnalysisRequired(duplicate_hash, out matchId);
+                isDuplicate = test.IsReanalysisRequired(duplicate_hash, out matchId,1);
             }
 
             Assert.IsTrue(isDuplicate);
@@ -569,7 +536,7 @@ namespace DemoCentralTests
                 var test = new DemoCentralDBInterface(context, _mockILogger);;
                 AddDemoToDB(demo, context);
 
-                isDuplicate = test.ReAnalysisRequired(second_hash, out matchId);
+                isDuplicate = test.IsReanalysisRequired(second_hash, out matchId,1);
             }
 
             Assert.AreNotEqual(first_hash, second_hash);

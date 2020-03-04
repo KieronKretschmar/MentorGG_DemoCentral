@@ -41,7 +41,7 @@ namespace DemoCentral.Controllers
         [HttpPost("match/{matchId}/duplicatecheck")]
         public ActionResult CreateHash(long matchId,byte framesPerSecond, string hash)
         {
-            bool duplicateHash = _dbInterface.ReAnalysisRequired(hash, out long duplicateMatchId, framesPerSecond);
+            bool duplicateHash = _dbInterface.IsReanalysisRequired(hash, out long duplicateMatchId, framesPerSecond);
 
             if (duplicateHash)
             {

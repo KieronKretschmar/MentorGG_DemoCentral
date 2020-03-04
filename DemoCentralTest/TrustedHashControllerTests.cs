@@ -34,10 +34,10 @@ namespace DemoCentralTests
             string hash = "test_hash";
             byte frames = 1;
 
-            mockIDemoDBInterface.Setup(x => x.ReAnalysisRequired(hash, out matchId, frames)).Returns(true);
+            mockIDemoDBInterface.Setup(x => x.IsReanalysisRequired(hash, out matchId, frames)).Returns(true);
             ActionResult response;
 
-            mockIDemoDBInterface.Object.ReAnalysisRequired(hash, out matchId);
+            mockIDemoDBInterface.Object.IsReanalysisRequired(hash, out matchId);
 
             using (var context = new DemoCentralContext(_test_config))
             {
@@ -54,7 +54,7 @@ namespace DemoCentralTests
             var mockIDemoDBInterface = new Mock<IDemoCentralDBInterface>();
             long matchId = 1;
             byte frames = 1;
-            mockIDemoDBInterface.Setup(x => x.ReAnalysisRequired("", out matchId, frames)).Returns(false);
+            mockIDemoDBInterface.Setup(x => x.IsReanalysisRequired("", out matchId, frames)).Returns(false);
             ActionResult response;
 
             using (var context = new DemoCentralContext(_test_config))
@@ -73,7 +73,7 @@ namespace DemoCentralTests
             long matchId = 1;
             byte frames = 1;
             string hash = "test_hash";
-            mockIDemoDBInterface.Setup(x => x.ReAnalysisRequired("", out matchId,frames)).Returns(false);
+            mockIDemoDBInterface.Setup(x => x.IsReanalysisRequired("", out matchId,frames)).Returns(false);
             ActionResult response;
 
             using (var context = new DemoCentralContext(_test_config))
