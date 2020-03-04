@@ -26,7 +26,7 @@ namespace DemoCentral.RabbitCommunication
         /// <summary>
         /// Send a downloaded demo to the demoFileWorker and update the queue status
         /// </summary>
-        void SendMessageAndUpdateQueueStatus(string correlationId, DemoAnalyzeInstruction model);
+        void SendMessageAndUpdateQueueStatus(DemoAnalyzeInstruction model);
     }
 
     public class DemoFileWorker : RPCClient<DemoAnalyzeInstruction, DemoAnalyzeReport>, IDemoFileWorker
@@ -44,10 +44,10 @@ namespace DemoCentral.RabbitCommunication
             _logger = provider.GetRequiredService<ILogger<DemoFileWorker>>();
         }
 
-        public void SendMessageAndUpdateQueueStatus(string correlationId, DemoAnalyzeInstruction model)
+        public void SendMessageAndUpdateQueueStatus(DemoAnalyzeInstruction model)
         {
             _inQueueDBInterface.UpdateProcessStatus(model.MatchId, ProcessedBy.DemoFileWorker, true);
-            PublishMessage(correlationId, model);
+            PublishMessage(model);
         }
 
         private void UpdateDBEntryFromFileWorkerResponse(DemoAnalyzeReport response)
@@ -103,7 +103,7 @@ namespace DemoCentral.RabbitCommunication
                     RedisKey = response.RedisKey,
                     ExpiryDate = response.ExpiryDate,
                 };
-                _fanoutSender.PublishMessage(matchId.ToString(), forwardModel);
+                _fanoutSender.PublishMessage(forwardModel);
 
                 _logger.LogInformation($"Demo#{matchId} was sent to fanout");
                 return;
