@@ -41,17 +41,12 @@ namespace DemoCentral
         void SetHash(long matchId, string hash);
         void SetUploadStatus(Demo demo, bool success);
         void SetUploadStatus(long matchId, bool success);
-        void SetDatabaseVersion(long matchId, string databaseVersion);
-        void SetFileWorkerStatus(long matchId, DemoFileWorkerStatus status);
-
         /// <summary>
         /// try to create a new entry in the demo table. Returns false and the matchId of the match, if the downloadUrl is already known, return true otherwise
         /// </summary>
         /// <param name="matchId">Return either a new matchId or the one of the found demo if the download url is known</param>
         /// <returns>true, if downloadUrl is unique</returns>
         bool TryCreateNewDemoEntryFromGatherer(DemoInsertInstruction model, AnalyzerQuality requestedQuality, out long matchId);
-        void SetHash(long matchId, string hash);
-        void SetFrames(long matchId, int framesPerSecond);
     }
 
     /// <summary>

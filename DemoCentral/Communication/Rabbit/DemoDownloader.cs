@@ -57,7 +57,7 @@ namespace DemoCentral.RabbitCommunication
         public override Task HandleMessageAsync(BasicDeliverEventArgs ea, DemoObtainReport consumeModel)
         {
             var properties = ea.BasicProperties;
-            long matchId = long.Parse(properties.CorrelationId);
+            long matchId = consumeModel.MatchId;
             var inQueueDemo = _inQueueDBInterface.GetDemoById(matchId);
             var dbDemo = _demoCentralDBInterface.GetDemoById(matchId);
 
