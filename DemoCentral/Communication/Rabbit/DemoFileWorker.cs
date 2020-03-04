@@ -46,13 +46,14 @@ namespace DemoCentral.RabbitCommunication
 
         public void SendMessageAndUpdateQueueStatus(string correlationId, DemoAnalyzeInstruction model)
         {
-            long matchId = long.Parse(correlationId);
-            _inQueueDBInterface.UpdateProcessStatus(matchId, ProcessedBy.DemoFileWorker, true);
+            _inQueueDBInterface.UpdateProcessStatus(model.MatchId, ProcessedBy.DemoFileWorker, true);
             PublishMessage(correlationId, model);
         }
 
-        private void UpdateDBEntryFromFileWorkerResponse(long matchId, DemoAnalyzeReport response)
+        private void UpdateDBEntryFromFileWorkerResponse(DemoAnalyzeReport response)
         {
+            var matchId = response.MatchId;
+
             var inQueueDemo = _inQueueDBInterface.GetDemoById(matchId);
             var dbDemo = _demoDBInterface.GetDemoById(matchId);
 
@@ -116,8 +117,7 @@ namespace DemoCentral.RabbitCommunication
 
         public override Task HandleMessageAsync(BasicDeliverEventArgs ea, DemoAnalyzeReport consumeModel)
         {
-            long matchId = long.Parse(ea.BasicProperties.CorrelationId);
-            UpdateDBEntryFromFileWorkerResponse(matchId, consumeModel);
+            UpdateDBEntryFromFileWorkerResponse(consumeModel);
             return Task.CompletedTask;
 
         }

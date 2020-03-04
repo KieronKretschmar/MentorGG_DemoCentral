@@ -47,7 +47,7 @@ namespace DemoCentral.RabbitCommunication
 
         public void SendMessageAndUpdateStatus(string correlationId, DemoDownloadInstruction produceModel)
         {
-            long matchId = long.Parse(correlationId);
+            long matchId = produceModel.MatchId;
             _demoCentralDBInterface.SetFileStatus(matchId, FileStatus.Downloading);
             _inQueueDBInterface.UpdateProcessStatus(matchId,ProcessedBy.DemoDownloader, true);
 

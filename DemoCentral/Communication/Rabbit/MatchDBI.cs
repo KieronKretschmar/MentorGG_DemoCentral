@@ -24,7 +24,7 @@ namespace DemoCentral.RabbitCommunication
         /// </summary>
         public override Task HandleMessageAsync(BasicDeliverEventArgs ea, TaskCompletedReport model)
         {
-            long matchId = long.Parse(ea.BasicProperties.CorrelationId);
+            long matchId = model.MatchId;
             var dbDemo = _dbInterface.GetDemoById(matchId);
             _dbInterface.SetUploadStatus(dbDemo, model.Success);
 
