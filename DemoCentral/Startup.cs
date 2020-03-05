@@ -51,7 +51,7 @@ namespace DemoCentral
 
             services.AddLogging(o =>
             {
-                o.AddConsole();
+                o.AddConsole(o => o.TimestampFormat = "[yyyy-MM-dd HH:mm:ss zzz] ");
                 o.AddDebug();
             });
 
