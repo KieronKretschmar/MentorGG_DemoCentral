@@ -63,7 +63,7 @@ namespace DemoCentral.RabbitCommunication
 
             if (consumeModel.Success)
             {
-                _demoCentralDBInterface.SetFilePath(dbDemo, consumeModel.BlobUrl);
+                _demoCentralDBInterface.SetBlobUrl(dbDemo, consumeModel.BlobUrl);
 
                 _demoCentralDBInterface.SetFileStatus(dbDemo, FileStatus.InBlobStorage);
 

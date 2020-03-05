@@ -14,8 +14,7 @@ namespace DataBase.DatabaseClasses
         public UploadStatus UploadStatus{get; set; }
         public Source Source { get; set; }
         public string DownloadUrl { get; set; }
-        public string FileName { get; set; }
-        public string FilePath { get; set; }
+        public string BlobUrl { get; set; }
         public string Md5hash { get; set; }
         public FileStatus FileStatus { get; set; }
         public AnalyzerQuality Quality { get; set; }
@@ -37,8 +36,7 @@ namespace DataBase.DatabaseClasses
                 UploadStatus = UploadStatus.New,
                 Source = model.Source,
                 DownloadUrl = model.DownloadUrl,
-                FileName = "",
-                FilePath = "",
+                BlobUrl = "",
                 Md5hash = "",
                 FileStatus = FileStatus.New,
                 DemoFileWorkerStatus = DemoFileWorkerStatus.New,
