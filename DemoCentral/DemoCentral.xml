@@ -17,7 +17,7 @@
             Handle the response from DemoDownloader, set the corresponding FileStatus, update the QueueStatus and check the retries, eventually remove the demo
             </summary>
         </member>
-        <member name="M:DemoCentral.RabbitCommunication.IDemoDownloader.SendMessageAndUpdateStatus(System.String,RabbitCommunicationLib.TransferModels.DemoDownloadInstruction)">
+        <member name="M:DemoCentral.RabbitCommunication.IDemoDownloader.SendMessageAndUpdateStatus(RabbitCommunicationLib.TransferModels.DemoDownloadInstruction)">
             <summary>
             Send a downloadUrl to the DemoDownloader, set the FileStatus to Downloading, and update the DemoDownloaderQueue Status
             </summary>
@@ -29,7 +29,7 @@
             remove from queue if unzip failed 
             </summary>
         </member>
-        <member name="M:DemoCentral.RabbitCommunication.IDemoFileWorker.SendMessageAndUpdateQueueStatus(System.String,RabbitCommunicationLib.TransferModels.DemoAnalyzeInstruction)">
+        <member name="M:DemoCentral.RabbitCommunication.IDemoFileWorker.SendMessageAndUpdateQueueStatus(RabbitCommunicationLib.TransferModels.DemoAnalyzeInstruction)">
             <summary>
             Send a downloaded demo to the demoFileWorker and update the queue status
             </summary>
@@ -199,7 +199,7 @@
             Required environment variables
             [AMQP_URI,AMQP_DEMODOWNLOADER, AMQP_DEMODOWNLOADER_REPLY,
                 AMQP_DEMOFILEWORKER, AMQP_DEMOFILEWORKER_REPLY, AMQP_GATHERER,
-                AMQP_SITUATIONSOPERATOR, AMQP_MATCHDBI,AMQP_MANUALDEMODOWNLOAD, HTTP_USER_SUBSCRIPTION]
+                AMQP_SITUATIONSOPERATOR, AMQP_MATCHDBI,AMQP_MANUALDEMODOWNLOAD,AMQP_FANOUT_EXCHANGE_NAME, HTTP_USER_SUBSCRIPTION]
             </summary>
         </member>
         <member name="M:DemoCentral.Startup.GetRequiredEnvironmentVariable``1(Microsoft.Extensions.Configuration.IConfiguration,System.String)">

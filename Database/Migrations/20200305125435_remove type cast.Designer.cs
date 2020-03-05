@@ -3,14 +3,16 @@ using System;
 using DataBase.DatabaseClasses;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Database.Migrations
 {
     [DbContext(typeof(DemoCentralContext))]
-    partial class DemoCentralContextModelSnapshot : ModelSnapshot
+    [Migration("20200305125435_remove type cast")]
+    partial class removetypecast
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -105,7 +107,7 @@ namespace Database.Migrations
 
                     b.HasKey("MatchId");
 
-                    b.ToTable("InQueueDemo");
+                    b.ToTable("InQueue");
                 });
 
             modelBuilder.Entity("DataBase.DatabaseClasses.Migrationhistory", b =>
