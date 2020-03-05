@@ -45,12 +45,9 @@ namespace DataBase.DatabaseClasses
 
                 entity.Property(e => e.DownloadUrl).HasColumnType("longtext");
 
-                entity.Property(e => e.FileName).HasColumnType("longtext");
+                entity.Property(e => e.BlobUrl).HasColumnType("longtext");
 
-                entity.Property(e => e.FilePath).HasColumnType("longtext");
-
-                entity.Property(e => e.Md5hash)
-                    .HasColumnType("longtext");
+                entity.Property(e => e.Md5hash).HasColumnType("longtext");
 
                 entity.Property(e => e.UploaderId).HasColumnType("bigint(20)");
             });

@@ -3,14 +3,16 @@ using System;
 using DataBase.DatabaseClasses;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Database.Migrations
 {
     [DbContext(typeof(DemoCentralContext))]
-    partial class DemoCentralContextModelSnapshot : ModelSnapshot
+    [Migration("20200305124100_rename filepath column")]
+    partial class renamefilepathcolumn
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -40,6 +42,9 @@ namespace Database.Migrations
 
                     b.Property<string>("Event")
                         .HasColumnType("longtext CHARACTER SET utf8mb4");
+
+                    b.Property<string>("FileName")
+                        .HasColumnType("longtext");
 
                     b.Property<byte>("FileStatus")
                         .HasColumnType("tinyint unsigned");

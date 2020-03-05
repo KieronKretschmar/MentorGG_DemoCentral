@@ -29,8 +29,8 @@ namespace DemoCentral
         void RemoveDemo(long matchId);
         void SetDatabaseVersion(Demo demo, string databaseVersion);
         void SetDatabaseVersion(long matchId, string databaseVersion);
-        void SetFilePath(Demo demo, string zippedFilePath);
-        void SetFilePath(long matchId, string zippedFilePath);
+        void SetBlobUrl(Demo demo, string blobUrl);
+        void SetBlobUrl(long matchId, string blobUrl);
         void SetFileStatus(Demo demo, FileStatus status);
         void SetFileStatus(long matchId, FileStatus status);
         void SetFileWorkerStatus(Demo demo, DemoFileWorkerStatus status);
@@ -101,7 +101,7 @@ namespace DemoCentral
             {
                 Source = demo.Source,
                 MatchDate = demo.MatchDate,
-                BlobUrl = demo.FilePath,
+                BlobUrl = demo.BlobUrl,
                 FramesPerSecond = demo.FramesPerSecond,
                 Quality = demo.Quality,
             };
@@ -127,15 +127,15 @@ namespace DemoCentral
             _context.SaveChanges();
         }
 
-        public void SetFilePath(long matchId, string zippedFilePath)
+        public void SetBlobUrl(long matchId, string zippedFilePath)
         {
             var demo = GetDemoById(matchId);
-            SetFilePath(demo, zippedFilePath);
+            SetBlobUrl(demo, zippedFilePath);
         }
 
-        public void SetFilePath(Demo demo, string zippedFilePath)
+        public void SetBlobUrl(Demo demo, string zippedFilePath)
         {
-            demo.FilePath = zippedFilePath;
+            demo.BlobUrl = zippedFilePath;
             _context.SaveChanges();
         }
 

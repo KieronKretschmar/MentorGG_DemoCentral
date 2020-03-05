@@ -194,7 +194,7 @@ namespace DemoCentralTests
             long matchId;
             DemoAnalyzeInstruction assertModel;
             Demo demo = CopyDemo(_standardDemo);
-            demo.FilePath = "abc";
+            demo.BlobUrl = "abc";
             demo.Event = "TESTING";
             demo.Source = Source.ManualUpload;
 
@@ -207,7 +207,7 @@ namespace DemoCentralTests
                 assertModel = test.CreateAnalyzeInstructions(matchId);
             }
 
-            Assert.AreEqual(demo.FilePath, assertModel.BlobUrl);
+            Assert.AreEqual(demo.BlobUrl, assertModel.BlobUrl);
             Assert.AreEqual(demo.Source, assertModel.Source);
         }
 
@@ -345,10 +345,10 @@ namespace DemoCentralTests
                 DemoCentralDBInterface test = new DemoCentralDBInterface(context, _mockILogger);;
                 AddDemoToDB(demo, context);
 
-                test.SetFilePath(demo.MatchId, test_path);
+                test.SetBlobUrl(demo.MatchId, test_path);
             }
 
-            Assert.AreEqual(test_path, demo.FilePath);
+            Assert.AreEqual(test_path, demo.BlobUrl);
         }
 
         [TestMethod]
