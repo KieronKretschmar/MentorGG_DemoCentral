@@ -24,12 +24,13 @@ namespace DemoCentral.RabbitCommunication
         /// </summary>
         public override Task HandleMessageAsync(BasicDeliverEventArgs ea, TaskCompletedReport model)
         {
-            long matchId = long.Parse(ea.BasicProperties.CorrelationId);
-            _dbInterface.SetUploadStatus(matchId, model.Success);
+            long matchId = model.MatchId;
+            var dbDemo = _dbInterface.GetDemoById(matchId);
+            _dbInterface.SetUploadStatus(dbDemo, model.Success);
 
             if (model.Success)
             {
-                _dbInterface.SetDatabaseVersion(matchId, model.Version);
+                _dbInterface.SetDatabaseVersion(dbDemo, model.Version);
             }
 
             string log = model.Success ? "was uploaded" : "failed upload";

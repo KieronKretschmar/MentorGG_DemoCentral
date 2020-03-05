@@ -3,14 +3,16 @@ using System;
 using DataBase.DatabaseClasses;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Database.Migrations
 {
     [DbContext(typeof(DemoCentralContext))]
-    partial class DemoCentralContextModelSnapshot : ModelSnapshot
+    [Migration("20200305124100_rename filepath column")]
+    partial class renamefilepathcolumn
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -24,7 +26,7 @@ namespace Database.Migrations
                         .HasColumnType("bigint(20) auto_increment");
 
                     b.Property<string>("BlobUrl")
-                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+                        .HasColumnType("longtext");
 
                     b.Property<string>("DatabaseVersion")
                         .HasColumnType("longtext CHARACTER SET utf8mb4");
@@ -36,10 +38,13 @@ namespace Database.Migrations
                         .HasColumnType("longtext CHARACTER SET utf8mb4");
 
                     b.Property<string>("DownloadUrl")
-                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+                        .HasColumnType("longtext");
 
                     b.Property<string>("Event")
                         .HasColumnType("longtext CHARACTER SET utf8mb4");
+
+                    b.Property<string>("FileName")
+                        .HasColumnType("longtext");
 
                     b.Property<byte>("FileStatus")
                         .HasColumnType("tinyint unsigned");
@@ -51,7 +56,7 @@ namespace Database.Migrations
                         .HasColumnType("datetime(6)");
 
                     b.Property<string>("Md5hash")
-                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+                        .HasColumnType("longtext");
 
                     b.Property<byte>("Quality")
                         .HasColumnType("tinyint unsigned");
@@ -105,7 +110,7 @@ namespace Database.Migrations
 
                     b.HasKey("MatchId");
 
-                    b.ToTable("InQueueDemo");
+                    b.ToTable("InQueue");
                 });
 
             modelBuilder.Entity("DataBase.DatabaseClasses.Migrationhistory", b =>

@@ -12,24 +12,24 @@
             <param name="steamId"></param>
             <returns></returns>
         </member>
-        <member name="M:DemoCentral.RabbitCommunication.IDemoDownloader.HandleMessageAsync(RabbitMQ.Client.IBasicProperties,RabbitCommunicationLib.TransferModels.DownloadReport)">
+        <member name="M:DemoCentral.RabbitCommunication.IDemoDownloader.HandleMessageAsync(RabbitMQ.Client.Events.BasicDeliverEventArgs,RabbitCommunicationLib.TransferModels.DemoObtainReport)">
             <summary>
             Handle the response from DemoDownloader, set the corresponding FileStatus, update the QueueStatus and check the retries, eventually remove the demo
             </summary>
         </member>
-        <member name="M:DemoCentral.RabbitCommunication.IDemoDownloader.SendMessageAndUpdateStatus(System.String,RabbitCommunicationLib.TransferModels.DemoDownloadInstructions)">
+        <member name="M:DemoCentral.RabbitCommunication.IDemoDownloader.SendMessageAndUpdateStatus(RabbitCommunicationLib.TransferModels.DemoDownloadInstruction)">
             <summary>
             Send a downloadUrl to the DemoDownloader, set the FileStatus to Downloading, and update the DemoDownloaderQueue Status
             </summary>
         </member>
-        <member name="M:DemoCentral.RabbitCommunication.IDemoFileWorker.HandleMessageAsync(RabbitMQ.Client.IBasicProperties,RabbitCommunicationLib.TransferModels.DemoAnalyzeReport)">
+        <member name="M:DemoCentral.RabbitCommunication.IDemoFileWorker.HandleMessageAsync(RabbitMQ.Client.Events.BasicDeliverEventArgs,RabbitCommunicationLib.TransferModels.DemoAnalyzeReport)">
             <summary>
             Handle response fromm DemoFileWorker, update filepath,filestatus and queue status if success,
             remove entirely if duplicate, 
             remove from queue if unzip failed 
             </summary>
         </member>
-        <member name="M:DemoCentral.RabbitCommunication.IDemoFileWorker.SendMessageAndUpdateQueueStatus(System.String,RabbitCommunicationLib.TransferModels.DemoAnalyzeInstructions)">
+        <member name="M:DemoCentral.RabbitCommunication.IDemoFileWorker.SendMessageAndUpdateQueueStatus(RabbitCommunicationLib.TransferModels.DemoAnalyzeInstruction)">
             <summary>
             Send a downloaded demo to the demoFileWorker and update the queue status
             </summary>
@@ -41,17 +41,17 @@
             and the message is forwarded to the demodownloader
             </summary>
         </member>
-        <member name="M:DemoCentral.RabbitCommunication.Gatherer.HandleMessageAsync(RabbitMQ.Client.IBasicProperties,RabbitCommunicationLib.TransferModels.DemoEntryInstructions)">
+        <member name="M:DemoCentral.RabbitCommunication.Gatherer.HandleMessageAsync(RabbitMQ.Client.Events.BasicDeliverEventArgs,RabbitCommunicationLib.TransferModels.DemoInsertInstruction)">
             <summary>
             Handle downloadUrl from GathererQueue, create new entry and send to downloader if unique, else delete and forget
             </summary>
         </member>
-        <member name="M:DemoCentral.RabbitCommunication.MatchDBI.HandleMessageAsync(RabbitMQ.Client.IBasicProperties,RabbitCommunicationLib.TransferModels.TaskCompletedReport)">
+        <member name="M:DemoCentral.RabbitCommunication.MatchDBI.HandleMessageAsync(RabbitMQ.Client.Events.BasicDeliverEventArgs,RabbitCommunicationLib.TransferModels.TaskCompletedReport)">
             <summary>
             Handle response from  MatchDBI, update upload status, set database version
             </summary>
         </member>
-        <member name="M:DemoCentral.RabbitCommunication.SituationsOperator.HandleMessageAsync(RabbitMQ.Client.IBasicProperties,RabbitCommunicationLib.TransferModels.TaskCompletedReport)">
+        <member name="M:DemoCentral.RabbitCommunication.SituationsOperator.HandleMessageAsync(RabbitMQ.Client.Events.BasicDeliverEventArgs,RabbitCommunicationLib.TransferModels.TaskCompletedReport)">
             <summary>
             Handle response from SituationsOperator, update queue status
             </summary>
@@ -106,7 +106,7 @@
             <param name="matchId">id of the match to potentially create</param>
             <param name="framesPerSecond">the requested amount of frames for the analysis</param>
             <param name="hash">hash to check</param>
-            <response code="200">the request analysis of the demo was required and the has is set</response>
+            <response code="200">The analysis of the demo was requested and the provided hash has been set.</response>
             <response code="409">the request demo is a duplicate</response>
             <returns>Conflict or Ok if reANalysis is required or not</returns>
             <example>POST v1/trusted/match/123456789/duplicatecheck?framesPerSecond=1&amp;hash=mdHash123451a</example>
@@ -121,7 +121,7 @@
             Returns the player matches in queue , empty list if none found
             </summary>
         </member>
-        <member name="M:DemoCentral.IDemoCentralDBInterface.TryCreateNewDemoEntryFromGatherer(RabbitCommunicationLib.TransferModels.DemoEntryInstructions,RabbitCommunicationLib.Enums.AnalyzerQuality,System.Int64@)">
+        <member name="M:DemoCentral.IDemoCentralDBInterface.TryCreateNewDemoEntryFromGatherer(RabbitCommunicationLib.TransferModels.DemoInsertInstruction,RabbitCommunicationLib.Enums.AnalyzerQuality,System.Int64@)">
             <summary>
             try to create a new entry in the demo table. Returns false and the matchId of the match, if the downloadUrl is already known, return true otherwise
             </summary>
@@ -133,7 +133,7 @@
             Basic implementation of the <see cref="T:DemoCentral.IDemoCentralDBInterface"/>
             </summary>
         </member>
-        <member name="M:DemoCentral.DemoCentralDBInterface.ReAnalysisRequired(System.String,System.Int64@,System.Byte)">
+        <member name="M:DemoCentral.DemoCentralDBInterface.IsReanalysisRequired(System.String,System.Int64@,System.Byte)">
             <summary>
             Checks if a hash is already in the database, and analyzed with more frames than the requested amount \n
             if so the out parameter is the matchId of the original demo, else -1
@@ -167,6 +167,13 @@
             <remarks>if all queues are set to false after execution the demo gets removed from the table</remarks>
             <param name="inQueue">bool if it is in that queue</param>
         </member>
+        <member name="M:DemoCentral.IInQueueDBInterface.UpdateProcessStatus(DataBase.DatabaseClasses.InQueueDemo,Database.Enumerals.ProcessedBy,System.Boolean)">
+            <summary>
+            Update the status for a certain queue
+            </summary>
+            <remarks>if all queues are set to false after execution the demo gets removed from the table</remarks>
+            <param name="inQueue">bool if it is in that queue</param>
+        </member>
         <member name="T:DemoCentral.InQueueDBInterface">
             <summary>
             Basic implementation of the <see cref="T:DemoCentral.IInQueueDBInterface"/>
@@ -179,6 +186,11 @@
             <param name="matchId"></param>
             <returns></returns>
         </member>
+        <member name="M:DemoCentral.InQueueDBInterface.IncrementRetry(DataBase.DatabaseClasses.InQueueDemo)">
+            <summary>
+            Increments the number of retries for this demo and return the new number
+            </summary>
+        </member>
         <member name="T:DemoCentral.Startup">
             <summary>
             DemoCentral orchestrates the entire demo acquisition and analysis.
@@ -187,8 +199,15 @@
             Required environment variables
             [AMQP_URI,AMQP_DEMODOWNLOADER, AMQP_DEMODOWNLOADER_REPLY,
                 AMQP_DEMOFILEWORKER, AMQP_DEMOFILEWORKER_REPLY, AMQP_GATHERER,
-                AMQP_SITUATIONSOPERATOR, AMQP_MATCHDBI,AMQP_MANUALDEMODOWNLOAD, HTTP_USER_SUBSCRIPTION]
+                AMQP_SITUATIONSOPERATOR, AMQP_MATCHDBI,AMQP_MANUALDEMODOWNLOAD,AMQP_FANOUT_EXCHANGE_NAME, HTTP_USER_SUBSCRIPTION]
             </summary>
+        </member>
+        <member name="M:DemoCentral.Startup.GetRequiredEnvironmentVariable``1(Microsoft.Extensions.Configuration.IConfiguration,System.String)">
+            <summary>
+            Attempt to retrieve an Environment Variable
+            Throws ArgumentNullException is not found.
+            </summary>
+            <typeparam name="T">Type to retreive</typeparam>
         </member>
     </members>
 </doc>

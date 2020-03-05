@@ -14,6 +14,9 @@ using Microsoft.OpenApi.Models;
 using System.Reflection;
 using System.IO;
 using Microsoft.AspNetCore.Mvc;
+using RabbitCommunicationLib.TransferModels;
+using RabbitCommunicationLib.Interfaces;
+using RabbitCommunicationLib.Producer;
 
 namespace DemoCentral
 {
@@ -24,7 +27,7 @@ namespace DemoCentral
     /// Required environment variables
     /// [AMQP_URI,AMQP_DEMODOWNLOADER, AMQP_DEMODOWNLOADER_REPLY,
     ///     AMQP_DEMOFILEWORKER, AMQP_DEMOFILEWORKER_REPLY, AMQP_GATHERER,
-    ///     AMQP_SITUATIONSOPERATOR, AMQP_MATCHDBI,AMQP_MANUALDEMODOWNLOAD, HTTP_USER_SUBSCRIPTION]
+    ///     AMQP_SITUATIONSOPERATOR, AMQP_MATCHDBI,AMQP_MANUALDEMODOWNLOAD,AMQP_FANOUT_EXCHANGE_NAME, HTTP_USER_SUBSCRIPTION]
     /// </summary>
     public class Startup
     {
@@ -39,8 +42,10 @@ namespace DemoCentral
         //// This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            string MYSQL_CONNECTION_STRING = GetRequiredEnvironmentVariable<string>(Configuration, "MYSQL_CONNECTION_STRING");
+
             services.AddDbContext<DemoCentralContext>(options =>
-                options.UseMySql(Configuration.GetValue<string>("CONNECTION_STRING")), ServiceLifetime.Singleton, ServiceLifetime.Singleton);
+                options.UseMySql(MYSQL_CONNECTION_STRING), ServiceLifetime.Transient, ServiceLifetime.Transient);
 
             services.AddControllers();
 
@@ -56,7 +61,8 @@ namespace DemoCentral
                 return;
             }
 
-            services.AddApiVersioning(o => {
+            services.AddApiVersioning(o =>
+            {
                 o.ReportApiVersions = true;
                 o.AssumeDefaultVersionWhenUnspecified = true;
                 o.DefaultApiVersion = new ApiVersion(1, 0);
@@ -82,87 +88,88 @@ namespace DemoCentral
                 return;
             }
 
-            services.AddSingleton<IInQueueDBInterface, InQueueDBInterface>();
-            services.AddSingleton<IDemoCentralDBInterface, DemoCentralDBInterface>();
+            services.AddTransient<IInQueueDBInterface, InQueueDBInterface>();
+            services.AddTransient<IDemoCentralDBInterface, DemoCentralDBInterface>();
 
 
             //Read environment variables
-            var AMQP_URI = Configuration.GetValue<string>("AMQP_URI");
+            var AMQP_URI = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_URI");
 
-            var AMQP_DEMODOWNLOADER = Configuration.GetValue<string>("AMQP_DEMODOWNLOADER") ??
-                throw new ArgumentNullException("The environment variable AMQP_DEMODOWNLOADER has not been set.");
-            var AMQP_DEMODOWNLOADER_REPLY = Configuration.GetValue<string>("AMQP_DEMODOWNLOADER_REPLY") ??
-                throw new ArgumentNullException("The environment variable AMQP_DEMODOWNLOADER_REPLY has not been set.");
+            var AMQP_DEMODOWNLOADER = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_DEMODOWNLOADER");
+            var AMQP_DEMODOWNLOADER_REPLY = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_DEMODOWNLOADER_REPLY");
             var demoDownloaderRpcQueue = new RPCQueueConnections(AMQP_URI, AMQP_DEMODOWNLOADER_REPLY, AMQP_DEMODOWNLOADER);
 
-            var AMQP_DEMOFILEWORKER = Configuration.GetValue<string>("AMQP_DEMOFILEWORKER") ??
-                throw new ArgumentNullException("The environment variable AMQP_DEMOFILEWORKER has not been set.");
-            var AMQP_DEMOFILEWORKER_REPLY = Configuration.GetValue<string>("AMQP_DEMOFILEWORKER_REPLY") ??
-                throw new ArgumentNullException("The environment variable AMQP_DEMOFILEWORKER_REPLY has not been set.");
+            var AMQP_DEMOFILEWORKER = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_DEMOFILEWORKER");
+            var AMQP_DEMOFILEWORKER_REPLY = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_DEMOFILEWORKER_REPLY");
             var demoFileworkerRpcQueue = new RPCQueueConnections(AMQP_URI, AMQP_DEMOFILEWORKER_REPLY, AMQP_DEMOFILEWORKER);
 
-            var AMQP_GATHERER = Configuration.GetValue<string>("AMQP_GATHERER") ??
-                throw new ArgumentNullException("The environment variable AMQP_GATHERER has not been set.");
+            var AMQP_GATHERER = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_GATHERER");
             var gathererQueue = new QueueConnection(AMQP_URI, AMQP_GATHERER);
 
-            var AMQP_SITUATIONSOPERATOR = Configuration.GetValue<string>("AMQP_SITUATIONSOPERATOR") ??
-                throw new ArgumentNullException("The environment variable AMQP_SITUATIONSOPERATOR has not been set.");
+            var AMQP_SITUATIONSOPERATOR = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_SITUATIONSOPERATOR");
             var soQueue = new QueueConnection(AMQP_URI, AMQP_SITUATIONSOPERATOR);
 
-            var AMQP_MATCHDBI = Configuration.GetValue<string>("AMQP_MATCHDBI") ??
-                throw new ArgumentNullException("The environment variable AMQP_MATCHDBI has not been set.");
+            var AMQP_MATCHDBI = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_MATCHDBI");
             var matchDBIQueue = new QueueConnection(AMQP_URI, AMQP_MATCHDBI);
 
-            var AMQP_MANUALDEMODOWNLOAD = Configuration.GetValue<string>("AMQP_MANUALDEMODOWNLOAD") ??
-                throw new ArgumentNullException("The environment variable AMQP_MANUALDEMODOWNLOAD has not been set.");
+            var AMQP_MANUALDEMODOWNLOAD = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_MANUALDEMODOWNLOAD");
             var manualDemoDownloadQueue = new QueueConnection(AMQP_URI, AMQP_MANUALDEMODOWNLOAD);
 
+            var AMQP_FANOUT_EXCHANGE_NAME = GetRequiredEnvironmentVariable<string>(Configuration,"AMQP_FANOUT_EXCHANGE_NAME");
+            var fanoutExchangeConnection = new ExchangeConnection(AMQP_URI,AMQP_FANOUT_EXCHANGE_NAME);
 
-            var HTTP_USER_SUBSCRIPTION = Configuration.GetValue<string>("HTTP_USER_SUBSCRIPTION") ??
-                throw new ArgumentNullException("The environment variable HTTP_USER_SUBSCRIPTION has not been set.");
+            var HTTP_USER_SUBSCRIPTION = GetRequiredEnvironmentVariable<string>(Configuration, "HTTP_USER_SUBSCRIPTION");
 
             //Add services, 
             //if 3 or more are required to initialize another one, just pass the service provider
             services.AddHostedService<MatchDBI>(services =>
             {
-                return new MatchDBI(matchDBIQueue, services.GetRequiredService<IDemoCentralDBInterface>(),services.GetRequiredService<ILogger<MatchDBI>>());
+                return new MatchDBI(matchDBIQueue, services.GetRequiredService<IDemoCentralDBInterface>(), services.GetRequiredService<ILogger<MatchDBI>>());
             });
 
             services.AddHostedService<SituationsOperator>(services =>
             {
-                return new SituationsOperator(soQueue, services.GetRequiredService<IInQueueDBInterface>(),services.GetRequiredService<ILogger<SituationsOperator>>());
+                return new SituationsOperator(soQueue, services.GetRequiredService<IInQueueDBInterface>(), services.GetRequiredService<ILogger<SituationsOperator>>());
             });
 
             //WORKAROUND for requesting a hostedService
             //Hosted services cant be addressed as an API, which we want to do with the PublishMessage() method
-            //so we add a singleton and a hosted service, which returns the singleton instance
+            //so we add a Transient and a hosted service, which returns the Transient instance
             // from https://github.com/aspnet/Extensions/issues/553
-            services.AddSingleton<IDemoFileWorker,DemoFileWorker>(services =>
-            {
-                return new DemoFileWorker(demoFileworkerRpcQueue, services);
-            });
+            services.AddTransient<IDemoFileWorker, DemoFileWorker>(services =>
+             {
+                 return new DemoFileWorker(demoFileworkerRpcQueue, services);
+             });
             services.AddHostedService<IDemoFileWorker>(p => p.GetRequiredService<IDemoFileWorker>());
 
 
             //WORKAROUND for requesting a hostedService
             //Hosted services cant be addressed as an API, which we want to do with the PublishMessage() method
-            //so we add a singleton and a hosted service, which returns the singleton instance
+            //so we add a Transient and a hosted service, which returns the Transient instance
             //from https://github.com/aspnet/Extensions/issues/553
-            services.AddSingleton<IDemoDownloader,DemoDownloader>(services =>
+            services.AddTransient<IDemoDownloader, DemoDownloader>(services =>
+             {
+                 return new DemoDownloader(demoDownloaderRpcQueue, services);
+             });
+
+            services.AddTransient<IUserInfoOperator>(services =>
             {
-                return new DemoDownloader(demoDownloaderRpcQueue, services);
+                if (HTTP_USER_SUBSCRIPTION == "mock")
+                    return new MockUserInfoGatherer();
+
+                return new UserInfoOperator(HTTP_USER_SUBSCRIPTION, services.GetRequiredService<ILogger<UserInfoOperator>>());
             });
 
-            services.AddSingleton<IUserInfoOperator, UserInfoOperator>(services =>
+            services.AddTransient<IProducer<RedisLocalizationInstruction>>(services =>
             {
-                return new UserInfoOperator(HTTP_USER_SUBSCRIPTION, services.GetRequiredService<ILogger<UserInfoOperator>>());
+                return new FanoutProducer<RedisLocalizationInstruction>(fanoutExchangeConnection);
             });
 
             services.AddHostedService<IDemoDownloader>(p => p.GetRequiredService<IDemoDownloader>());
 
             services.AddHostedService<Gatherer>(services =>
             {
-                return new Gatherer(gathererQueue, services.GetRequiredService<IDemoCentralDBInterface>(), services.GetRequiredService<IDemoDownloader>(),services.GetRequiredService<IUserInfoOperator>(), services.GetRequiredService<ILogger<Gatherer>>(), services.GetRequiredService<IInQueueDBInterface>());
+                return new Gatherer(gathererQueue, services.GetRequiredService<IDemoCentralDBInterface>(), services.GetRequiredService<IDemoDownloader>(), services.GetRequiredService<IUserInfoOperator>(), services.GetRequiredService<ILogger<Gatherer>>(), services.GetRequiredService<IInQueueDBInterface>());
             });
 
             services.AddHostedService<ManualUploadReceiver>(services =>
@@ -172,7 +179,7 @@ namespace DemoCentral
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IServiceProvider services)
         {
             if (env.IsDevelopment())
             {
@@ -198,6 +205,27 @@ namespace DemoCentral
             {
                 endpoints.MapControllers();
             });
+
+            services.GetRequiredService<DemoCentralContext>().Database.Migrate();
+        }
+
+        /// <summary>
+        /// Attempt to retrieve an Environment Variable
+        /// Throws ArgumentNullException is not found.
+        /// </summary>
+        /// <typeparam name="T">Type to retreive</typeparam>
+        private static T GetRequiredEnvironmentVariable<T>(IConfiguration config, string key)
+        {
+            T value = config.GetValue<T>(key);
+            if (value == null)
+            {
+                throw new ArgumentNullException(
+                    $"{key} is missing, Configure the `{key}` environment variable.");
+            }
+            else
+            {
+                return value;
+            }
         }
     }
 }

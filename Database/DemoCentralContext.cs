@@ -30,24 +30,16 @@ namespace DataBase.DatabaseClasses
             modelBuilder.Entity<InQueueDemo>(entity =>
             {
                 entity.HasKey(e => e.MatchId);
-                entity.ToTable("InQueue", "democentral");
             });
 
             modelBuilder.Entity<Demo>(entity =>
             {
                 entity.HasKey(e => e.MatchId);
-                entity.ToTable("Demo", "democentral");
 
-                entity.Property(e => e.MatchId).HasColumnType("int(11)").ValueGeneratedOnAdd();
-
-                entity.Property(e => e.DownloadUrl).HasColumnType("longtext");
-
-                entity.Property(e => e.FileName).HasColumnType("longtext");
-
-                entity.Property(e => e.FilePath).HasColumnType("longtext");
-
-                entity.Property(e => e.Md5hash)
-                    .HasColumnType("longtext");
+                //WORKAROUND This ensures the column is added as auto increment
+                //Related https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/issues/1015
+                //https://docs.microsoft.com/en-us/ef/core/modeling/generated-properties?tabs=data-annotations
+                entity.Property(e => e.MatchId).HasColumnType("bigint(20) auto_increment").ValueGeneratedOnAdd();
 
                 entity.Property(e => e.UploaderId).HasColumnType("bigint(20)");
             });
@@ -56,7 +48,7 @@ namespace DataBase.DatabaseClasses
             {
                 entity.HasKey(e => e.MigrationId);
 
-                entity.ToTable("__efmigrationhistory", "democentral");
+                entity.ToTable("__efmigrationhistory");
 
                 entity.Property(e => e.MigrationId)
                     .HasMaxLength(150)

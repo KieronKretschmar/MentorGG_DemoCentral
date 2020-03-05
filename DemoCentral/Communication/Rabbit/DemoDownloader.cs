@@ -19,15 +19,15 @@ namespace DemoCentral.RabbitCommunication
         /// <summary>
         /// Handle the response from DemoDownloader, set the corresponding FileStatus, update the QueueStatus and check the retries, eventually remove the demo
         /// </summary>
-        Task HandleMessageAsync(BasicDeliverEventArgs ea, DownloadReport consumeModel);
+        Task HandleMessageAsync(BasicDeliverEventArgs ea, DemoObtainReport consumeModel);
 
         /// <summary>
         /// Send a downloadUrl to the DemoDownloader, set the FileStatus to Downloading, and update the DemoDownloaderQueue Status
         /// </summary>
-        void SendMessageAndUpdateStatus(string correlationId, DemoDownloadInstructions produceModel);
+        void SendMessageAndUpdateStatus(DemoDownloadInstruction produceModel);
     }
 
-    public class DemoDownloader : RPCClient<DemoDownloadInstructions, DownloadReport>, IDemoDownloader
+    public class DemoDownloader : RPCClient<DemoDownloadInstruction, DemoObtainReport>, IDemoDownloader
     {
         private readonly IDemoCentralDBInterface _demoCentralDBInterface;
         private readonly IInQueueDBInterface _inQueueDBInterface;
@@ -45,59 +45,62 @@ namespace DemoCentral.RabbitCommunication
 
 
 
-        public void SendMessageAndUpdateStatus(string correlationId, DemoDownloadInstructions produceModel)
+        public void SendMessageAndUpdateStatus(DemoDownloadInstruction produceModel)
         {
-            long matchId = long.Parse(correlationId);
+            long matchId = produceModel.MatchId;
             _demoCentralDBInterface.SetFileStatus(matchId, FileStatus.Downloading);
             _inQueueDBInterface.UpdateProcessStatus(matchId,ProcessedBy.DemoDownloader, true);
 
-            PublishMessage(correlationId, produceModel);
+            PublishMessage(produceModel);
         }
 
-        public override Task HandleMessageAsync(BasicDeliverEventArgs ea, DownloadReport consumeModel)
+        public override Task HandleMessageAsync(BasicDeliverEventArgs ea, DemoObtainReport consumeModel)
         {
             var properties = ea.BasicProperties;
-            long matchId = long.Parse(properties.CorrelationId);
-
+            long matchId = consumeModel.MatchId;
+            var inQueueDemo = _inQueueDBInterface.GetDemoById(matchId);
+            var dbDemo = _demoCentralDBInterface.GetDemoById(matchId);
 
             if (consumeModel.Success)
             {
-                _demoCentralDBInterface.SetFilePath(matchId, consumeModel.DemoUrl);
+                _demoCentralDBInterface.SetBlobUrl(dbDemo, consumeModel.BlobUrl);
 
-                _demoCentralDBInterface.SetFileStatus(matchId, FileStatus.InBlobStorage);
+                _demoCentralDBInterface.SetFileStatus(dbDemo, FileStatus.InBlobStorage);
 
-                _inQueueDBInterface.UpdateProcessStatus(matchId,ProcessedBy.DemoDownloader, false);
+                _inQueueDBInterface.UpdateProcessStatus(inQueueDemo, ProcessedBy.DemoDownloader, false);
 
-                var model = _demoCentralDBInterface.CreateAnalyzeInstructions(matchId);
+                var model = _demoCentralDBInterface.CreateAnalyzeInstructions(dbDemo);
 
-                _demoFileWorker.SendMessageAndUpdateQueueStatus(properties.CorrelationId, model);
+                _demoFileWorker.SendMessageAndUpdateQueueStatus(model);
 
                 _logger.LogInformation($"Demo#{matchId} successfully downloaded");
             }
             else
             {
-                int attempts = _inQueueDBInterface.IncrementRetry(matchId);
+                int attempts = _inQueueDBInterface.IncrementRetry(inQueueDemo);
 
                 if (attempts > MAX_RETRIES)
                 {
-                    _inQueueDBInterface.RemoveDemoFromQueue(matchId);
+                    _inQueueDBInterface.RemoveDemoFromQueue(inQueueDemo);
                     _logger.LogError($"Demo#{matchId} failed download more than {MAX_RETRIES}, deleted");
                 }
                 else
                 {
-                    var downloadUrl = _demoCentralDBInterface.SetDownloadRetryingAndGetDownloadPath(matchId);
+                    _demoCentralDBInterface.SetFileStatus(dbDemo, FileStatus.DownloadRetrying);
+                    var downloadUrl = dbDemo.DownloadUrl;
 
-                    var resendModel = new DemoDownloadInstructions
+                    var resendModel = new DemoDownloadInstruction
                     {
                         DownloadUrl = downloadUrl,
                     };
 
-                    SendMessageAndUpdateStatus(properties.CorrelationId, resendModel);
+                    SendMessageAndUpdateStatus(resendModel);
 
                     _logger.LogWarning($"Demo#{matchId} failed download, retrying");
                 }
             }
 
+            _inQueueDBInterface.RemoveDemoIfNotInAnyQueue(inQueueDemo);
             return Task.CompletedTask;
         }
     }

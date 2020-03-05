@@ -16,7 +16,7 @@ namespace DemoCentral.RabbitCommunication
     /// If a message is received , <see cref="HandleMessage(IBasicProperties, GathererTransferModel)"/> is called
     /// and the message is forwarded to the demodownloader
     /// </summary>
-    public class Gatherer : Consumer<DemoEntryInstructions>
+    public class Gatherer : Consumer<DemoInsertInstruction>
     {
         private readonly IDemoCentralDBInterface _dbInterface;
         private readonly IDemoDownloader _demoDownloader;
@@ -24,7 +24,7 @@ namespace DemoCentral.RabbitCommunication
         private IUserInfoOperator _userInfoOperator;
         private IInQueueDBInterface _inQueueDBInterface;
 
-        public Gatherer(IQueueConnection queueConnection, IDemoCentralDBInterface dbInterface, IDemoDownloader demoDownloader,IUserInfoOperator userInfoOperator, ILogger<Gatherer> logger, IInQueueDBInterface inQueueDBInterface) : base(queueConnection)
+        public Gatherer(IQueueConnection queueConnection, IDemoCentralDBInterface dbInterface, IDemoDownloader demoDownloader, IUserInfoOperator userInfoOperator, ILogger<Gatherer> logger, IInQueueDBInterface inQueueDBInterface) : base(queueConnection)
         {
 
             _dbInterface = dbInterface;
@@ -37,26 +37,29 @@ namespace DemoCentral.RabbitCommunication
         /// <summary>
         /// Handle downloadUrl from GathererQueue, create new entry and send to downloader if unique, else delete and forget
         /// </summary>
-        public async override Task HandleMessageAsync(BasicDeliverEventArgs ea, DemoEntryInstructions model)
+        public async override Task HandleMessageAsync(BasicDeliverEventArgs ea, DemoInsertInstruction model)
         {
             AnalyzerQuality requestedQuality = await _userInfoOperator.GetAnalyzerQualityAsync(model.UploaderId);
             //TODO OPTIONAL FEATURE handle duplicate entry
             //Currently not inserted into db and forgotten afterwards
             //Maybe saved to special table or keep track of it otherwise
-            if (_dbInterface.TryCreateNewDemoEntryFromGatherer(model,requestedQuality,  out long matchId))
+            if (_dbInterface.TryCreateNewDemoEntryFromGatherer(model, requestedQuality, out long matchId))
             {
-                var forwardModel = new DemoDownloadInstructions
+                var forwardModel = new DemoDownloadInstruction
                 {
                     DownloadUrl = model.DownloadUrl
                 };
 
                 _inQueueDBInterface.Add(matchId, model.MatchDate, model.Source, model.UploaderId);
 
-                _demoDownloader.SendMessageAndUpdateStatus(matchId.ToString(), forwardModel);
+                _demoDownloader.SendMessageAndUpdateStatus(forwardModel);
 
                 _logger.LogInformation($"Demo#{matchId} assigned to {model.DownloadUrl}");
             }
-            _logger.LogInformation($"DownloadUrl {model.DownloadUrl} was duplicate of Demo#{matchId}");
+            else
+            {
+                _logger.LogInformation($"DownloadUrl {model.DownloadUrl} was duplicate of Demo#{matchId}");
+            }
         }
     }
 }

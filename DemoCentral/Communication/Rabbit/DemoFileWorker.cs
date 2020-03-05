@@ -26,36 +26,42 @@ namespace DemoCentral.RabbitCommunication
         /// <summary>
         /// Send a downloaded demo to the demoFileWorker and update the queue status
         /// </summary>
-        void SendMessageAndUpdateQueueStatus(string correlationId, DemoAnalyzeInstructions model);
+        void SendMessageAndUpdateQueueStatus(DemoAnalyzeInstruction model);
     }
 
-    public class DemoFileWorker : RPCClient<DemoAnalyzeInstructions, DemoAnalyzeReport>, IDemoFileWorker
+    public class DemoFileWorker : RPCClient<DemoAnalyzeInstruction, DemoAnalyzeReport>, IDemoFileWorker
     {
         private readonly IDemoCentralDBInterface _demoDBInterface;
         private readonly IInQueueDBInterface _inQueueDBInterface;
+        private readonly IProducer<RedisLocalizationInstruction> _fanoutSender;
         private readonly ILogger<DemoFileWorker> _logger;
 
         public DemoFileWorker(IRPCQueueConnections queueConnection, IServiceProvider provider, bool persistantMessageSending = true) : base(queueConnection, persistantMessageSending)
         {
             _demoDBInterface = provider.GetRequiredService<IDemoCentralDBInterface>();
             _inQueueDBInterface = provider.GetRequiredService<IInQueueDBInterface>();
+            _fanoutSender = provider.GetRequiredService<IProducer<RedisLocalizationInstruction>>();
             _logger = provider.GetRequiredService<ILogger<DemoFileWorker>>();
         }
 
-        public void SendMessageAndUpdateQueueStatus(string correlationId, DemoAnalyzeInstructions model)
+        public void SendMessageAndUpdateQueueStatus(DemoAnalyzeInstruction model)
         {
-            long matchId = long.Parse(correlationId);
-            _inQueueDBInterface.UpdateProcessStatus(matchId, ProcessedBy.DemoFileWorker, true);
-            PublishMessage(correlationId, model);
+            _inQueueDBInterface.UpdateProcessStatus(model.MatchId, ProcessedBy.DemoFileWorker, true);
+            PublishMessage(model);
         }
 
-        private void UpdateDBEntryFromFileWorkerResponse(long matchId, DemoAnalyzeReport response)
+        private void UpdateDBEntryFromFileWorkerResponse(DemoAnalyzeReport response)
         {
+            var matchId = response.MatchId;
+
+            var inQueueDemo = _inQueueDBInterface.GetDemoById(matchId);
+            var dbDemo = _demoDBInterface.GetDemoById(matchId);
+
             if (!response.Unzipped)
             {
                 //Remove demo from queue and set file status to unzip failed
-                _demoDBInterface.SetFileWorkerStatus(matchId, DemoFileWorkerStatus.UnzipFailed);
-                _inQueueDBInterface.RemoveDemoFromQueue(matchId);
+                _demoDBInterface.SetFileWorkerStatus(dbDemo, DemoFileWorkerStatus.UnzipFailed);
+                _inQueueDBInterface.RemoveDemoFromQueue(inQueueDemo);
                 _logger.LogWarning($"Demo#{matchId} could not be unzipped");
                 return;
             }
@@ -64,8 +70,8 @@ namespace DemoCentral.RabbitCommunication
             {
                 //Keep track of demos for which the duplicate check itself failed,
                 //they may or may not be duplicates, the check itself failed for any reason
-                _inQueueDBInterface.RemoveDemoFromQueue(matchId);
-                _demoDBInterface.SetFileWorkerStatus(matchId, DemoFileWorkerStatus.DuplicateCheckFailed);
+                _inQueueDBInterface.RemoveDemoFromQueue(inQueueDemo);
+                _demoDBInterface.SetFileWorkerStatus(dbDemo, DemoFileWorkerStatus.DuplicateCheckFailed);
                 _logger.LogWarning($"Demo#{matchId} was not duplicate checked");
                 return;
             }
@@ -76,7 +82,7 @@ namespace DemoCentral.RabbitCommunication
                 //TODO OPTIONAL FEATURE handle duplicate entry 2
                 //Currently a hash-checked demo, which is duplicated just gets removed
                 //Maybe keep track of it or just report back ?
-                _demoDBInterface.RemoveDemo(matchId);
+                _demoDBInterface.RemoveDemo(dbDemo);
                 _logger.LogWarning($"Demo#{matchId} is duplicate via MD5Hash");
                 return;
             }
@@ -84,12 +90,22 @@ namespace DemoCentral.RabbitCommunication
             if (response.Success)
             {
                 //Successfully handled in demo fileworker
-                _demoDBInterface.SetFileWorkerStatus(matchId, DemoFileWorkerStatus.Finished);
-                _demoDBInterface.SetFileStatus(matchId, FileStatus.InBlobStorage);
-                _demoDBInterface.SetFrames(matchId, response.FramesPerSecond);
+                _demoDBInterface.SetFileWorkerStatus(dbDemo, DemoFileWorkerStatus.Finished);
+                _demoDBInterface.SetFileStatus(dbDemo, FileStatus.InBlobStorage);
+                _demoDBInterface.SetFrames(dbDemo, response.FramesPerSecond);
 
-                _inQueueDBInterface.UpdateProcessStatus(matchId, ProcessedBy.DemoFileWorker, false);
+                _inQueueDBInterface.UpdateProcessStatus(inQueueDemo, ProcessedBy.DemoFileWorker, false);
+                _inQueueDBInterface.RemoveDemoIfNotInAnyQueue(inQueueDemo);
                 _logger.LogInformation($"Demo#{matchId} was successfully handled by DemoFileWorker");
+
+                var forwardModel = new RedisLocalizationInstruction
+                {
+                    RedisKey = response.RedisKey,
+                    ExpiryDate = response.ExpiryDate,
+                };
+                _fanoutSender.PublishMessage(forwardModel);
+
+                _logger.LogInformation($"Demo#{matchId} was sent to fanout");
                 return;
             }
 
@@ -101,8 +117,7 @@ namespace DemoCentral.RabbitCommunication
 
         public override Task HandleMessageAsync(BasicDeliverEventArgs ea, DemoAnalyzeReport consumeModel)
         {
-            long matchId = long.Parse(ea.BasicProperties.CorrelationId);
-            UpdateDBEntryFromFileWorkerResponse(matchId, consumeModel);
+            UpdateDBEntryFromFileWorkerResponse(consumeModel);
             return Task.CompletedTask;
 
         }

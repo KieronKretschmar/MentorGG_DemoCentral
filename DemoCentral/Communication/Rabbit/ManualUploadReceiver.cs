@@ -11,7 +11,7 @@ using RabbitMQ.Client.Events;
 
 namespace DemoCentral.RabbitCommunication
 {
-    public class ManualUploadReceiver : Consumer<DemoEntryInstructions>
+    public class ManualUploadReceiver : Consumer<DemoInsertInstruction>
     {
         private readonly IDemoFileWorker _demoFileWorker;
         private readonly IDemoCentralDBInterface _dBInterface;
@@ -26,17 +26,16 @@ namespace DemoCentral.RabbitCommunication
             _inQueueDBInterface = inQueueDBInterface;
         }
 
-        public async override Task HandleMessageAsync(BasicDeliverEventArgs ea, DemoEntryInstructions model)
+        public async override Task HandleMessageAsync(BasicDeliverEventArgs ea, DemoInsertInstruction model)
         {
             var requestedAnalyzerQuality = await _userInfoOperator.GetAnalyzerQualityAsync(model.UploaderId);
             if (_dBInterface.TryCreateNewDemoEntryFromGatherer(model, requestedAnalyzerQuality, out long matchId))
             {
                 _inQueueDBInterface.Add(matchId, model.MatchDate, model.Source, model.UploaderId);
                 var analyzeInstructions = _dBInterface.CreateAnalyzeInstructions(matchId);
-                analyzeInstructions.BlobURI = model.DownloadUrl;
+                analyzeInstructions.BlobUrl = model.DownloadUrl;
 
-
-                _demoFileWorker.SendMessageAndUpdateQueueStatus(matchId.ToString(), analyzeInstructions);
+                _demoFileWorker.SendMessageAndUpdateQueueStatus(analyzeInstructions);
             }
         }
     }
