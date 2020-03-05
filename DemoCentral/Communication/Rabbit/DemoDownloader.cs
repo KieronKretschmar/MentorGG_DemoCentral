@@ -50,6 +50,7 @@ namespace DemoCentral.RabbitCommunication
             long matchId = produceModel.MatchId;
             _demoCentralDBInterface.SetFileStatus(matchId, FileStatus.Downloading);
             _inQueueDBInterface.UpdateProcessStatus(matchId,ProcessedBy.DemoDownloader, true);
+            _logger.LogInformation($"Sent demo#{matchId} to DemoDownloadInstruction queue");
 
             PublishMessage(produceModel);
         }

@@ -34,7 +34,6 @@ namespace DemoCentral.RabbitCommunication
 
             return Task.CompletedTask;
         }
-
     }
 }
 
