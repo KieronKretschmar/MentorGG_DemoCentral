@@ -1,4 +1,6 @@
-﻿namespace DataBase.Enumerals
+﻿using System.Collections.Generic;
+
+namespace DataBase.Enumerals
 {
     /// <summary>
     /// This enum contains all possible values from demofileworker
@@ -14,5 +16,17 @@
         DuplicateCheckFailed = 33,
         AnalyzerFailed = 34, 
         CacheUploadFailed = 35,
+    }
+
+    public static class DemoFileWorkerStatusCollections
+    {
+        public static List<DemoFileWorkerStatus> Failed = new List<DemoFileWorkerStatus> 
+        {
+            DemoFileWorkerStatus.BlobStorageDownloadFailed,
+            DemoFileWorkerStatus.UnzipFailed,
+            DemoFileWorkerStatus.DuplicateCheckFailed,
+            DemoFileWorkerStatus.AnalyzerFailed,
+            DemoFileWorkerStatus.CacheUploadFailed
+        };
     }
 }
