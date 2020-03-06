@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using RabbitMQ.Client.Events;
 using Microsoft.Extensions.Logging;
+using RabbitCommunicationLib.Enums;
 
 namespace DemoCentral.RabbitCommunication
 {
@@ -29,7 +30,21 @@ namespace DemoCentral.RabbitCommunication
             _logger = logger;
         }
 
-        public async override Task HandleMessageAsync(BasicDeliverEventArgs ea, DemoInsertInstruction model)
+        public async override Task<ConsumedMessageHandling> HandleMessageAsync(BasicDeliverEventArgs ea, DemoInsertInstruction model)
+        {
+            try
+            {
+                await InsertNewDemo(model);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError($"Could not insert download from {model.DownloadUrl} to DB due to {e}");
+                return ConsumedMessageHandling.ThrowAway;
+            }
+            return ConsumedMessageHandling.Done;
+        }
+
+        private async Task InsertNewDemo(DemoInsertInstruction model)
         {
             var requestedAnalyzerQuality = await _userInfoOperator.GetAnalyzerQualityAsync(model.UploaderId);
             _logger.LogInformation($"Received manual upload from uploader#{model.UploaderId}, \n\t stored at {model.DownloadUrl}");
@@ -44,7 +59,6 @@ namespace DemoCentral.RabbitCommunication
             }
             else
                 _logger.LogInformation($"Received manual upload request from uploader#{model.UploaderId} was duplicate of match#{matchId}");
-
         }
     }
 }

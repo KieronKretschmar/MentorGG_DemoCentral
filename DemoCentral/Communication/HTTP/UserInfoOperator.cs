@@ -32,6 +32,7 @@ namespace DemoCentral.Communication.HTTP
         /// <summary>
         /// Gets the analyzer quality associated with a users subscription plan
         /// </summary>
+        /// <remarks>defaults to low if user could not be queried</remarks>
         /// <exception cref="HttpRequestException"></exception>
         /// <param name="steamId"></param>
         /// <returns></returns>
@@ -39,8 +40,7 @@ namespace DemoCentral.Communication.HTTP
         {
             var queryString = $"{_http_USER_SUBSCRIPTION}?steamId={steamId}";
             var response = await Client.GetAsync(queryString);
-
-            // throw exception if response is not succesful
+            
             if (!response.IsSuccessStatusCode)
             {
                 var msg = $"Getting user subscription plan failed for query [ {queryString} ]. Response: {response}";
@@ -51,9 +51,12 @@ namespace DemoCentral.Communication.HTTP
 
             var userSubscriptionString = await response.Content.ReadAsStringAsync();
 
-            var userSubscription = Enum.Parse<UserSubscription>(userSubscriptionString);
+            var success = Enum.TryParse(userSubscriptionString,out UserSubscription subscription);
 
-            switch (userSubscription)
+            if (!success)
+                return AnalyzerQuality.Low;
+
+            switch (subscription)   
             {
                 case UserSubscription.Free:
                     return AnalyzerQuality.Low;
@@ -63,7 +66,7 @@ namespace DemoCentral.Communication.HTTP
                     return AnalyzerQuality.High;
                 default:
                     return AnalyzerQuality.Low;
-            }
+            } 
         }
     }
 }
