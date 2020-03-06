@@ -1,11 +1,11 @@
-#Changelog
+# Changelog
 
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-##Upcoming
+## Upcoming
 - CI
 - Logging in Rabbit communication
 
@@ -25,19 +25,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Sending to match data fanout
 - Self-Migration
 
-###Changed
+### Changed
 - Database: rename FilePath => BlobUrl
 - Rabbit to Release 0.5.0
 
-###Fixed
+###  Fixed
 - Optimize database calls
 
 ## [0.2.0] - 2020-02-27
-##Added
+## Added
 - Swagger documentation
 - Docker support
 - Manual Upload
 
-##Updated
+## Updated
 - Rabbit to Release 0.4.0
 - Routes
