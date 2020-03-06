@@ -47,6 +47,7 @@ namespace DemoCentral.RabbitCommunication
         public void SendMessageAndUpdateQueueStatus(DemoAnalyzeInstruction model)
         {
             _inQueueDBInterface.UpdateProcessStatus(model.MatchId, ProcessedBy.DemoFileWorker, true);
+            _logger.LogInformation($"Sent demo#{model.MatchId} to DemoAnalyzeInstruction queue");
             PublishMessage(model);
         }
 
@@ -117,6 +118,7 @@ namespace DemoCentral.RabbitCommunication
 
         public override Task HandleMessageAsync(BasicDeliverEventArgs ea, DemoAnalyzeReport consumeModel)
         {
+            _logger.LogInformation($"Received demo#{consumeModel.MatchId} from DemoAnalyzeReport queue");
             UpdateDBEntryFromFileWorkerResponse(consumeModel);
             return Task.CompletedTask;
 

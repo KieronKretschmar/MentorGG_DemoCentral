@@ -39,6 +39,7 @@ namespace DemoCentral.RabbitCommunication
         /// </summary>
         public async override Task HandleMessageAsync(BasicDeliverEventArgs ea, DemoInsertInstruction model)
         {
+            _logger.LogInformation($"Received download url from DemoInsertInstruction queue \n url={model.DownloadUrl}");
             AnalyzerQuality requestedQuality = await _userInfoOperator.GetAnalyzerQualityAsync(model.UploaderId);
             //TODO OPTIONAL FEATURE handle duplicate entry
             //Currently not inserted into db and forgotten afterwards
