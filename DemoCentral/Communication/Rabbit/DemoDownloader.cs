@@ -58,6 +58,8 @@ namespace DemoCentral.RabbitCommunication
 
         public override Task<ConsumedMessageHandling> HandleMessageAsync(BasicDeliverEventArgs ea, DemoObtainReport consumeModel)
         {
+            _logger.LogInformation($"Received {consumeModel.GetType()} for match#{consumeModel.MatchId}");
+
             try
             {
                 UpdateDemoStatusFromObtainReport(consumeModel);
