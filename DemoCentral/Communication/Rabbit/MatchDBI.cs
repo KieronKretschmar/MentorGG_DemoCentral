@@ -5,6 +5,8 @@ using RabbitCommunicationLib.Interfaces;
 using RabbitCommunicationLib.TransferModels;
 using System.Threading.Tasks;
 using RabbitMQ.Client.Events;
+using RabbitCommunicationLib.Enums;
+using System;
 
 namespace DemoCentral.RabbitCommunication
 {
@@ -22,7 +24,23 @@ namespace DemoCentral.RabbitCommunication
         /// <summary>
         /// Handle response from  MatchDBI, update upload status, set database version
         /// </summary>
-        public override Task HandleMessageAsync(BasicDeliverEventArgs ea, TaskCompletedReport model)
+        public override Task<ConsumedMessageHandling> HandleMessageAsync(BasicDeliverEventArgs ea, TaskCompletedReport model)
+        {
+            try
+            {
+                UpdateDBFromResponse(model);
+
+            }
+            catch (Exception e)
+            {
+                _logger.LogError($"Could not update demo#{model.MatchId} from matchDBI response due to {e}");
+                return Task.FromResult(ConsumedMessageHandling.ThrowAway);
+            }
+
+            return Task.FromResult(ConsumedMessageHandling.Done);
+        }
+
+        private void UpdateDBFromResponse(TaskCompletedReport model)
         {
             long matchId = model.MatchId;
             var dbDemo = _dbInterface.GetDemoById(matchId);
@@ -35,8 +53,6 @@ namespace DemoCentral.RabbitCommunication
 
             string log = model.Success ? "was uploaded" : "failed upload";
             _logger.LogInformation($"Demo#{matchId} " + log);
-
-            return Task.CompletedTask;
         }
     }
 }

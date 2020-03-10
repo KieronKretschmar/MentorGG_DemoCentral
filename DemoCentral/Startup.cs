@@ -51,7 +51,7 @@ namespace DemoCentral
 
             services.AddLogging(o =>
             {
-                o.AddConsole();
+                o.AddConsole(o => o.TimestampFormat = "[yyyy-MM-dd HH:mm:ss zzz] ");
                 o.AddDebug();
             });
 
@@ -152,6 +152,8 @@ namespace DemoCentral
                  return new DemoDownloader(demoDownloaderRpcQueue, services);
              });
 
+            services.AddTransient<IProducer<DemoInsertInstruction>>(services => new Producer<DemoInsertInstruction>(gathererQueue));
+
             services.AddTransient<IUserInfoOperator>(services =>
             {
                 if (HTTP_USER_SUBSCRIPTION == "mock")
@@ -164,8 +166,8 @@ namespace DemoCentral
             {
                 return new FanoutProducer<RedisLocalizationInstruction>(fanoutExchangeConnection);
             });
-
             services.AddHostedService<IDemoDownloader>(p => p.GetRequiredService<IDemoDownloader>());
+
 
             services.AddHostedService<Gatherer>(services =>
             {
@@ -174,7 +176,7 @@ namespace DemoCentral
 
             services.AddHostedService<ManualUploadReceiver>(services =>
             {
-                return new ManualUploadReceiver(manualDemoDownloadQueue, services.GetRequiredService<IDemoFileWorker>(), services.GetRequiredService<IDemoCentralDBInterface>(), services.GetRequiredService<IUserInfoOperator>(), services.GetRequiredService<IInQueueDBInterface>());
+                return new ManualUploadReceiver(manualDemoDownloadQueue, services.GetRequiredService<IDemoFileWorker>(), services.GetRequiredService<IDemoCentralDBInterface>(), services.GetRequiredService<IUserInfoOperator>(), services.GetRequiredService<IInQueueDBInterface>(), services.GetRequiredService<ILogger<ManualUploadReceiver>>());
             });
         }
 

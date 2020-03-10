@@ -37,8 +37,9 @@ namespace DemoCentral.RabbitCommunication
         /// <summary>
         /// Handle downloadUrl from GathererQueue, create new entry and send to downloader if unique, else delete and forget
         /// </summary>
-        public async override Task HandleMessageAsync(BasicDeliverEventArgs ea, DemoInsertInstruction model)
+        public async override Task<ConsumedMessageHandling> HandleMessageAsync(BasicDeliverEventArgs ea, DemoInsertInstruction model)
         {
+            _logger.LogInformation($"Received download url from DemoInsertInstruction queue \n url={model.DownloadUrl}");
             AnalyzerQuality requestedQuality = await _userInfoOperator.GetAnalyzerQualityAsync(model.UploaderId);
             //TODO OPTIONAL FEATURE handle duplicate entry
             //Currently not inserted into db and forgotten afterwards
@@ -60,6 +61,8 @@ namespace DemoCentral.RabbitCommunication
             {
                 _logger.LogInformation($"DownloadUrl {model.DownloadUrl} was duplicate of Demo#{matchId}");
             }
+
+            return ConsumedMessageHandling.Done;
         }
     }
 }

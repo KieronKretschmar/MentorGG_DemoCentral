@@ -10,6 +10,7 @@ using DataBase.Enumerals;
 using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
 using RabbitMQ.Client.Events;
+using RabbitCommunicationLib.Enums;
 
 namespace DemoCentral.RabbitCommunication
 {
@@ -21,7 +22,7 @@ namespace DemoCentral.RabbitCommunication
         /// remove entirely if duplicate, 
         /// remove from queue if unzip failed 
         /// </summary>
-        Task HandleMessageAsync(BasicDeliverEventArgs ea, DemoAnalyzeReport consumeModel);
+        Task<ConsumedMessageHandling> HandleMessageAsync(BasicDeliverEventArgs ea, DemoAnalyzeReport consumeModel);
 
         /// <summary>
         /// Send a downloaded demo to the demoFileWorker and update the queue status
@@ -47,6 +48,7 @@ namespace DemoCentral.RabbitCommunication
         public void SendMessageAndUpdateQueueStatus(DemoAnalyzeInstruction model)
         {
             _inQueueDBInterface.UpdateProcessStatus(model.MatchId, ProcessedBy.DemoFileWorker, true);
+            _logger.LogInformation($"Sent demo#{model.MatchId} to DemoAnalyzeInstruction queue");
             PublishMessage(model);
         }
 
@@ -115,11 +117,20 @@ namespace DemoCentral.RabbitCommunication
             _logger.LogError("Could not handle response from DemoFileWorker");
         }
 
-        public override Task HandleMessageAsync(BasicDeliverEventArgs ea, DemoAnalyzeReport consumeModel)
+        public async override Task<ConsumedMessageHandling> HandleMessageAsync(BasicDeliverEventArgs ea, DemoAnalyzeReport consumeModel)
         {
-            UpdateDBEntryFromFileWorkerResponse(consumeModel);
-            return Task.CompletedTask;
+            _logger.LogInformation($"Received demo#{consumeModel.MatchId} from DemoAnalyzeReport queue");
 
+            try
+            {
+                UpdateDBEntryFromFileWorkerResponse(consumeModel);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError($"Failed to update demo#{consumeModel.MatchId} in database due to {e}");
+                return await Task.FromResult(ConsumedMessageHandling.ThrowAway);
+            }
+            return await Task.FromResult(ConsumedMessageHandling.Done);
         }
     }
 }

@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
 using DataBase.Enumerals;
 using RabbitMQ.Client.Events;
+using RabbitCommunicationLib.Enums;
 
 namespace DemoCentral.RabbitCommunication
 {
@@ -19,7 +20,7 @@ namespace DemoCentral.RabbitCommunication
         /// <summary>
         /// Handle the response from DemoDownloader, set the corresponding FileStatus, update the QueueStatus and check the retries, eventually remove the demo
         /// </summary>
-        Task HandleMessageAsync(BasicDeliverEventArgs ea, DemoObtainReport consumeModel);
+        Task<ConsumedMessageHandling> HandleMessageAsync(BasicDeliverEventArgs ea, DemoObtainReport consumeModel);
 
         /// <summary>
         /// Send a downloadUrl to the DemoDownloader, set the FileStatus to Downloading, and update the DemoDownloaderQueue Status
@@ -49,14 +50,30 @@ namespace DemoCentral.RabbitCommunication
         {
             long matchId = produceModel.MatchId;
             _demoCentralDBInterface.SetFileStatus(matchId, FileStatus.Downloading);
-            _inQueueDBInterface.UpdateProcessStatus(matchId,ProcessedBy.DemoDownloader, true);
+            _inQueueDBInterface.UpdateProcessStatus(matchId, ProcessedBy.DemoDownloader, true);
+            _logger.LogInformation($"Sent demo#{matchId} to DemoDownloadInstruction queue");
 
             PublishMessage(produceModel);
         }
 
-        public override Task HandleMessageAsync(BasicDeliverEventArgs ea, DemoObtainReport consumeModel)
+        public override Task<ConsumedMessageHandling> HandleMessageAsync(BasicDeliverEventArgs ea, DemoObtainReport consumeModel)
         {
-            var properties = ea.BasicProperties;
+            _logger.LogInformation($"Received {consumeModel.GetType()} for match#{consumeModel.MatchId}");
+
+            try
+            {
+                UpdateDemoStatusFromObtainReport(consumeModel);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError($"Could not update demo#{consumeModel.MatchId} from DemoObtainReport due to {e}");
+                return Task.FromResult(ConsumedMessageHandling.ThrowAway);
+            }
+            return Task.FromResult(ConsumedMessageHandling.Done);
+        }
+
+        private void UpdateDemoStatusFromObtainReport(DemoObtainReport consumeModel)
+        {
             long matchId = consumeModel.MatchId;
             var inQueueDemo = _inQueueDBInterface.GetDemoById(matchId);
             var dbDemo = _demoCentralDBInterface.GetDemoById(matchId);
@@ -101,7 +118,6 @@ namespace DemoCentral.RabbitCommunication
             }
 
             _inQueueDBInterface.RemoveDemoIfNotInAnyQueue(inQueueDemo);
-            return Task.CompletedTask;
         }
     }
 }
