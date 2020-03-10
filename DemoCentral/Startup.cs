@@ -152,6 +152,8 @@ namespace DemoCentral
                  return new DemoDownloader(demoDownloaderRpcQueue, services);
              });
 
+            services.AddTransient<IProducer<DemoInsertInstruction>>(services => new Producer<DemoInsertInstruction>(gathererQueue));
+
             services.AddTransient<IUserInfoOperator>(services =>
             {
                 if (HTTP_USER_SUBSCRIPTION == "mock")
@@ -164,8 +166,8 @@ namespace DemoCentral
             {
                 return new FanoutProducer<RedisLocalizationInstruction>(fanoutExchangeConnection);
             });
-
             services.AddHostedService<IDemoDownloader>(p => p.GetRequiredService<IDemoDownloader>());
+
 
             services.AddHostedService<Gatherer>(services =>
             {
