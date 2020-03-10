@@ -32,45 +32,62 @@ namespace DemoCentral.Controllers.trusted
         /// Convert a browser extension request into a DemoInstertInstruction and put it in the corresponding queue
         /// </summary>
         /// <param name="uploaderId">steam id of the uploader</param>
-        /// <param name="jsonModel">json string of the data associated with the request</param>
+        /// <param name="data">json string of the data associated with the request</param>
         /// <response code="200"> request was processed and put into queue</response>
         /// <response code="400"> request could not be processed</response>
         [HttpPost("extensionupload")]
-        public ActionResult InsertIntoGathererQueue(long uploaderId, string jsonModel)
+        public ActionResult InsertIntoGathererQueue([FromBody] JsonMatches data)
         {
-            _logger.LogInformation($"Received new browwser extension upload from {uploaderId}");
-            
-            try
-            {
-                var match = JsonConvert.DeserializeObject<JsonModel>(jsonModel);
+            _logger.LogInformation($"Received {data.Matches.Length} new matches via browser extension");
 
-                var model = new DemoInsertInstruction
+
+            foreach (var match in data.Matches)
+            {
+                try
                 {
-                    DownloadUrl = match.DownloadUrl,
-                    UploaderId = uploaderId,
-                    MatchDate = match.MatchDate,
-                    Source = match.Source,
-                    UploadType = UploadType.Extension
-                };
+                    var uploaderId = match.UploaderId;
+                    var model = new DemoInsertInstruction
+                    {
+                        DownloadUrl = match.DownloadUrl,
+                        UploaderId = uploaderId,
+                        MatchDate = match.MatchDate,
+                        Source = match.Source,
+                        UploadType = UploadType.Extension
+                    };
 
-                _producer.PublishMessage(model);
-                _logger.LogInformation($"Put new download request from browser extension in queue \n url:{model.DownloadUrl}");
-                return Ok();
+                    _producer.PublishMessage(model);
+                    _logger.LogInformation($"Put new download request from browser extension in queue \n url:{model.DownloadUrl}");
+                    return Ok();
 
+                }
+                catch (Exception e)
+                {
+                    _logger.LogWarning($"Failed to insert download request from {match.DownloadUrl} due to {e}");
+                    return BadRequest();
+                }
             }
-            catch (Exception e)
-            {
-                _logger.LogWarning($"Failed to insert download request from {uploaderId} due to {e}");
-                return BadRequest();
-            }
+            return Ok();
         }
 
-
-        public struct JsonModel
+        public partial class JsonMatches
         {
-            public DateTime MatchDate;
-            public string DownloadUrl;
-            public Source Source;
+            [JsonProperty(" matches")]
+            public Match[] Matches { get; set; }
+        }
+
+        public partial class Match
+        {
+            [JsonProperty(" time ")]
+            public DateTime MatchDate { get; set; }
+
+            [JsonProperty("url")]
+            public string DownloadUrl { get; set; }
+
+            [JsonProperty("steamId")]
+            public long UploaderId { get; set; }
+
+            [JsonProperty("source")]
+            public Source Source { get; set; }
         }
     }
 }
