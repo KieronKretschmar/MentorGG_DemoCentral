@@ -71,13 +71,13 @@ namespace DemoCentral.Controllers
 
         public partial class JsonMatches
         {
-            [JsonProperty(" matches")]
+            [JsonProperty("matches")]
             public Match[] Matches { get; set; }
         }
 
         public partial class Match
         {
-            [JsonProperty(" time ")]
+            [JsonProperty("time")]
             public DateTime MatchDate { get; set; }
 
             [JsonProperty("url")]
