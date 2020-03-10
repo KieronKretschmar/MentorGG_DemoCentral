@@ -39,7 +39,7 @@ namespace DemoCentral.Controllers
         public ActionResult InsertIntoGathererQueue([FromBody] JsonMatches data)
         {
             _logger.LogInformation($"Received {data.Matches.Length} new matches via browser extension");
-
+            bool atLeastOneMatchFailed = false;
 
             foreach (var match in data.Matches)
             {
@@ -57,16 +57,18 @@ namespace DemoCentral.Controllers
 
                     _producer.PublishMessage(model);
                     _logger.LogInformation($"Put new download request from browser extension in queue \n url:{model.DownloadUrl}");
-                    return Ok();
 
                 }
                 catch (Exception e)
                 {
                     _logger.LogWarning($"Failed to insert download request from {match.DownloadUrl} due to {e}");
-                    return BadRequest();
+                    atLeastOneMatchFailed = true;
                 }
             }
-            return Ok();
+            if (atLeastOneMatchFailed)
+                return BadRequest();
+            else
+                return Ok();
         }
 
         public partial class JsonMatches
