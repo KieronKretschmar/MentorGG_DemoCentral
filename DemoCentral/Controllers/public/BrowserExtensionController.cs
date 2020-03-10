@@ -11,10 +11,10 @@ using RabbitCommunicationLib.Interfaces;
 using RabbitCommunicationLib.Producer;
 using RabbitCommunicationLib.TransferModels;
 
-namespace DemoCentral.Controllers.trusted
+namespace DemoCentral.Controllers
 {
     [ApiVersion("1")]
-    [Route("v{version:apiVersion}/trusted")]
+    [Route("v{version:apiVersion}/public")]
     [ApiController]
     public class BrowserExtensionController : ControllerBase
     {
@@ -35,7 +35,7 @@ namespace DemoCentral.Controllers.trusted
         /// <param name="data">json string of the data associated with the request</param>
         /// <response code="200"> request was processed and put into queue</response>
         /// <response code="400"> request could not be processed</response>
-        [HttpPost("extensionupload")]
+        [HttpPost("extensionupload-valve")]
         public ActionResult InsertIntoGathererQueue([FromBody] JsonMatches data)
         {
             _logger.LogInformation($"Received {data.Matches.Length} new matches via browser extension");
@@ -51,7 +51,7 @@ namespace DemoCentral.Controllers.trusted
                         DownloadUrl = match.DownloadUrl,
                         UploaderId = uploaderId,
                         MatchDate = match.MatchDate,
-                        Source = match.Source,
+                        Source = Source.Valve,
                         UploadType = UploadType.Extension
                     };
 
@@ -85,9 +85,6 @@ namespace DemoCentral.Controllers.trusted
 
             [JsonProperty("steamId")]
             public long UploaderId { get; set; }
-
-            [JsonProperty("source")]
-            public Source Source { get; set; }
         }
     }
 }
