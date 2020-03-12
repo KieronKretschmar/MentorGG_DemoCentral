@@ -32,9 +32,8 @@ public BrowserExtensionControllerTests()
 
             var testProducer = new Mock<IProducer<DemoInsertInstruction>>();
             var test = new BrowserExtensionController(testProducer.Object, _mockILogger);
-            var testMatches = JsonConvert.DeserializeObject<JsonMatches>(browserExtensionJson);
 
-            var result  = test.InsertIntoGathererQueue(testMatches);
+            var result  = test.InsertIntoGathererQueue(browserExtensionJson);
 
             Assert.IsTrue(result is OkResult);
             testProducer.Verify(x => x.PublishMessage(It.IsAny<DemoInsertInstruction>(),null),Times.Once);

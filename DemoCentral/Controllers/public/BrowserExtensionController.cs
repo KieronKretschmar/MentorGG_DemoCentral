@@ -36,12 +36,14 @@ namespace DemoCentral.Controllers
         /// <response code="200"> request was processed and put into queue</response>
         /// <response code="400"> request could not be processed</response>
         [HttpPost("extensionupload-valve")]
-        public ActionResult InsertIntoGathererQueue([FromBody] JsonMatches data)
+        public ActionResult InsertIntoGathererQueue(string data)
         {
-            _logger.LogInformation($"Received {data.Matches.Length} new matches via browser extension");
+            var matches = JsonConvert.DeserializeObject<JsonMatches>(data);
+
+            _logger.LogInformation($"Received {matches.Matches.Length} new matches via browser extension");
             bool atLeastOneMatchFailed = false;
 
-            foreach (var match in data.Matches)
+            foreach (var match in matches.Matches)
             {
                 try
                 {
