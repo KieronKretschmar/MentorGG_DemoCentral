@@ -102,6 +102,7 @@ namespace DemoCentral.RabbitCommunication
 
                 var forwardModel = new RedisLocalizationInstruction
                 {
+                    MatchId = response.MatchId,
                     RedisKey = response.RedisKey,
                     ExpiryDate = response.ExpiryDate,
                 };

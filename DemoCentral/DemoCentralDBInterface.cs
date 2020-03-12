@@ -99,6 +99,7 @@ namespace DemoCentral
         {
             return new DemoAnalyzeInstruction
             {
+                MatchId = demo.MatchId,
                 Source = demo.Source,
                 MatchDate = demo.MatchDate,
                 BlobUrl = demo.BlobUrl,
