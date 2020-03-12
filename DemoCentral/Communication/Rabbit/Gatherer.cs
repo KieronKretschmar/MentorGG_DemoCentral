@@ -48,6 +48,7 @@ namespace DemoCentral.RabbitCommunication
             {
                 var forwardModel = new DemoDownloadInstruction
                 {
+                    MatchId = matchId,
                     DownloadUrl = model.DownloadUrl
                 };
 
