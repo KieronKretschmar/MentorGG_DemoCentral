@@ -1,4 +1,6 @@
-﻿namespace DataBase.Enumerals
+﻿using System.Collections.Generic;
+
+namespace DataBase.Enumerals
 {
     /// <summary>
     /// This enum contains the options for a demo file unrelated to demoFileWorker
@@ -11,5 +13,10 @@
         DownloadFailed = 12,
         InBlobStorage = 30,
         Removed = 50
+    }
+
+    public static class FileStatusCollections
+    {
+        public static List<FileStatus> Failed = new List<FileStatus> { FileStatus.DownloadFailed };
     }
 }

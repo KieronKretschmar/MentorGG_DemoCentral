@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System.Web;
 using System.Net;
+using DemoCentral.Models;
 
 namespace DemoCentral.Controllers
 {
@@ -52,18 +53,22 @@ namespace DemoCentral.Controllers
         }
 
         /// <summary>
-        /// Get the number of enqueued matches for a certain player 
+        /// Get information about matches the player has in queue, e.g. the total number of enqueued matches for a certain player.
         /// </summary>
         /// <response code="200">number of matches in queue for a certain player</response>
         /// <param name="steamId">steamid of the certain player</param>
         /// <example>GET /v1/public/single/11231331131/matchesinqueue</example>
         [HttpGet("single/{steamId}/matchesinqueue")]
-        public ActionResult<int> NumberPlayerMatches(long steamId)
+        public ActionResult<QueueStatusModel> QueueStatus(long steamId)
         {
             _logger.LogInformation($"Received request for matches of player#{steamId}");
-            return _dbInterface.GetPlayerMatchesInQueue(steamId).Count;
+            var model = new QueueStatusModel();
+
+            // assign matchids, starting with the match inserted first
+            model.MatchIds = _dbInterface.GetPlayerMatchesInQueue(steamId).OrderBy(x=>x.InsertDate).Select(x => x.MatchId).ToList();
+            model.FirstDemoPosition = model.MatchIds.Count > 0 ? _dbInterface.GetQueuePosition(model.MatchIds.First()) : -1;
+            model.TotalQueueLength = _dbInterface.GetTotalQueueLength();
+            return model;
         }
     }
-
-
 }

@@ -47,6 +47,7 @@ namespace DemoCentral
         /// <param name="matchId">Return either a new matchId or the one of the found demo if the download url is known</param>
         /// <returns>true, if downloadUrl is unique</returns>
         bool TryCreateNewDemoEntryFromGatherer(DemoInsertInstruction model, AnalyzerQuality requestedQuality, out long matchId);
+        List<Demo> GetRecentFailedMatches(long playerId, int recentMatches, int offset = 0);
     }
 
     /// <summary>
@@ -168,6 +169,18 @@ namespace DemoCentral
         public List<Demo> GetRecentMatches(long playerId, int recentMatches, int offset = 0)
         {
             var recentMatchesId = _context.Demo.Where(x => x.UploaderId == playerId).Take(recentMatches + offset).ToList();
+            recentMatchesId.RemoveRange(0, offset);
+
+            return recentMatchesId;
+        }
+
+        public List<Demo> GetRecentFailedMatches(long playerId, int recentMatches, int offset = 0)
+        {
+            var recentMatchesId = _context.Demo
+                .Where(x => x.UploaderId == playerId)
+                .Where(x=> FileStatusCollections.Failed.Contains(x.FileStatus) || DemoFileWorkerStatusCollections.Failed.Contains(x.DemoFileWorkerStatus))
+                .Take(recentMatches + offset)
+                .ToList();
             recentMatchesId.RemoveRange(0, offset);
 
             return recentMatchesId;

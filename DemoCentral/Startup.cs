@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Mvc;
 using RabbitCommunicationLib.TransferModels;
 using RabbitCommunicationLib.Interfaces;
 using RabbitCommunicationLib.Producer;
+using DemoCentral.Helpers;
 
 namespace DemoCentral
 {
@@ -47,7 +48,14 @@ namespace DemoCentral
             services.AddDbContext<DemoCentralContext>(options =>
                 options.UseMySql(MYSQL_CONNECTION_STRING), ServiceLifetime.Transient, ServiceLifetime.Transient);
 
-            services.AddControllers();
+            services.AddControllers()
+                .AddNewtonsoftJson(x =>
+                {
+                    // Serialize JSON using the Member CASE!
+                    x.UseMemberCasing();
+                    // Serialize longs (steamIds) as strings
+                    x.SerializerSettings.Converters.Add(new LongToStringConverter());
+                });
 
             services.AddLogging(o =>
             {

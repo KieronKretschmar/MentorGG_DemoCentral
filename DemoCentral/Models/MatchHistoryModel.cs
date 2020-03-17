@@ -12,21 +12,19 @@ namespace DemoCentral.Models
 
         public static MatchHistoryModel FromRecentFailedMatches(long playerId, int recentMatches, int offset, IDemoCentralDBInterface dBInterface)
         {
-            var matches = dBInterface.GetRecentMatches(playerId, recentMatches, offset);
-            List<MatchHistoryEntry> matchHistoryEntries = new List<MatchHistoryEntry>();
-            foreach (var match in matches)
-            {
-                matchHistoryEntries.Add(new MatchHistoryEntry
+            var failedMatches = dBInterface.GetRecentFailedMatches(playerId, recentMatches, offset);
+            var entries = failedMatches
+                .Select(match => new MatchHistoryEntry
                 {
                     MatchId = match.MatchId,
                     MatchDate = match.MatchDate,
                     Success = match.DemoFileWorkerStatus == DemoFileWorkerStatus.Finished
-                });
-            }
+                })
+                .ToList();
 
             return new MatchHistoryModel
             {
-                Entries = matchHistoryEntries.Where(x => x.Success).ToList(),
+                Entries = entries
             };
         }
 
