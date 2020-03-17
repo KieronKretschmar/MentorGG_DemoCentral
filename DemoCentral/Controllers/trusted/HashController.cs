@@ -8,6 +8,7 @@ using DemoCentral.Models;
 using DataBase.DatabaseClasses;
 using System.Net;
 using Microsoft.Extensions.Logging;
+using RabbitCommunicationLib.Enums;
 
 namespace DemoCentral.Controllers
 {
@@ -32,16 +33,16 @@ namespace DemoCentral.Controllers
         /// Check if the hash is already in the database, create if not
         /// </summary>
         /// <param name="matchId">id of the match to potentially create</param>
-        /// <param name="framesPerSecond">the requested amount of frames for the analysis</param>
+        /// <param name="requestedQuality">quality for which the </param>
         /// <param name="hash">hash to check</param>
         /// <response code="200">The analysis of the demo was requested and the provided hash has been set.</response>
         /// <response code="409">the request demo is a duplicate</response>
         /// <returns>Conflict or Ok if reANalysis is required or not</returns>
-        /// <example>POST v1/trusted/match/123456789/duplicatecheck?framesPerSecond=1&amp;hash=mdHash123451a</example>
+        /// <example>POST v1/trusted/match/123456789/duplicatecheck?requestedQuality=1&amp;hash=mdHash123451a</example>
         [HttpPost("match/{matchId}/duplicatecheck")]
-        public ActionResult CreateHash(long matchId,byte framesPerSecond, string hash)
+        public ActionResult CreateHash(long matchId,AnalyzerQuality requestedQuality, string hash)
         {
-            bool duplicateHash = _dbInterface.IsReanalysisRequired(hash, out long duplicateMatchId, framesPerSecond);
+            bool duplicateHash = _dbInterface.IsReanalysisRequired(hash, out long duplicateMatchId, requestedQuality);
 
             if (duplicateHash)
             {
