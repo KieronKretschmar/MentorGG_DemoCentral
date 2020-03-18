@@ -74,6 +74,8 @@ namespace DemoCentral.RabbitCommunication
                 //Currently a hash-checked demo, which is duplicated just gets removed
                 //Maybe keep track of it or just report back ?
                 _demoDBInterface.RemoveDemo(dbDemo);
+                _inQueueDBInterface.RemoveDemoFromQueue(inQueueDemo);
+
                 _logger.LogWarning($"Demo#{matchId} is duplicate via MD5Hash");
                 return;
             }
