@@ -31,6 +31,8 @@ namespace DemoCentral.Controllers
         [HttpGet("single/{steamId}/manual-upload")]
         public async Task<int> GetNumberOfManualUploadedMatches(long steamId)
         {
+            _logger.LogInformation($"Recceived request for number of manual uploaded matches of player#{steamId}");
+
             var numberSuccessfulPlayerMatches = _dBInterface.GetMatchesByUploader(steamId).Where(x => x.UploadType == UploadType.ManualUserUpload && x.UploadStatus == UploadStatus.Finished).Count();
 
             var matchesInQueue = _inQueueDBInterface.GetPlayerMatchesInQueue(steamId).Select(x => x.MatchId);
