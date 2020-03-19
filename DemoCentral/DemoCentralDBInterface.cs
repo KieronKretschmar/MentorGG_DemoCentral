@@ -29,6 +29,7 @@ namespace DemoCentral
         void RemoveDemo(long matchId);
         void SetDatabaseVersion(Demo demo, string databaseVersion);
         void SetDatabaseVersion(long matchId, string databaseVersion);
+        List<Demo> GetMatchesByUploader(long steamId);
         void SetBlobUrl(Demo demo, string blobUrl);
         void SetBlobUrl(long matchId, string blobUrl);
         void SetFileStatus(Demo demo, FileStatus status);
@@ -273,6 +274,11 @@ namespace DemoCentral
         {
             demo.DemoFileWorkerStatus = status;
             _context.SaveChanges();
+        }
+
+        public List<Demo> GetMatchesByUploader(long steamId)
+        {
+            return _context.Demo.Where(x => x.UploaderId == steamId).ToList();
         }
     }
 
