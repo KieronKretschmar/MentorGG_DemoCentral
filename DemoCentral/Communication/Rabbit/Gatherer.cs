@@ -8,6 +8,7 @@ using RabbitCommunicationLib.TransferModels;
 using System.Threading.Tasks;
 using RabbitCommunicationLib.Enums;
 using RabbitMQ.Client.Events;
+using DataBase.Enumerals;
 
 namespace DemoCentral.RabbitCommunication
 {
@@ -46,6 +47,8 @@ namespace DemoCentral.RabbitCommunication
             //Maybe saved to special table or keep track of it otherwise
             if (_dbInterface.TryCreateNewDemoEntryFromGatherer(model, requestedQuality, out long matchId))
             {
+                _logger.LogInformation($"Demo#{matchId} assigned to {model.DownloadUrl}");
+
                 var forwardModel = new DemoDownloadInstruction
                 {
                     MatchId = matchId,
@@ -54,9 +57,12 @@ namespace DemoCentral.RabbitCommunication
 
                 _inQueueDBInterface.Add(matchId, model.MatchDate, model.Source, model.UploaderId);
 
-                _demoDownloader.SendMessageAndUpdateStatus(forwardModel);
+                _dbInterface.SetFileStatus(matchId, FileStatus.Downloading);
+                _inQueueDBInterface.UpdateProcessStatus(matchId, ProcessedBy.DemoDownloader, true);
+                _demoDownloader.PublishMessage(forwardModel);
 
-                _logger.LogInformation($"Demo#{matchId} assigned to {model.DownloadUrl}");
+                _logger.LogInformation($"Sent demo#{matchId} to DemoDownloadInstruction queue");
+
             }
             else
             {

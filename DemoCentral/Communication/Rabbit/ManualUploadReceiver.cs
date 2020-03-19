@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using RabbitMQ.Client.Events;
 using Microsoft.Extensions.Logging;
 using RabbitCommunicationLib.Enums;
+using Database.Enumerals;
 
 namespace DemoCentral.RabbitCommunication
 {
@@ -54,8 +55,11 @@ namespace DemoCentral.RabbitCommunication
                 var analyzeInstructions = _dBInterface.CreateAnalyzeInstructions(matchId);
                 analyzeInstructions.BlobUrl = model.DownloadUrl;
                 _logger.LogInformation($"Upload from uploader#{model.UploaderId} was unique, stored at match id #{matchId} now");
+                
+                _inQueueDBInterface.UpdateProcessStatus(matchId, ProcessedBy.DemoFileWorker, true);
 
-                _demoFileWorker.SendMessageAndUpdateQueueStatus(analyzeInstructions);
+                _demoFileWorker.PublishMessage(analyzeInstructions);
+                _logger.LogInformation($"Sent demo#{matchId} to DemoAnalyzeInstruction queue");
             }
             else
                 _logger.LogInformation($"Received manual upload request from uploader#{model.UploaderId} was duplicate of match#{matchId}");

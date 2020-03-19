@@ -22,10 +22,7 @@ namespace DemoCentral.RabbitCommunication
         /// </summary>
         Task<ConsumedMessageHandling> HandleMessageAsync(BasicDeliverEventArgs ea, DemoObtainReport consumeModel);
 
-        /// <summary>
-        /// Send a downloadUrl to the DemoDownloader, set the FileStatus to Downloading, and update the DemoDownloaderQueue Status
-        /// </summary>
-        void SendMessageAndUpdateStatus(DemoDownloadInstruction produceModel);
+        void PublishMessage(DemoDownloadInstruction produceModel);
     }
 
     public class DemoDownloader : RPCClient<DemoDownloadInstruction, DemoObtainReport>, IDemoDownloader
@@ -42,18 +39,6 @@ namespace DemoCentral.RabbitCommunication
             _inQueueDBInterface = serviceProvider.GetService<IInQueueDBInterface>();
             _demoFileWorker = serviceProvider.GetRequiredService<IDemoFileWorker>();
             _logger = serviceProvider.GetRequiredService<ILogger<DemoDownloader>>();
-        }
-
-
-
-        public void SendMessageAndUpdateStatus(DemoDownloadInstruction produceModel)
-        {
-            long matchId = produceModel.MatchId;
-            _demoCentralDBInterface.SetFileStatus(matchId, FileStatus.Downloading);
-            _inQueueDBInterface.UpdateProcessStatus(matchId, ProcessedBy.DemoDownloader, true);
-            _logger.LogInformation($"Sent demo#{matchId} to DemoDownloadInstruction queue");
-
-            PublishMessage(produceModel);
         }
 
         public override Task<ConsumedMessageHandling> HandleMessageAsync(BasicDeliverEventArgs ea, DemoObtainReport consumeModel)
@@ -88,9 +73,8 @@ namespace DemoCentral.RabbitCommunication
 
                 var model = _demoCentralDBInterface.CreateAnalyzeInstructions(dbDemo);
 
-                _demoFileWorker.SendMessageAndUpdateQueueStatus(model);
-
-                _logger.LogInformation($"Demo#{matchId} successfully downloaded");
+                _inQueueDBInterface.UpdateProcessStatus(inQueueDemo, ProcessedBy.DemoFileWorker, true);
+                _demoFileWorker.PublishMessage(model);
             }
             else
             {
@@ -111,7 +95,12 @@ namespace DemoCentral.RabbitCommunication
                         DownloadUrl = downloadUrl,
                     };
 
-                    SendMessageAndUpdateStatus(resendModel);
+                    _demoCentralDBInterface.SetFileStatus(matchId, FileStatus.DownloadRetrying);
+                    _inQueueDBInterface.UpdateProcessStatus(matchId, ProcessedBy.DemoDownloader, true);
+                    _logger.LogInformation($"Sent demo#{matchId} to DemoDownloadInstruction queue");
+
+                    PublishMessage(resendModel);
+
 
                     _logger.LogWarning($"Demo#{matchId} failed download, retrying");
                 }

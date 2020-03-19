@@ -129,15 +129,15 @@ namespace DemoCentral
             _context.SaveChanges();
         }
 
-        public void SetBlobUrl(long matchId, string zippedFilePath)
+        public void SetBlobUrl(long matchId, string blobUrl)
         {
             var demo = GetDemoById(matchId);
-            SetBlobUrl(demo, zippedFilePath);
+            SetBlobUrl(demo, blobUrl);
         }
 
-        public void SetBlobUrl(Demo demo, string zippedFilePath)
+        public void SetBlobUrl(Demo demo, string blobUrl)
         {
-            demo.BlobUrl = zippedFilePath;
+            demo.BlobUrl = blobUrl;
             _context.SaveChanges();
         }
 

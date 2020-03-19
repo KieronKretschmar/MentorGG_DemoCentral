@@ -23,11 +23,7 @@ namespace DemoCentral.RabbitCommunication
         /// remove from queue if unzip failed 
         /// </summary>
         Task<ConsumedMessageHandling> HandleMessageAsync(BasicDeliverEventArgs ea, DemoAnalyzeReport consumeModel);
-
-        /// <summary>
-        /// Send a downloaded demo to the demoFileWorker and update the queue status
-        /// </summary>
-        void SendMessageAndUpdateQueueStatus(DemoAnalyzeInstruction model);
+        void PublishMessage(DemoAnalyzeInstruction model);
     }
 
     public class DemoFileWorker : RPCClient<DemoAnalyzeInstruction, DemoAnalyzeReport>, IDemoFileWorker
@@ -43,13 +39,6 @@ namespace DemoCentral.RabbitCommunication
             _inQueueDBInterface = provider.GetRequiredService<IInQueueDBInterface>();
             _fanoutSender = provider.GetRequiredService<IProducer<RedisLocalizationInstruction>>();
             _logger = provider.GetRequiredService<ILogger<DemoFileWorker>>();
-        }
-
-        public void SendMessageAndUpdateQueueStatus(DemoAnalyzeInstruction model)
-        {
-            _inQueueDBInterface.UpdateProcessStatus(model.MatchId, ProcessedBy.DemoFileWorker, true);
-            _logger.LogInformation($"Sent demo#{model.MatchId} to DemoAnalyzeInstruction queue");
-            PublishMessage(model);
         }
 
         private void UpdateDBEntryFromFileWorkerResponse(DemoAnalyzeReport response)
@@ -85,6 +74,8 @@ namespace DemoCentral.RabbitCommunication
                 //Currently a hash-checked demo, which is duplicated just gets removed
                 //Maybe keep track of it or just report back ?
                 _demoDBInterface.RemoveDemo(dbDemo);
+                _inQueueDBInterface.RemoveDemoFromQueue(inQueueDemo);
+
                 _logger.LogWarning($"Demo#{matchId} is duplicate via MD5Hash");
                 return;
             }
