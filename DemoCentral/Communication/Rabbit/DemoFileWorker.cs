@@ -84,12 +84,9 @@ namespace DemoCentral.RabbitCommunication
             {
                 //Successfully handled in demo fileworker
                 _demoDBInterface.SetFileWorkerStatus(dbDemo, DemoFileWorkerStatus.Finished);
-                _demoDBInterface.SetFileStatus(dbDemo, FileStatus.InBlobStorage);
                 _demoDBInterface.SetFrames(dbDemo, response.FramesPerSecond);
 
                 _inQueueDBInterface.UpdateProcessStatus(inQueueDemo, ProcessedBy.DemoFileWorker, false);
-                _inQueueDBInterface.RemoveDemoIfNotInAnyQueue(inQueueDemo);
-                _logger.LogInformation($"Demo#{matchId} was successfully handled by DemoFileWorker");
 
                 var forwardModel = new RedisLocalizationInstruction
                 {
@@ -98,7 +95,9 @@ namespace DemoCentral.RabbitCommunication
                     ExpiryDate = response.ExpiryDate,
                 };
                 _fanoutSender.PublishMessage(forwardModel);
+                _inQueueDBInterface.UpdateProcessStatus(inQueueDemo, ProcessedBy.SituationsOperator, true);
 
+                _inQueueDBInterface.RemoveDemoIfNotInAnyQueue(inQueueDemo);
                 _logger.LogInformation($"Demo#{matchId} was sent to fanout");
                 return;
             }
