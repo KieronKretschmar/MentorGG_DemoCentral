@@ -95,7 +95,10 @@ namespace DemoCentral.RabbitCommunication
                     ExpiryDate = response.ExpiryDate,
                 };
                 _fanoutSender.PublishMessage(forwardModel);
-                _inQueueDBInterface.UpdateProcessStatus(inQueueDemo, ProcessedBy.SituationsOperator, true);
+
+                //TODO IF SITUATIONOPERATOR IS OWN SERVICE
+                //Set to in queue
+                //_inQueueDBInterface.UpdateProcessStatus(inQueueDemo, ProcessedBy.SituationsOperator, true);
 
                 _inQueueDBInterface.RemoveDemoIfNotInAnyQueue(inQueueDemo);
                 _logger.LogInformation($"Demo#{matchId} was sent to fanout");
