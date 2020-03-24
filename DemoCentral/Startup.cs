@@ -61,6 +61,7 @@ namespace DemoCentral
             {
                 o.AddConsole(o => o.TimestampFormat = "[yyyy-MM-dd HH:mm:ss zzz] ");
                 o.AddDebug();
+                o.AddFilter("Microsoft.EntityFrameworkCore.Database.Command",LogLevel.Warning);
             });
 
             if (Configuration.GetValue<bool>("IS_MIGRATING"))
