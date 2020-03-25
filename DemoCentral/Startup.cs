@@ -62,7 +62,8 @@ namespace DemoCentral
             {
                 o.AddConsole(o => o.TimestampFormat = "[yyyy-MM-dd HH:mm:ss zzz] ");
                 o.AddDebug();
-                //Filter out all logs of LogLevel lower than LogLevel.Warning
+
+                //Filter out ASP.Net and EFCore logs of LogLevel lower than LogLevel.Warning
                 o.AddFilter("Microsoft.EntityFrameworkCore.Database.Command",LogLevel.Warning);
                 o.AddFilter("Microsoft.EntityFrameworkCore.Infrastructure", LogLevel.Warning);
                 o.AddFilter("Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker", LogLevel.Warning);
