@@ -63,7 +63,7 @@ namespace DemoCentral.Controllers
                 }
                 catch (Exception e)
                 {
-                    _logger.LogWarning($"Failed to insert download request from {match.DownloadUrl} due to {e}");
+                    _logger.LogWarning(e, $"Failed to insert download request from {match.DownloadUrl}");
                     atLeastOneMatchFailed = true;
                 }
             }
