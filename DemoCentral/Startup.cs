@@ -61,7 +61,9 @@ namespace DemoCentral
             {
                 o.AddConsole(o => o.TimestampFormat = "[yyyy-MM-dd HH:mm:ss zzz] ");
                 o.AddDebug();
+                //Filter out all logs of LogLevel lower than LogLevel.Warning
                 o.AddFilter("Microsoft.EntityFrameworkCore.Database.Command",LogLevel.Warning);
+                o.AddFilter(" Microsoft.AspNetCore", LogLevel.Warning);
             });
 
             if (Configuration.GetValue<bool>("IS_MIGRATING"))

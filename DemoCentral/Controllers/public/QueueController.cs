@@ -38,7 +38,6 @@ namespace DemoCentral.Controllers
         [HttpGet("match/{matchId}/queueposition")]
         public ActionResult<int> QueuePosition(long matchId)
         {
-            _logger.LogInformation($"Received request for queue position of Demo#{matchId}");
             try
             {
                 return _dbInterface.GetQueuePosition(matchId);
@@ -47,7 +46,6 @@ namespace DemoCentral.Controllers
             {
                 string error = $"Demo#{matchId} not in queue";
 
-                _logger.LogInformation(error);
                 return NotFound(error);
             }
         }
@@ -61,7 +59,6 @@ namespace DemoCentral.Controllers
         [HttpGet("single/{steamId}/matchesinqueue")]
         public ActionResult<QueueStatusModel> QueueStatus(long steamId)
         {
-            _logger.LogInformation($"Received request for matches of player#{steamId}");
             var model = new QueueStatusModel();
 
             // assign matchids, starting with the match inserted first
