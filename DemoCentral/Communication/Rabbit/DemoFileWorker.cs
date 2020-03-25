@@ -121,7 +121,7 @@ namespace DemoCentral.RabbitCommunication
             }
             catch (Exception e)
             {
-                _logger.LogError($"Failed to update demo#{consumeModel.MatchId} in database due to {e}");
+                _logger.LogError(e, $"Failed to update demo#{consumeModel.MatchId} in database");
                 return await Task.FromResult(ConsumedMessageHandling.ThrowAway);
             }
             return await Task.FromResult(ConsumedMessageHandling.Done);

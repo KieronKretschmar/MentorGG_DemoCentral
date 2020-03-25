@@ -51,7 +51,7 @@ namespace DemoCentral.RabbitCommunication
             }
             catch (Exception e)
             {
-                _logger.LogError($"Could not update demo#{consumeModel.MatchId} from DemoObtainReport due to {e}");
+                _logger.LogError(e, $"Could not update demo#{consumeModel.MatchId} from DemoObtainReport.");
                 return Task.FromResult(ConsumedMessageHandling.ThrowAway);
             }
             return Task.FromResult(ConsumedMessageHandling.Done);

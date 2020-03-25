@@ -42,7 +42,7 @@ namespace DemoCentral.RabbitCommunication
             }
             catch (Exception e)
             {
-                _logger.LogError($"Could not insert download from {model.DownloadUrl} due to {e}");
+                _logger.LogError(e, $"Could not insert download from {model.DownloadUrl}");
                 return ConsumedMessageHandling.ThrowAway;
             }
             return ConsumedMessageHandling.Done;

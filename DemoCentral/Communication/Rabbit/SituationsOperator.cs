@@ -34,7 +34,7 @@ namespace DemoCentral.RabbitCommunication
             catch (Exception e)
             {
 
-                _logger.LogError($"Could not update demo#{model.MatchId} from situations operator response due to {e}");
+                _logger.LogError(e, $"Could not update demo#{model.MatchId} from situations operator response");
                 return Task.FromResult(ConsumedMessageHandling.ThrowAway);
             }
 

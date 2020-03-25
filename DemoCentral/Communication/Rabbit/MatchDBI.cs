@@ -33,7 +33,7 @@ namespace DemoCentral.RabbitCommunication
             }
             catch (Exception e)
             {
-                _logger.LogError($"Could not update demo#{model.MatchId} from matchDBI response due to {e}");
+                _logger.LogError(e, $"Could not update demo#{model.MatchId} from matchDBI response");
                 return Task.FromResult(ConsumedMessageHandling.ThrowAway);
             }
 
