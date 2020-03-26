@@ -44,5 +44,18 @@ namespace DataBase.DatabaseClasses
                 UploadDate = DateTime.UtcNow,
             };
         }
+
+        public bool HasFailedAnalysis()
+        {
+            switch (DemoFileWorkerStatus)       
+            {
+                case DemoFileWorkerStatus.New:
+                case DemoFileWorkerStatus.InQueue:
+                case DemoFileWorkerStatus.Finished:
+                    return false;
+                default:
+                    return true;
+            }
+        }
     }
 }
