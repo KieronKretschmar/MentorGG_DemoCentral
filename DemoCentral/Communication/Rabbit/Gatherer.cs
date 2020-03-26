@@ -1,5 +1,4 @@
 ﻿using Database.Enumerals;
-using DemoCentral.Communication.HTTP;
 using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
 using RabbitCommunicationLib.Consumer;
@@ -22,15 +21,13 @@ namespace DemoCentral.RabbitCommunication
         private readonly IDemoCentralDBInterface _dbInterface;
         private readonly IDemoDownloader _demoDownloader;
         private readonly ILogger<Gatherer> _logger;
-        private IUserInfoOperator _userInfoOperator;
         private IInQueueDBInterface _inQueueDBInterface;
 
-        public Gatherer(IQueueConnection queueConnection, IDemoCentralDBInterface dbInterface, IDemoDownloader demoDownloader, IUserInfoOperator userInfoOperator, ILogger<Gatherer> logger, IInQueueDBInterface inQueueDBInterface) : base(queueConnection)
+        public Gatherer(IQueueConnection queueConnection, IDemoCentralDBInterface dbInterface, IDemoDownloader demoDownloader, ILogger<Gatherer> logger, IInQueueDBInterface inQueueDBInterface) : base(queueConnection)
         {
 
             _dbInterface = dbInterface;
             _demoDownloader = demoDownloader;
-            _userInfoOperator = userInfoOperator;
             _inQueueDBInterface = inQueueDBInterface;
             _logger = logger;
         }
@@ -41,7 +38,7 @@ namespace DemoCentral.RabbitCommunication
         public async override Task<ConsumedMessageHandling> HandleMessageAsync(BasicDeliverEventArgs ea, DemoInsertInstruction model)
         {
             _logger.LogInformation($"Received download url from DemoInsertInstruction queue \n url={model.DownloadUrl}");
-            AnalyzerQuality requestedQuality = await _userInfoOperator.GetAnalyzerQualityAsync(model.UploaderId);
+            AnalyzerQuality requestedQuality = model.RequestedQuality;
             //TODO OPTIONAL FEATURE handle duplicate entry
             //Currently not inserted into db and forgotten afterwards
             //Maybe saved to special table or keep track of it otherwise

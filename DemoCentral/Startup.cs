@@ -9,7 +9,6 @@ using DemoCentral.RabbitCommunication;
 using RabbitCommunicationLib.Queues;
 using Microsoft.Extensions.Logging;
 using System;
-using DemoCentral.Communication.HTTP;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
 using System.IO;
@@ -64,7 +63,7 @@ namespace DemoCentral
                 o.AddDebug();
 
                 //Filter out ASP.Net and EFCore logs of LogLevel lower than LogLevel.Warning
-                o.AddFilter("Microsoft.EntityFrameworkCore.Database.Command",LogLevel.Warning);
+                o.AddFilter("Microsoft.EntityFrameworkCore.Database.Command", LogLevel.Warning);
                 o.AddFilter("Microsoft.EntityFrameworkCore.Infrastructure", LogLevel.Warning);
                 o.AddFilter("Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker", LogLevel.Warning);
                 o.AddFilter("Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor", LogLevel.Warning);
@@ -132,8 +131,8 @@ namespace DemoCentral
             var AMQP_MANUALDEMODOWNLOAD = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_MANUALDEMODOWNLOAD");
             var manualDemoDownloadQueue = new QueueConnection(AMQP_URI, AMQP_MANUALDEMODOWNLOAD);
 
-            var AMQP_FANOUT_EXCHANGE_NAME = GetRequiredEnvironmentVariable<string>(Configuration,"AMQP_FANOUT_EXCHANGE_NAME");
-            var fanoutExchangeConnection = new ExchangeConnection(AMQP_URI,AMQP_FANOUT_EXCHANGE_NAME);
+            var AMQP_FANOUT_EXCHANGE_NAME = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_FANOUT_EXCHANGE_NAME");
+            var fanoutExchangeConnection = new ExchangeConnection(AMQP_URI, AMQP_FANOUT_EXCHANGE_NAME);
 
             var HTTP_USER_SUBSCRIPTION = GetRequiredEnvironmentVariable<string>(Configuration, "HTTP_USER_SUBSCRIPTION");
 
@@ -171,13 +170,6 @@ namespace DemoCentral
 
             services.AddTransient<IProducer<DemoInsertInstruction>>(services => new Producer<DemoInsertInstruction>(gathererQueue));
 
-            services.AddTransient<IUserInfoOperator>(services =>
-            {
-                if (HTTP_USER_SUBSCRIPTION == "mock")
-                    return new MockUserInfoGatherer();
-
-                return new UserInfoOperator(HTTP_USER_SUBSCRIPTION, services.GetRequiredService<ILogger<UserInfoOperator>>());
-            });
 
             services.AddTransient<IProducer<RedisLocalizationInstruction>>(services =>
             {
@@ -188,12 +180,12 @@ namespace DemoCentral
 
             services.AddHostedService<Gatherer>(services =>
             {
-                return new Gatherer(gathererQueue, services.GetRequiredService<IDemoCentralDBInterface>(), services.GetRequiredService<IDemoDownloader>(), services.GetRequiredService<IUserInfoOperator>(), services.GetRequiredService<ILogger<Gatherer>>(), services.GetRequiredService<IInQueueDBInterface>());
+                return new Gatherer(gathererQueue, services.GetRequiredService<IDemoCentralDBInterface>(), services.GetRequiredService<IDemoDownloader>(), services.GetRequiredService<ILogger<Gatherer>>(), services.GetRequiredService<IInQueueDBInterface>());
             });
 
             services.AddHostedService<ManualUploadReceiver>(services =>
             {
-                return new ManualUploadReceiver(manualDemoDownloadQueue, services.GetRequiredService<IDemoFileWorker>(), services.GetRequiredService<IDemoCentralDBInterface>(), services.GetRequiredService<IUserInfoOperator>(), services.GetRequiredService<IInQueueDBInterface>(), services.GetRequiredService<ILogger<ManualUploadReceiver>>());
+                return new ManualUploadReceiver(manualDemoDownloadQueue, services.GetRequiredService<IDemoFileWorker>(), services.GetRequiredService<IDemoCentralDBInterface>(), services.GetRequiredService<IInQueueDBInterface>(), services.GetRequiredService<ILogger<ManualUploadReceiver>>());
             });
         }
 
