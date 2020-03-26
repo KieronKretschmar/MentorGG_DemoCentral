@@ -16,7 +16,7 @@ namespace DemoCentral
 
         public Task<AnalyzerQuality> GetAnalyzerQualityAsync(long steamId)
         {
-            _logger.LogWarning($"You are using the mock for UserInfoGatherer. Request made for user #{steamId}.");
+            _logger.LogWarning($"You are using the mock for UserInfoGatherer. Request made for SteamId [ {steamId} ]");
             return Task.FromResult(AnalyzerQuality.Medium);
         }
     }
