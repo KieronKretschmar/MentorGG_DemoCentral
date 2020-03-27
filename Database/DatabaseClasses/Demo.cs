@@ -44,5 +44,25 @@ namespace DataBase.DatabaseClasses
                 UploadDate = DateTime.UtcNow,
             };
         }
+
+        public bool HasFailedAnalysis()
+        {
+            switch (DemoFileWorkerStatus)
+            {
+                case DemoFileWorkerStatus.New:
+                case DemoFileWorkerStatus.InQueue:
+                case DemoFileWorkerStatus.Finished:
+                    return false;
+                case DemoFileWorkerStatus.BlobStorageDownloadFailed:
+                case DemoFileWorkerStatus.UnzipFailed:
+                case DemoFileWorkerStatus.DuplicateCheckFailed:
+                case DemoFileWorkerStatus.AnalyzerFailed:
+                case DemoFileWorkerStatus.CacheUploadFailed:
+                    return true;
+                default:
+                    throw new ArgumentOutOfRangeException($"Unknown DemoFileWorkerStatus [ {DemoFileWorkerStatus} ] for HasFailedAnalysis( Match #{MatchId})");
+            }
+
+        }
     }
 }
