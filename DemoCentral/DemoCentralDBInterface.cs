@@ -214,6 +214,9 @@ namespace DemoCentral
                 if (!(requestedQuality > demo.Quality))
                     return false;
 
+                if (demo.HasFailedAnalysis())
+                    return false;
+
                 demo.Quality = requestedQuality;
                 demo.FramesPerSecond = FramesPerQuality.Frames[requestedQuality];
                 _context.SaveChanges();
