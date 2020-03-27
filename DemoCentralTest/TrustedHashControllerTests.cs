@@ -74,7 +74,7 @@ namespace DemoCentralTests
             long matchId = 1;
             AnalyzerQuality quality = AnalyzerQuality.Low;
             string hash = "test_hash";
-            mockIDemoDBInterface.Setup(x => x.IsReanalysisRequired("", out matchId,quality)).Returns(true);
+            mockIDemoDBInterface.Setup(x => x.IsReanalysisRequired(hash, out matchId,quality)).Returns(true);
             ActionResult response;
 
             using (var context = new DemoCentralContext(_test_config))
