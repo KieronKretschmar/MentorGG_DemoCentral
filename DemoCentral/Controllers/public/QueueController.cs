@@ -44,7 +44,7 @@ namespace DemoCentral.Controllers
             }
             catch (InvalidOperationException)
             {
-                string error = $"Demo#{matchId} not in queue";
+                string error = $"Demo #{matchId} not in queue";
 
                 return NotFound(error);
             }
