@@ -47,15 +47,22 @@ namespace DataBase.DatabaseClasses
 
         public bool HasFailedAnalysis()
         {
-            switch (DemoFileWorkerStatus)       
+            switch (DemoFileWorkerStatus)
             {
                 case DemoFileWorkerStatus.New:
                 case DemoFileWorkerStatus.InQueue:
                 case DemoFileWorkerStatus.Finished:
                     return false;
-                default:
+                case DemoFileWorkerStatus.BlobStorageDownloadFailed:
+                case DemoFileWorkerStatus.UnzipFailed:
+                case DemoFileWorkerStatus.DuplicateCheckFailed:
+                case DemoFileWorkerStatus.AnalyzerFailed:
+                case DemoFileWorkerStatus.CacheUploadFailed:
                     return true;
+                default:
+                    throw new ArgumentOutOfRangeException($"Unknown DemoFileWorkerStatus [ {DemoFileWorkerStatus} ] for HasFailedAnalysis( Match #{MatchId})");
             }
+
         }
     }
 }
