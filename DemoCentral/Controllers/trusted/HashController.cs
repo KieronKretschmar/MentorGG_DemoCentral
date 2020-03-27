@@ -42,9 +42,9 @@ namespace DemoCentral.Controllers
         [HttpPost("match/{matchId}/duplicatecheck")]
         public ActionResult CreateHash(long matchId,AnalyzerQuality requestedQuality, string hash)
         {
-            bool duplicateHash = _dbInterface.IsReanalysisRequired(hash, out long duplicateMatchId, requestedQuality);
+            bool analysisrequired = _dbInterface.IsReanalysisRequired(hash, out long duplicateMatchId, requestedQuality);
 
-            if (duplicateHash)
+            if (!analysisrequired)
             {
                 string error = $"Demo#{matchId} was duplicate of Demo#{duplicateMatchId} via MD5Hash";
                 _logger.LogInformation(error);

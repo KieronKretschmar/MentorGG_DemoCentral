@@ -35,7 +35,7 @@ namespace DemoCentralTests
             string hash = "test_hash";
             AnalyzerQuality quality = AnalyzerQuality.High;
 
-            mockIDemoDBInterface.Setup(x => x.IsReanalysisRequired(hash, out matchId, quality)).Returns(true);
+            mockIDemoDBInterface.Setup(x => x.IsReanalysisRequired(hash, out matchId, quality)).Returns(false);
             ActionResult response;
 
             mockIDemoDBInterface.Object.IsReanalysisRequired(hash, out matchId, quality);
@@ -55,7 +55,7 @@ namespace DemoCentralTests
             var mockIDemoDBInterface = new Mock<IDemoCentralDBInterface>();
             long matchId = 1;
             AnalyzerQuality quality = AnalyzerQuality.Low;
-            mockIDemoDBInterface.Setup(x => x.IsReanalysisRequired("", out matchId, quality)).Returns(false);
+            mockIDemoDBInterface.Setup(x => x.IsReanalysisRequired("", out matchId, quality)).Returns(true);
             ActionResult response;
 
             using (var context = new DemoCentralContext(_test_config))
@@ -74,7 +74,7 @@ namespace DemoCentralTests
             long matchId = 1;
             AnalyzerQuality quality = AnalyzerQuality.Low;
             string hash = "test_hash";
-            mockIDemoDBInterface.Setup(x => x.IsReanalysisRequired("", out matchId,quality)).Returns(false);
+            mockIDemoDBInterface.Setup(x => x.IsReanalysisRequired("", out matchId,quality)).Returns(true);
             ActionResult response;
 
             using (var context = new DemoCentralContext(_test_config))

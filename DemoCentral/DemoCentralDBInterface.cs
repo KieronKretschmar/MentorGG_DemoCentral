@@ -198,7 +198,7 @@ namespace DemoCentral
 
             matchId = demo == null ? -1 : demo.MatchId;
 
-            return !(demo == null) && demo.Quality > requestedQuality;
+            return demo == null || requestedQuality > demo.Quality;
         }
 
 
