@@ -10,6 +10,7 @@ using RabbitMQ.Client.Events;
 using Microsoft.Extensions.Logging;
 using RabbitCommunicationLib.Enums;
 using Database.Enumerals;
+using DemoCentral.Communication.HTTP;
 
 namespace DemoCentral.RabbitCommunication
 {
@@ -18,13 +19,15 @@ namespace DemoCentral.RabbitCommunication
         private readonly IDemoFileWorker _demoFileWorker;
         private readonly IDemoCentralDBInterface _dBInterface;
         private readonly IInQueueDBInterface _inQueueDBInterface;
+        private readonly IUserInfoGetter _userInfoGetter;
         private readonly ILogger<ManualUploadReceiver> _logger;
 
-        public ManualUploadReceiver(IQueueConnection queueConnection, IDemoFileWorker demoFileWorker, IDemoCentralDBInterface dBInterface, IInQueueDBInterface inQueueDBInterface, ILogger<ManualUploadReceiver> logger) : base(queueConnection)
+        public ManualUploadReceiver(IQueueConnection queueConnection, IDemoFileWorker demoFileWorker, IDemoCentralDBInterface dBInterface, IInQueueDBInterface inQueueDBInterface,IUserInfoGetter userInfoGetter , ILogger<ManualUploadReceiver> logger) : base(queueConnection)
         {
             _demoFileWorker = demoFileWorker;
             _dBInterface = dBInterface;
             _inQueueDBInterface = inQueueDBInterface;
+            _userInfoGetter = userInfoGetter;
             _logger = logger;
         }
 
@@ -49,7 +52,7 @@ namespace DemoCentral.RabbitCommunication
         {
             _logger.LogInformation($"Received manual upload from uploader #{model.UploaderId}, \n\t stored at {model.DownloadUrl}");
 
-            var requestedAnalyzerQuality = model.RequestedQuality;
+            var requestedAnalyzerQuality = await _userInfoGetter.GetAnalyzerQualityAsync(model.UploaderId);
             if (_dBInterface.TryCreateNewDemoEntryFromGatherer(model, requestedAnalyzerQuality, out long matchId))
             {
                 _logger.LogInformation($"Upload from uploader #{model.UploaderId} was unique, stored at match id #{matchId} now");
