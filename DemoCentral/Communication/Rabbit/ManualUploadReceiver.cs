@@ -12,7 +12,7 @@ using RabbitCommunicationLib.Enums;
 using Database.Enumerals;
 using DemoCentral.Communication.HTTP;
 
-namespace DemoCentral.RabbitCommunication
+namespace DemoCentral.Communication.Rabbit
 {
     public class ManualUploadReceiver : Consumer<DemoInsertInstruction>
     {

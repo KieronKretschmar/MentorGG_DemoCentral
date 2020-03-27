@@ -9,7 +9,7 @@ using RabbitMQ.Client.Events;
 using RabbitCommunicationLib.Enums;
 using System;
 
-namespace DemoCentral.RabbitCommunication
+namespace DemoCentral.Communication.Rabbit
 {
     public class SituationsOperator : Consumer<TaskCompletedReport>
     {

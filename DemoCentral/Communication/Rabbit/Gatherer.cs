@@ -10,7 +10,7 @@ using RabbitMQ.Client.Events;
 using DataBase.Enumerals;
 using DemoCentral.Communication.HTTP;
 
-namespace DemoCentral.RabbitCommunication
+namespace DemoCentral.Communication.Rabbit
 {
     /// <summary>
     /// Consumer for the Gatherer queue

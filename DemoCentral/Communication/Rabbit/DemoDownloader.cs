@@ -12,7 +12,7 @@ using DataBase.Enumerals;
 using RabbitMQ.Client.Events;
 using RabbitCommunicationLib.Enums;
 
-namespace DemoCentral.RabbitCommunication
+namespace DemoCentral.Communication.Rabbit
 {
     //Implement IHostedService so the Interface can be added via AddHostedService()
     public interface IDemoDownloader : IHostedService

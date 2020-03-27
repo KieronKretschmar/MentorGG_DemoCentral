@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using DataBase.DatabaseClasses;
 using Microsoft.EntityFrameworkCore;
-using DemoCentral.RabbitCommunication;
+using DemoCentral.Communication;
 using RabbitCommunicationLib.Queues;
 using Microsoft.Extensions.Logging;
 using System;
@@ -18,6 +18,7 @@ using RabbitCommunicationLib.Interfaces;
 using RabbitCommunicationLib.Producer;
 using DemoCentral.Helpers;
 using DemoCentral.Communication.HTTP;
+using DemoCentral.Communication.Rabbit;
 
 namespace DemoCentral
 {
