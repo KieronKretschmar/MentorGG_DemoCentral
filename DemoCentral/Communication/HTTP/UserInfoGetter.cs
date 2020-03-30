@@ -54,7 +54,10 @@ namespace DemoCentral.Communication.HTTP
             var success = Enum.TryParse(userSubscriptionString, out UserSubscription subscription);
 
             if (!success)
+            {
+                _logger.LogWarning($"Defaulting to AnalyzerQuality.Low for as response could not be parsed");
                 return AnalyzerQuality.Low;
+            }
 
             switch (subscription)
             {
@@ -65,6 +68,7 @@ namespace DemoCentral.Communication.HTTP
                 case UserSubscription.Ultimate:
                     return AnalyzerQuality.High;
                 default:
+                    _logger.LogWarning($"Defaulting to AnalyzerQuality.Low for unknown UserSubsription of user [ {steamId} ]");
                     return AnalyzerQuality.Low;
             }
         }
