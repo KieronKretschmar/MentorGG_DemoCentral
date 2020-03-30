@@ -60,7 +60,7 @@ namespace DataBase.DatabaseClasses
                 case DemoFileWorkerStatus.CacheUploadFailed:
                     return true;
                 default:
-                    throw new ArgumentOutOfRangeException($"Unknown DemoFileWorkerStatus [ {DemoFileWorkerStatus} ] for HasFailedAnalysis( Match #{MatchId})");
+                    throw new ArgumentOutOfRangeException($"Unknown DemoFileWorkerStatus [ {DemoFileWorkerStatus} ] for HasFailedAnalysis( Match [ {MatchId} ] )");
             }
 
         }

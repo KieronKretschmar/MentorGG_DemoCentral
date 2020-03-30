@@ -47,7 +47,7 @@ namespace DemoCentral.Communication.Rabbit
             //Maybe saved to special table or keep track of it otherwise
             if (_dbInterface.TryCreateNewDemoEntryFromGatherer(model, requestedQuality, out long matchId))
             {
-                _logger.LogInformation($"Demo #{matchId} assigned to {model.DownloadUrl}");
+                _logger.LogInformation($"Demo [ {matchId} ] assigned to [ {model.DownloadUrl} ]");
 
                 var forwardModel = new DemoDownloadInstruction
                 {
@@ -61,12 +61,12 @@ namespace DemoCentral.Communication.Rabbit
                 _inQueueDBInterface.UpdateProcessStatus(matchId, ProcessedBy.DemoDownloader, true);
                 _demoDownloader.PublishMessage(forwardModel);
 
-                _logger.LogInformation($"Sent demo #{matchId} to DemoDownloadInstruction queue");
+                _logger.LogInformation($"Sent demo [ {matchId} ] to DemoDownloadInstruction queue");
 
             }
             else
             {
-                _logger.LogInformation($"DownloadUrl {model.DownloadUrl} was duplicate of Demo #{matchId}");
+                _logger.LogInformation($"DownloadUrl [ {model.DownloadUrl} ] was duplicate of Demo [ {matchId} ]");
             }
 
             return ConsumedMessageHandling.Done;

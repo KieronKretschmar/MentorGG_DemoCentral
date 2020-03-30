@@ -43,7 +43,7 @@ namespace DemoCentral.Communication.Rabbit
 
         public override Task<ConsumedMessageHandling> HandleMessageAsync(BasicDeliverEventArgs ea, DemoObtainReport consumeModel)
         {
-            _logger.LogInformation($"Received {consumeModel.GetType()} for match #{consumeModel.MatchId}");
+            _logger.LogInformation($"Received {consumeModel.GetType()} for match [ {consumeModel.MatchId} ]");
 
             try
             {
@@ -51,7 +51,7 @@ namespace DemoCentral.Communication.Rabbit
             }
             catch (Exception e)
             {
-                _logger.LogError(e, $"Could not update demo #{consumeModel.MatchId} from DemoObtainReport.");
+                _logger.LogError(e, $"Could not update demo [ {consumeModel.MatchId} ] from DemoObtainReport.");
                 return Task.FromResult(ConsumedMessageHandling.ThrowAway);
             }
             return Task.FromResult(ConsumedMessageHandling.Done);
@@ -83,7 +83,7 @@ namespace DemoCentral.Communication.Rabbit
                 if (attempts > MAX_RETRIES)
                 {
                     _inQueueDBInterface.RemoveDemoFromQueue(inQueueDemo);
-                    _logger.LogError($"Demo #{matchId} failed download more than {MAX_RETRIES}, deleted");
+                    _logger.LogError($"Demo [ {matchId} ] failed download more than {MAX_RETRIES} times, deleted");
                 }
                 else
                 {
@@ -97,12 +97,12 @@ namespace DemoCentral.Communication.Rabbit
 
                     _demoCentralDBInterface.SetFileStatus(matchId, FileStatus.DownloadRetrying);
                     _inQueueDBInterface.UpdateProcessStatus(matchId, ProcessedBy.DemoDownloader, true);
-                    _logger.LogInformation($"Sent demo #{matchId} to DemoDownloadInstruction queue");
+                    _logger.LogInformation($"Sent demo [ {matchId} ] to DemoDownloadInstruction queue");
 
                     PublishMessage(resendModel);
 
 
-                    _logger.LogWarning($"Demo #{matchId} failed download, retrying");
+                    _logger.LogWarning($"Demo [ {matchId} ] failed download, retrying");
                 }
             }
 

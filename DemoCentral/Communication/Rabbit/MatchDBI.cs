@@ -33,7 +33,7 @@ namespace DemoCentral.Communication.Rabbit
             }
             catch (Exception e)
             {
-                _logger.LogError(e, $"Could not update demo #{model.MatchId} from matchDBI response");
+                _logger.LogError(e, $"Could not update demo [ {model.MatchId} ] from matchDBI response");
                 return Task.FromResult(ConsumedMessageHandling.ThrowAway);
             }
 
@@ -52,7 +52,7 @@ namespace DemoCentral.Communication.Rabbit
             }
 
             string log = model.Success ? "was uploaded" : "failed upload";
-            _logger.LogInformation($"Demo #{matchId} " + log);
+            _logger.LogInformation($"Demo [ {matchId} ] " + log);
         }
     }
 }

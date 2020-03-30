@@ -50,12 +50,12 @@ namespace DemoCentral.Communication.Rabbit
 
         private async Task InsertNewDemo(DemoInsertInstruction model)
         {
-            _logger.LogInformation($"Received manual upload from uploader #{model.UploaderId}, \n\t stored at {model.DownloadUrl}");
+            _logger.LogInformation($"Received manual upload from uploader [ {model.UploaderId} ], \n\t stored at [ {model.DownloadUrl} ]");
 
             var requestedAnalyzerQuality = await _userInfoGetter.GetAnalyzerQualityAsync(model.UploaderId);
             if (_dBInterface.TryCreateNewDemoEntryFromGatherer(model, requestedAnalyzerQuality, out long matchId))
             {
-                _logger.LogInformation($"Upload from uploader #{model.UploaderId} was unique, stored at match id #{matchId} now");
+                _logger.LogInformation($"Upload from uploader [ {model.UploaderId} ] was unique, stored at match id [ {matchId} ] now");
 
                 _inQueueDBInterface.Add(matchId, model.MatchDate, model.Source, model.UploaderId);
                 var analyzeInstructions = _dBInterface.CreateAnalyzeInstructions(matchId);
@@ -63,11 +63,11 @@ namespace DemoCentral.Communication.Rabbit
 
 
                 _demoFileWorker.PublishMessage(analyzeInstructions);
-                _logger.LogInformation($"Sent demo #{matchId} to DemoAnalyzeInstruction queue");
+                _logger.LogInformation($"Sent demo [ {matchId} ] to DemoAnalyzeInstruction queue");
                 _inQueueDBInterface.UpdateProcessStatus(matchId, ProcessedBy.DemoFileWorker, true);
             }
             else
-                _logger.LogInformation($"Received manual upload request from uploader #{model.UploaderId} was duplicate of match #{matchId}");
+                _logger.LogInformation($"Received manual upload request from uploader [ {model.UploaderId} ] was duplicate of match [ {matchId} ]");
         }
     }
 }

@@ -34,7 +34,7 @@ namespace DemoCentral.Communication.Rabbit
             catch (Exception e)
             {
 
-                _logger.LogError(e, $"Could not update demo #{model.MatchId} from situations operator response");
+                _logger.LogError(e, $"Could not update demo [ {model.MatchId} ] from situations operator response");
                 return Task.FromResult(ConsumedMessageHandling.ThrowAway);
             }
 
@@ -48,7 +48,7 @@ namespace DemoCentral.Communication.Rabbit
             _inQueueDBInterface.RemoveDemoIfNotInAnyQueue(matchId);
 
             string successString = model.Success ? "finished" : "failed";
-            _logger.LogInformation($"Demo #{matchId} " + successString + "siutationsoperator");
+            _logger.LogInformation($"Demo [ {matchId} ] " + successString + "siutationsoperator");
         }
     }
 }
