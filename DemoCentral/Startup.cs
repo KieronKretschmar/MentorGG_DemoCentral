@@ -19,6 +19,7 @@ using RabbitCommunicationLib.Producer;
 using DemoCentral.Helpers;
 using DemoCentral.Communication.HTTP;
 using DemoCentral.Communication.Rabbit;
+using System.Net.Http;
 
 namespace DemoCentral
 {
@@ -138,12 +139,17 @@ namespace DemoCentral
             var fanoutExchangeConnection = new ExchangeConnection(AMQP_URI, AMQP_FANOUT_EXCHANGE_NAME);
 
             var HTTP_USER_SUBSCRIPTION_ENDPOINT = GetRequiredEnvironmentVariable<string>(Configuration, "HTTP_USER_SUBSCRIPTION_ENDPOINT");
+            services.AddHttpClient("user-subscription", c =>
+            {
+                c.BaseAddress = new Uri(HTTP_USER_SUBSCRIPTION_ENDPOINT);
+            });
+
             services.AddTransient<IUserInfoGetter>(services =>
             {
                 if (HTTP_USER_SUBSCRIPTION_ENDPOINT == "mock")
                     return new MockUserInfoGetter(services.GetRequiredService<ILogger<MockUserInfoGetter>>());
 
-                return new UserInfoGetter(HTTP_USER_SUBSCRIPTION_ENDPOINT, services.GetRequiredService<ILogger<UserInfoGetter>>());
+                return new UserInfoGetter(services.GetRequiredService<IHttpClientFactory>(), services.GetRequiredService<ILogger<UserInfoGetter>>());
             });
 
 

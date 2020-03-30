@@ -22,11 +22,10 @@ namespace DemoCentral.Communication.HTTP
         private readonly HttpClient Client;
 
 
-        public UserInfoGetter(string http_user_subscription, ILogger<UserInfoGetter> logger)
+        public UserInfoGetter(IHttpClientFactory httpClientFactory, ILogger<UserInfoGetter> logger)
         {
-            _http_USER_SUBSCRIPTION = http_user_subscription;
             _logger = logger;
-            Client = new HttpClient();
+            Client = httpClientFactory.CreateClient("user-subscription");
         }
 
         /// <summary>
@@ -38,7 +37,7 @@ namespace DemoCentral.Communication.HTTP
         /// <returns></returns>
         public async Task<AnalyzerQuality> GetAnalyzerQualityAsync(long steamId)
         {
-            var queryString = $"{_http_USER_SUBSCRIPTION}?steamId={steamId}";
+            var queryString = $"/identity/{steamId}";
             var response = await Client.GetAsync(queryString);
 
             if (!response.IsSuccessStatusCode)
