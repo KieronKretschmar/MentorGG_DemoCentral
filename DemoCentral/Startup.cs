@@ -138,15 +138,15 @@ namespace DemoCentral
             var AMQP_FANOUT_EXCHANGE_NAME = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_FANOUT_EXCHANGE_NAME");
             var fanoutExchangeConnection = new ExchangeConnection(AMQP_URI, AMQP_FANOUT_EXCHANGE_NAME);
 
-            var HTTP_USER_SUBSCRIPTION_ENDPOINT = GetRequiredEnvironmentVariable<string>(Configuration, "HTTP_USER_SUBSCRIPTION_ENDPOINT");
+            var API_BASE_ADDRESS = GetRequiredEnvironmentVariable<string>(Configuration, "API_BASE_ADDRESS");
             services.AddHttpClient("user-subscription", c =>
             {
-                c.BaseAddress = new Uri(HTTP_USER_SUBSCRIPTION_ENDPOINT);
+                c.BaseAddress = new Uri(API_BASE_ADDRESS);
             });
 
             services.AddTransient<IUserInfoGetter>(services =>
             {
-                if (HTTP_USER_SUBSCRIPTION_ENDPOINT == "mock")
+                if (API_BASE_ADDRESS == "mock")
                     return new MockUserInfoGetter(services.GetRequiredService<ILogger<MockUserInfoGetter>>());
 
                 return new UserInfoGetter(services.GetRequiredService<IHttpClientFactory>(), services.GetRequiredService<ILogger<UserInfoGetter>>());

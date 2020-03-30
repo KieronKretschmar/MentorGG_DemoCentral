@@ -17,7 +17,7 @@ Set all the required environment variables, see `Startup.cs`
 - `AMQP_MATCHDBI` :  Rabbit queue's name for consuming messages from MatchDBI[*]
 - `AMQP_MANUALDEMODOWNLOAD` : Rabbit queue's name for consuming messages from ManualDemoDownloader[*]
 - `AMQP_FANOUT_EXCHANGE_NAME` : Rabbit's exchange name for the producing messagesto the fanout[*]
-- `HTTP_USER_SUBSCRIPTION_ENDPOINT` : HTTP URL to the endpoint responsible for the current user subscription, supply "mock" to create an endpoint that always returns the lowest subscription
+- `API_BASE_ADDRESS` : HTTP URL to base api like "https://api.mentor.gg"", supply "mock" to create an endpoint that always returns the lowest subscription
 
 
 # Flow
