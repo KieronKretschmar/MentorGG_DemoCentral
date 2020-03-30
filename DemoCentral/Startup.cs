@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using DataBase.DatabaseClasses;
 using Microsoft.EntityFrameworkCore;
-using DemoCentral.RabbitCommunication;
+using DemoCentral.Communication;
 using RabbitCommunicationLib.Queues;
 using Microsoft.Extensions.Logging;
 using System;
@@ -17,6 +17,9 @@ using RabbitCommunicationLib.TransferModels;
 using RabbitCommunicationLib.Interfaces;
 using RabbitCommunicationLib.Producer;
 using DemoCentral.Helpers;
+using DemoCentral.Communication.HTTP;
+using DemoCentral.Communication.Rabbit;
+using System.Net.Http;
 
 namespace DemoCentral
 {
@@ -69,6 +72,7 @@ namespace DemoCentral
                 o.AddFilter("Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor", LogLevel.Warning);
                 o.AddFilter("Microsoft.AspNetCore.Hosting.Diagnostics", LogLevel.Warning);
                 o.AddFilter("Microsoft.AspNetCore.Routing.EndpointMiddleware", LogLevel.Warning);
+                o.AddFilter("Microsoft.AspNetCore.Mvc.StatusCodeResult", LogLevel.Warning);
             });
 
             if (Configuration.GetValue<bool>("IS_MIGRATING"))
@@ -134,7 +138,20 @@ namespace DemoCentral
             var AMQP_FANOUT_EXCHANGE_NAME = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_FANOUT_EXCHANGE_NAME");
             var fanoutExchangeConnection = new ExchangeConnection(AMQP_URI, AMQP_FANOUT_EXCHANGE_NAME);
 
-            var HTTP_USER_SUBSCRIPTION = GetRequiredEnvironmentVariable<string>(Configuration, "HTTP_USER_SUBSCRIPTION");
+            var MENTORINTERFACE_BASE_ADDRESS = GetRequiredEnvironmentVariable<string>(Configuration, "MENTORINTERFACE_BASE_ADDRESS");
+            services.AddHttpClient("user-subscription", c =>
+            {
+                c.BaseAddress = new Uri(MENTORINTERFACE_BASE_ADDRESS);
+            });
+
+            services.AddTransient<IUserInfoGetter>(services =>
+            {
+                if (MENTORINTERFACE_BASE_ADDRESS == "mock")
+                    return new MockUserInfoGetter(services.GetRequiredService<ILogger<MockUserInfoGetter>>());
+
+                return new UserInfoGetter(services.GetRequiredService<IHttpClientFactory>(), services.GetRequiredService<ILogger<UserInfoGetter>>());
+            });
+
 
             //Add services, 
             //if 3 or more are required to initialize another one, just pass the service provider
@@ -180,12 +197,12 @@ namespace DemoCentral
 
             services.AddHostedService<Gatherer>(services =>
             {
-                return new Gatherer(gathererQueue, services.GetRequiredService<IDemoCentralDBInterface>(), services.GetRequiredService<IDemoDownloader>(), services.GetRequiredService<ILogger<Gatherer>>(), services.GetRequiredService<IInQueueDBInterface>());
+                return new Gatherer(gathererQueue, services.GetRequiredService<IDemoCentralDBInterface>(), services.GetRequiredService<IDemoDownloader>(),services.GetRequiredService<IUserInfoGetter>(), services.GetRequiredService<ILogger<Gatherer>>(), services.GetRequiredService<IInQueueDBInterface>());
             });
 
             services.AddHostedService<ManualUploadReceiver>(services =>
             {
-                return new ManualUploadReceiver(manualDemoDownloadQueue, services.GetRequiredService<IDemoFileWorker>(), services.GetRequiredService<IDemoCentralDBInterface>(), services.GetRequiredService<IInQueueDBInterface>(), services.GetRequiredService<ILogger<ManualUploadReceiver>>());
+                return new ManualUploadReceiver(manualDemoDownloadQueue, services.GetRequiredService<IDemoFileWorker>(), services.GetRequiredService<IDemoCentralDBInterface>(), services.GetRequiredService<IInQueueDBInterface>(), services.GetRequiredService<IUserInfoGetter>(), services.GetRequiredService<ILogger<ManualUploadReceiver>>());
             });
         }
 

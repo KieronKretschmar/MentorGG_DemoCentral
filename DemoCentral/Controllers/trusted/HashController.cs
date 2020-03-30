@@ -46,13 +46,13 @@ namespace DemoCentral.Controllers
 
             if (!analysisrequired)
             {
-                string error = $"Demo#{matchId} was duplicate of Demo#{duplicateMatchId} via MD5Hash";
+                string error = $"Demo [ {matchId} ] was duplicate of Demo [ {duplicateMatchId} ] via MD5Hash";
                 _logger.LogInformation(error);
                 return Conflict(error);
             }
             else
             {
-                _logger.LogInformation($"Demo#{matchId} is unique");
+                _logger.LogInformation($"Demo [ {matchId} ] is unique");
                 _dbInterface.SetHash(matchId, hash);
 
                 return Ok();

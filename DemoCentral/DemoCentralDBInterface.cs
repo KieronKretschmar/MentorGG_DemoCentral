@@ -75,7 +75,7 @@ namespace DemoCentral
             }
             catch (InvalidOperationException e)
             {
-                string critical = $"Requested hash update for non-existing demo#{matchId} \n " +
+                string critical = $"Requested hash update for non-existing demo [ {matchId} ]\n " +
                     $"One should have been created by DemoCentral on first receiving the demo from the Gatherer";
                 _logger.LogCritical(critical);
                 throw new InvalidOperationException(critical, e);

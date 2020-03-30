@@ -33,7 +33,6 @@ namespace DemoCentral.Controllers
         [HttpGet("single/{steamId}/failedmatches")]
         public MatchHistoryModel GetFailedMatchHistory(long steamId, int count, int offset)
         {
-            _logger.LogInformation($"Received request for player#{steamId} to get {count} failed matches, offset {offset}");
             return MatchHistoryModel.FromRecentFailedMatches(steamId, count, offset, _dbInterface);
         }
     }

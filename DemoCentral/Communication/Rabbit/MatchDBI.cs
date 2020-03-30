@@ -8,7 +8,7 @@ using RabbitMQ.Client.Events;
 using RabbitCommunicationLib.Enums;
 using System;
 
-namespace DemoCentral.RabbitCommunication
+namespace DemoCentral.Communication.Rabbit
 {
     public class MatchDBI : Consumer<TaskCompletedReport>
     {
@@ -33,7 +33,7 @@ namespace DemoCentral.RabbitCommunication
             }
             catch (Exception e)
             {
-                _logger.LogError(e, $"Could not update demo#{model.MatchId} from matchDBI response");
+                _logger.LogError(e, $"Could not update demo [ {model.MatchId} ] from matchDBI response");
                 return Task.FromResult(ConsumedMessageHandling.ThrowAway);
             }
 
@@ -52,7 +52,7 @@ namespace DemoCentral.RabbitCommunication
             }
 
             string log = model.Success ? "was uploaded" : "failed upload";
-            _logger.LogInformation($"Demo#{matchId} " + log);
+            _logger.LogInformation($"Demo [ {matchId} ] " + log);
         }
     }
 }

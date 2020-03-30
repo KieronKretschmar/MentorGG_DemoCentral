@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 using RabbitMQ.Client.Events;
 using RabbitCommunicationLib.Enums;
 
-namespace DemoCentral.RabbitCommunication
+namespace DemoCentral.Communication.Rabbit
 {
     //Implement IHostedService so the Interface can be added via AddHostedService()
     public interface IDemoFileWorker : IHostedService
@@ -53,7 +53,7 @@ namespace DemoCentral.RabbitCommunication
                 //Remove demo from queue and set file status to unzip failed
                 _demoDBInterface.SetFileWorkerStatus(dbDemo, DemoFileWorkerStatus.UnzipFailed);
                 _inQueueDBInterface.RemoveDemoFromQueue(inQueueDemo);
-                _logger.LogWarning($"Demo#{matchId} could not be unzipped");
+                _logger.LogWarning($"Demo [ {matchId} ] could not be unzipped");
                 return;
             }
 
@@ -63,7 +63,7 @@ namespace DemoCentral.RabbitCommunication
                 //they may or may not be duplicates, the check itself failed for any reason
                 _inQueueDBInterface.RemoveDemoFromQueue(inQueueDemo);
                 _demoDBInterface.SetFileWorkerStatus(dbDemo, DemoFileWorkerStatus.DuplicateCheckFailed);
-                _logger.LogWarning($"Demo#{matchId} was not duplicate checked");
+                _logger.LogWarning($"Demo [ {matchId} ] was not duplicate checked");
                 return;
             }
 
@@ -76,7 +76,7 @@ namespace DemoCentral.RabbitCommunication
                 _demoDBInterface.RemoveDemo(dbDemo);
                 _inQueueDBInterface.RemoveDemoFromQueue(inQueueDemo);
 
-                _logger.LogWarning($"Demo#{matchId} is duplicate via MD5Hash");
+                _logger.LogWarning($"Demo [ {matchId} ] is duplicate via MD5Hash");
                 return;
             }
 
@@ -101,7 +101,7 @@ namespace DemoCentral.RabbitCommunication
                 //_inQueueDBInterface.UpdateProcessStatus(inQueueDemo, ProcessedBy.SituationsOperator, true);
 
                 _inQueueDBInterface.RemoveDemoIfNotInAnyQueue(inQueueDemo);
-                _logger.LogInformation($"Demo#{matchId} was sent to fanout");
+                _logger.LogInformation($"Demo [ {matchId} ] was sent to fanout");
                 return;
             }
 
@@ -113,7 +113,7 @@ namespace DemoCentral.RabbitCommunication
 
         public async override Task<ConsumedMessageHandling> HandleMessageAsync(BasicDeliverEventArgs ea, DemoAnalyzeReport consumeModel)
         {
-            _logger.LogInformation($"Received demo#{consumeModel.MatchId} from DemoAnalyzeReport queue");
+            _logger.LogInformation($"Received demo [ {consumeModel.MatchId} ] from DemoAnalyzeReport queue");
 
             try
             {
@@ -121,7 +121,7 @@ namespace DemoCentral.RabbitCommunication
             }
             catch (Exception e)
             {
-                _logger.LogError(e, $"Failed to update demo#{consumeModel.MatchId} in database");
+                _logger.LogError(e, $"Failed to update demo [ {consumeModel.MatchId} ] in database");
                 return await Task.FromResult(ConsumedMessageHandling.ThrowAway);
             }
             return await Task.FromResult(ConsumedMessageHandling.Done);

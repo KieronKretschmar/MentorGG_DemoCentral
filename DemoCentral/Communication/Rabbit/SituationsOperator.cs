@@ -9,7 +9,7 @@ using RabbitMQ.Client.Events;
 using RabbitCommunicationLib.Enums;
 using System;
 
-namespace DemoCentral.RabbitCommunication
+namespace DemoCentral.Communication.Rabbit
 {
     public class SituationsOperator : Consumer<TaskCompletedReport>
     {
@@ -34,7 +34,7 @@ namespace DemoCentral.RabbitCommunication
             catch (Exception e)
             {
 
-                _logger.LogError(e, $"Could not update demo#{model.MatchId} from situations operator response");
+                _logger.LogError(e, $"Could not update demo [ {model.MatchId} ] from situations operator response");
                 return Task.FromResult(ConsumedMessageHandling.ThrowAway);
             }
 
@@ -48,7 +48,7 @@ namespace DemoCentral.RabbitCommunication
             _inQueueDBInterface.RemoveDemoIfNotInAnyQueue(matchId);
 
             string successString = model.Success ? "finished" : "failed";
-            _logger.LogInformation($"Demo#{matchId} " + successString + "siutationsoperator");
+            _logger.LogInformation($"Demo [ {matchId} ] " + successString + "siutationsoperator");
         }
     }
 }
