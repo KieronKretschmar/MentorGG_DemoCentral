@@ -35,6 +35,8 @@ namespace DemoCentral.Communication.Rabbit
         {
             try
             {
+                _logger.LogInformation($"Received manual upload from uploader [ {model.UploaderId} ], \n\t stored at [ {model.DownloadUrl} ]");
+
                 if (model.DownloadUrl is null)
                     throw new ArgumentNullException("BlobUrl can not be null");
 
@@ -50,7 +52,6 @@ namespace DemoCentral.Communication.Rabbit
 
         private async Task InsertNewDemo(DemoInsertInstruction model)
         {
-            _logger.LogInformation($"Received manual upload from uploader [ {model.UploaderId} ], \n\t stored at [ {model.DownloadUrl} ]");
 
             var requestedAnalyzerQuality = await _userInfoGetter.GetAnalyzerQualityAsync(model.UploaderId);
             if (_dBInterface.TryCreateNewDemoEntryFromGatherer(model, requestedAnalyzerQuality, out long matchId))
