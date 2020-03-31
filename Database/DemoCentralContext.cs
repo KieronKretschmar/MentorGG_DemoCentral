@@ -33,14 +33,9 @@ namespace DataBase.DatabaseClasses
 
             modelBuilder.Entity<Demo>(entity =>
             {
-                entity.HasKey(e => e.MatchId);
+                entity.HasKey(e => e.MatchId);                    
 
-                //WORKAROUND This ensures the column is added as auto increment
-                //Related https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/issues/1015
-                //https://docs.microsoft.com/en-us/ef/core/modeling/generated-properties?tabs=data-annotations
-                entity.Property(e => e.MatchId).HasColumnType("bigint(20) auto_increment").ValueGeneratedOnAdd();
-
-                entity.Property(e => e.UploaderId).HasColumnType("bigint(20)");
+                entity.Property(e => e.MatchId).ValueGeneratedOnAdd();
             });
         }
     }
