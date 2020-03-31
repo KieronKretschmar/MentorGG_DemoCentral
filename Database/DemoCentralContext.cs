@@ -21,7 +21,6 @@ namespace DataBase.DatabaseClasses
 
         public virtual DbSet<Demo> Demo { get; set; }
         public virtual DbSet<InQueueDemo> InQueueDemo { get; set; }
-        public virtual DbSet<Migrationhistory> MigrationHistory { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -42,32 +41,6 @@ namespace DataBase.DatabaseClasses
                 entity.Property(e => e.MatchId).HasColumnType("bigint(20) auto_increment").ValueGeneratedOnAdd();
 
                 entity.Property(e => e.UploaderId).HasColumnType("bigint(20)");
-            });
-
-            modelBuilder.Entity<Migrationhistory>(entity =>
-            {
-                entity.HasKey(e => e.MigrationId);
-
-                entity.ToTable("__efmigrationhistory");
-
-                entity.Property(e => e.MigrationId)
-                    .HasMaxLength(150)
-                    .IsUnicode(false)
-                    .ValueGeneratedNever();
-
-                entity.Property(e => e.ContextKey)
-                    .IsRequired()
-                    .HasMaxLength(300)
-                    .IsUnicode(false);
-
-                entity.Property(e => e.Model)
-                    .IsRequired()
-                    .HasColumnType("longblob");
-
-                entity.Property(e => e.ProductVersion)
-                    .IsRequired()
-                    .HasMaxLength(32)
-                    .IsUnicode(false);
             });
         }
     }
