@@ -9,8 +9,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Database.Migrations
 {
     [DbContext(typeof(DemoCentralContext))]
-    [Migration("20200302172852_try autogenerate")]
-    partial class tryautogenerate
+    [Migration("20200331081515_initial")]
+    partial class initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -23,7 +23,10 @@ namespace Database.Migrations
                 {
                     b.Property<long>("MatchId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint(20) auto_increment");
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("BlobUrl")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
                     b.Property<string>("DatabaseVersion")
                         .HasColumnType("longtext CHARACTER SET utf8mb4");
@@ -35,16 +38,10 @@ namespace Database.Migrations
                         .HasColumnType("longtext CHARACTER SET utf8mb4");
 
                     b.Property<string>("DownloadUrl")
-                        .HasColumnType("longtext");
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
                     b.Property<string>("Event")
                         .HasColumnType("longtext CHARACTER SET utf8mb4");
-
-                    b.Property<string>("FileName")
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("FilePath")
-                        .HasColumnType("longtext");
 
                     b.Property<byte>("FileStatus")
                         .HasColumnType("tinyint unsigned");
@@ -56,7 +53,7 @@ namespace Database.Migrations
                         .HasColumnType("datetime(6)");
 
                     b.Property<string>("Md5hash")
-                        .HasColumnType("longtext");
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
                     b.Property<byte>("Quality")
                         .HasColumnType("tinyint unsigned");
@@ -74,7 +71,7 @@ namespace Database.Migrations
                         .HasColumnType("tinyint unsigned");
 
                     b.Property<long>("UploaderId")
-                        .HasColumnType("bigint(20)");
+                        .HasColumnType("bigint");
 
                     b.HasKey("MatchId");
 
@@ -110,35 +107,7 @@ namespace Database.Migrations
 
                     b.HasKey("MatchId");
 
-                    b.ToTable("InQueue");
-                });
-
-            modelBuilder.Entity("DataBase.DatabaseClasses.Migrationhistory", b =>
-                {
-                    b.Property<string>("MigrationId")
-                        .HasColumnType("varchar(150) CHARACTER SET utf8mb4")
-                        .HasMaxLength(150)
-                        .IsUnicode(false);
-
-                    b.Property<string>("ContextKey")
-                        .IsRequired()
-                        .HasColumnType("varchar(300) CHARACTER SET utf8mb4")
-                        .HasMaxLength(300)
-                        .IsUnicode(false);
-
-                    b.Property<byte[]>("Model")
-                        .IsRequired()
-                        .HasColumnType("longblob");
-
-                    b.Property<string>("ProductVersion")
-                        .IsRequired()
-                        .HasColumnType("varchar(32) CHARACTER SET utf8mb4")
-                        .HasMaxLength(32)
-                        .IsUnicode(false);
-
-                    b.HasKey("MigrationId");
-
-                    b.ToTable("__efmigrationhistory");
+                    b.ToTable("InQueueDemo");
                 });
 #pragma warning restore 612, 618
         }
