@@ -21,7 +21,7 @@ namespace Database.Migrations
                 {
                     b.Property<long>("MatchId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint(20) auto_increment");
+                        .HasColumnType("bigint");
 
                     b.Property<string>("BlobUrl")
                         .HasColumnType("longtext CHARACTER SET utf8mb4");
@@ -69,7 +69,7 @@ namespace Database.Migrations
                         .HasColumnType("tinyint unsigned");
 
                     b.Property<long>("UploaderId")
-                        .HasColumnType("bigint(20)");
+                        .HasColumnType("bigint");
 
                     b.HasKey("MatchId");
 
@@ -106,34 +106,6 @@ namespace Database.Migrations
                     b.HasKey("MatchId");
 
                     b.ToTable("InQueueDemo");
-                });
-
-            modelBuilder.Entity("DataBase.DatabaseClasses.Migrationhistory", b =>
-                {
-                    b.Property<string>("MigrationId")
-                        .HasColumnType("varchar(150) CHARACTER SET utf8mb4")
-                        .HasMaxLength(150)
-                        .IsUnicode(false);
-
-                    b.Property<string>("ContextKey")
-                        .IsRequired()
-                        .HasColumnType("varchar(300) CHARACTER SET utf8mb4")
-                        .HasMaxLength(300)
-                        .IsUnicode(false);
-
-                    b.Property<byte[]>("Model")
-                        .IsRequired()
-                        .HasColumnType("longblob");
-
-                    b.Property<string>("ProductVersion")
-                        .IsRequired()
-                        .HasColumnType("varchar(32) CHARACTER SET utf8mb4")
-                        .HasMaxLength(32)
-                        .IsUnicode(false);
-
-                    b.HasKey("MigrationId");
-
-                    b.ToTable("__efmigrationhistory");
                 });
 #pragma warning restore 612, 618
         }
