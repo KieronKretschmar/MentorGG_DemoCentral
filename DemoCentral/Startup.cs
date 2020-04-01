@@ -148,6 +148,12 @@ namespace DemoCentral
                 c.BaseAddress = new Uri(MENTORINTERFACE_BASE_ADDRESS);
             });
 
+            var BLOBSTORAGE_CONNECTION_STRING = GetRequiredEnvironmentVariable<string>(Configuration, "BLOBSTORAGE_CONNECTION_STRING");
+            services.AddTransient<IBlobStorage>(services => 
+            {
+                return new BlobStorage(BLOBSTORAGE_CONNECTION_STRING, services.GetRequiredService<ILogger<BlobStorage>>());
+            });
+
             services.AddTransient<IUserIdentityRetriever>(services =>
             {
                 if (MENTORINTERFACE_BASE_ADDRESS == "mock")
@@ -171,7 +177,7 @@ namespace DemoCentral
 
             services.AddHostedService<IMatchWriter>(services =>
             {
-                return new MatchWriter(matchWriterRpcQueue, services.GetRequiredService<IDemoCentralDBInterface>(),services.GetRequiredService<ILogger<MatchWriter>>());
+                return new MatchWriter(matchWriterRpcQueue, services.GetRequiredService<IDemoCentralDBInterface>(),services.GetRequiredService<IBlobStorage>(),services.GetRequiredService<ILogger<MatchWriter>>());
             });
 
             //WORKAROUND for requesting a hostedService
