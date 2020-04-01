@@ -45,6 +45,25 @@ namespace DataBase.DatabaseClasses
             };
         }
 
+        public static Demo FromManualUploadTransferModel(ManualDownloadReport model)
+        {
+            return new Demo
+            {
+                MatchDate = model.MatchDate,
+                UploaderId = model.UploaderId,
+                UploadType = model.UploadType,
+                UploadStatus = UploadStatus.New,
+                Source = model.Source,
+                DownloadUrl = null,
+                BlobUrl = model.BlobUrl,
+                Md5hash = "",
+                FileStatus = FileStatus.New,
+                DemoFileWorkerStatus = DemoFileWorkerStatus.New,
+                DemoFileWorkerVersion = "",
+                UploadDate = model.UploadDate,
+            };
+        }
+
         public bool HasFailedAnalysis()
         {
             switch (DemoFileWorkerStatus)

@@ -76,7 +76,7 @@ namespace DemoCentral.Communication.Rabbit
                 _demoDBInterface.RemoveDemo(dbDemo);
                 _inQueueDBInterface.RemoveDemoFromQueue(inQueueDemo);
 
-                _logger.LogWarning($"Demo [ {matchId} ] is duplicate via MD5Hash");
+                _logger.LogInformation($"Demo [ {matchId} ] is duplicate via MD5Hash");
                 return;
             }
 
@@ -108,7 +108,7 @@ namespace DemoCentral.Communication.Rabbit
             //If you get here, the above if cases do not catch every statement
             //Therefore the response has more possible statusses than handled here
             //Probably a coding error if you update DemoFileWorker
-            _logger.LogError("Could not handle response from DemoFileWorker");
+            _logger.LogError($"Could not handle response from DemoFileWorker. MatchId [ {matchId} ], Message [ {response.ToJson()} ]");
         }
 
         public async override Task<ConsumedMessageHandling> HandleMessageAsync(BasicDeliverEventArgs ea, DemoAnalyzeReport consumeModel)

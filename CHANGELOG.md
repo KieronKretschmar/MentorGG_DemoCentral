@@ -7,8 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Upcoming
 
-## [0.4.0] - 2020-03-27
+## [0.5.0] - 2020-04-01
+### Changed
+- Expect ManualDownloadReport as model from ManualDemoDownloader
 
+## [0.4.0] - 2020-03-27
 ### Changed
 - Quality is now received from Gatherer transfer model
 - Ignore reanalysis for previouosly failed matches
