@@ -48,6 +48,12 @@ namespace DemoCentral
         /// <param name="matchId">Return either a new matchId or the one of the found demo if the download url is known</param>
         /// <returns>true, if downloadUrl is unique</returns>
         bool TryCreateNewDemoEntryFromGatherer(DemoInsertInstruction model, AnalyzerQuality requestedQuality, out long matchId);
+
+        /// <summary>
+        /// Creates a new entry in the demo table. Returns the matchId of the newly created match.
+        /// </summary>
+        /// <returns>MatchId of the newly created match</returns>
+        long CreateNewDemoEntryFromManualUpload(ManualDownloadReport model, AnalyzerQuality requestedQuality);
         List<Demo> GetRecentFailedMatches(long playerId, int recentMatches, int offset = 0);
         DemoDownloadInstruction CreateDownloadInstructions(Demo dbDemo);
     }
@@ -236,6 +242,19 @@ namespace DemoCentral
             matchId = demo.MatchId;
 
             return true;
+        }
+
+        public long CreateNewDemoEntryFromManualUpload(ManualDownloadReport model, AnalyzerQuality requestedQuality)
+        {
+            var demo = Demo.FromManualUploadTransferModel(model);
+            demo.Quality = requestedQuality;
+            demo.FramesPerSecond = FramesPerQuality.Frames[requestedQuality];
+
+            _context.Demo.Add(demo);
+
+            _context.SaveChanges();
+
+            return demo.MatchId;
         }
 
         public Demo GetDemoById(long matchId)
