@@ -10,6 +10,8 @@ Set all the required environment variables, see `Startup.cs`
 - `AMQP_URI` : URI to the rabbit cluster[*]
 - `AMQP_DEMODOWNLOADER` : Rabbit queue's name for producing messages to DemoDownloader[*]
 - `AMQP_DEMODOWNLOADER_REPLY` : Rabbit queue's name for consuming messages from DemoDownloader[*] 
+- `AMQP_MATCHWRITER` : Rabbit queue's name for producing messages to MatchWriter[*] 
+- `AMQP_MATCHWRITER_REPLY` : Rabbit queue's name for consuming messages from MatchWriter[*] 
 - `AMQP_DEMOFILEWORKER` : Rabbit queue's name for producing messages to DemoFileWorker[*]
 - `AMQP_DEMOFILEWORKER_REPLY` : Rabbit queue's name for consuming messages from DemoFileWorker[*]
 - `AMQP_GATHERER` : Rabbit queue's name for consuming messages from a Gatherer[*]
