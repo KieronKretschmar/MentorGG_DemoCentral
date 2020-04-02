@@ -14,7 +14,7 @@ using DemoCentral.Communication.HTTP;
 
 namespace DemoCentral.Communication.Rabbit
 {
-    public class ManualUploadReceiver : Consumer<DemoInsertInstruction>
+    public class ManualUploadReceiver : Consumer<ManualDownloadReport>
     {
         private readonly IDemoFileWorker _demoFileWorker;
         private readonly IDemoCentralDBInterface _dBInterface;
@@ -31,43 +31,36 @@ namespace DemoCentral.Communication.Rabbit
             _logger = logger;
         }
 
-        public async override Task<ConsumedMessageHandling> HandleMessageAsync(BasicDeliverEventArgs ea, DemoInsertInstruction model)
+        public async override Task<ConsumedMessageHandling> HandleMessageAsync(BasicDeliverEventArgs ea, ManualDownloadReport model)
         {
             try
             {
-                if (model.DownloadUrl is null)
+                _logger.LogInformation($"Received manual upload from uploader [ {model.UploaderId} ], \n\t stored at [ {model.BlobUrl} ]");
+
+                if (model.BlobUrl is null)
                     throw new ArgumentNullException("BlobUrl can not be null");
 
                 await InsertNewDemo(model);
             }
             catch (Exception e)
             {
-                _logger.LogError(e, $"Could not insert download from {model.DownloadUrl}");
+                _logger.LogError(e, $"Could not insert download from {model.BlobUrl}");
                 return ConsumedMessageHandling.ThrowAway;
             }
             return ConsumedMessageHandling.Done;
         }
 
-        private async Task InsertNewDemo(DemoInsertInstruction model)
+        private async Task InsertNewDemo(ManualDownloadReport model)
         {
-            _logger.LogInformation($"Received manual upload from uploader [ {model.UploaderId} ], \n\t stored at [ {model.DownloadUrl} ]");
-
             var requestedAnalyzerQuality = await _userInfoGetter.GetAnalyzerQualityAsync(model.UploaderId);
-            if (_dBInterface.TryCreateNewDemoEntryFromGatherer(model, requestedAnalyzerQuality, out long matchId))
-            {
-                _logger.LogInformation($"Upload from uploader [ {model.UploaderId} ] was unique, stored at match id [ {matchId} ] now");
+            var matchId = _dBInterface.CreateNewDemoEntryFromManualUpload(model, requestedAnalyzerQuality);
 
-                _inQueueDBInterface.Add(matchId, model.MatchDate, model.Source, model.UploaderId);
-                var analyzeInstructions = _dBInterface.CreateAnalyzeInstructions(matchId);
-                analyzeInstructions.BlobUrl = model.DownloadUrl;
+            _inQueueDBInterface.Add(matchId, model.MatchDate, model.Source, model.UploaderId);
+            var analyzeInstructions = _dBInterface.CreateAnalyzeInstructions(matchId);
 
-
-                _demoFileWorker.PublishMessage(analyzeInstructions);
-                _logger.LogInformation($"Sent demo [ {matchId} ] to DemoAnalyzeInstruction queue");
-                _inQueueDBInterface.UpdateProcessStatus(matchId, ProcessedBy.DemoFileWorker, true);
-            }
-            else
-                _logger.LogInformation($"Received manual upload request from uploader [ {model.UploaderId} ] was duplicate of match [ {matchId} ]");
+            _demoFileWorker.PublishMessage(analyzeInstructions);
+            _logger.LogInformation($"Sent demo [ {matchId} ] to DemoAnalyzeInstruction queue");
+            _inQueueDBInterface.UpdateProcessStatus(matchId, ProcessedBy.DemoFileWorker, true);
         }
     }
 }

@@ -48,7 +48,14 @@ namespace DemoCentral
         /// <param name="matchId">Return either a new matchId or the one of the found demo if the download url is known</param>
         /// <returns>true, if downloadUrl is unique</returns>
         bool TryCreateNewDemoEntryFromGatherer(DemoInsertInstruction model, AnalyzerQuality requestedQuality, out long matchId);
+
+        /// <summary>
+        /// Creates a new entry in the demo table. Returns the matchId of the newly created match.
+        /// </summary>
+        /// <returns>MatchId of the newly created match</returns>
+        long CreateNewDemoEntryFromManualUpload(ManualDownloadReport model, AnalyzerQuality requestedQuality);
         List<Demo> GetRecentFailedMatches(long playerId, int recentMatches, int offset = 0);
+        DemoDownloadInstruction CreateDownloadInstructions(Demo dbDemo);
     }
 
     /// <summary>
@@ -179,7 +186,7 @@ namespace DemoCentral
         {
             var recentMatchesId = _context.Demo
                 .Where(x => x.UploaderId == playerId)
-                .Where(x=> FileStatusCollections.Failed.Contains(x.FileStatus) || DemoFileWorkerStatusCollections.Failed.Contains(x.DemoFileWorkerStatus))
+                .Where(x => FileStatusCollections.Failed.Contains(x.FileStatus) || DemoFileWorkerStatusCollections.Failed.Contains(x.DemoFileWorkerStatus))
                 .Take(recentMatches + offset)
                 .ToList();
             recentMatchesId.RemoveRange(0, offset);
@@ -237,6 +244,19 @@ namespace DemoCentral
             return true;
         }
 
+        public long CreateNewDemoEntryFromManualUpload(ManualDownloadReport model, AnalyzerQuality requestedQuality)
+        {
+            var demo = Demo.FromManualUploadTransferModel(model);
+            demo.Quality = requestedQuality;
+            demo.FramesPerSecond = FramesPerQuality.Frames[requestedQuality];
+
+            _context.Demo.Add(demo);
+
+            _context.SaveChanges();
+
+            return demo.MatchId;
+        }
+
         public Demo GetDemoById(long matchId)
         {
             return _context.Demo.Single(x => x.MatchId == matchId);
@@ -282,6 +302,17 @@ namespace DemoCentral
         public List<Demo> GetMatchesByUploader(long steamId)
         {
             return _context.Demo.Where(x => x.UploaderId == steamId).ToList();
+        }
+
+        public DemoDownloadInstruction CreateDownloadInstructions(Demo dbDemo)
+        {
+            var res = new DemoDownloadInstruction
+            {
+                DownloadUrl = dbDemo.DownloadUrl,
+                MatchId = dbDemo.MatchId,
+            };
+            
+            return res;
         }
     }
 

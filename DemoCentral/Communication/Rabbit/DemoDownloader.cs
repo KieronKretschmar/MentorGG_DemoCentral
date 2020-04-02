@@ -83,20 +83,16 @@ namespace DemoCentral.Communication.Rabbit
                 if (attempts > MAX_RETRIES)
                 {
                     _inQueueDBInterface.RemoveDemoFromQueue(inQueueDemo);
-                    _logger.LogError($"Demo [ {matchId} ] failed download more than {MAX_RETRIES} times, deleted");
+                    _demoCentralDBInterface.SetFileStatus(dbDemo, FileStatus.DownloadFailed);
+                    _logger.LogError($"Demo [ {matchId} ] failed download more than {MAX_RETRIES} times, no further analyzing");
                 }
                 else
                 {
                     _demoCentralDBInterface.SetFileStatus(dbDemo, FileStatus.DownloadRetrying);
-                    var downloadUrl = dbDemo.DownloadUrl;
 
-                    var resendModel = new DemoDownloadInstruction
-                    {
-                        DownloadUrl = downloadUrl,
-                    };
+                    var resendModel = _demoCentralDBInterface.CreateDownloadInstructions(dbDemo);
 
                     _demoCentralDBInterface.SetFileStatus(matchId, FileStatus.DownloadRetrying);
-                    _inQueueDBInterface.UpdateProcessStatus(matchId, ProcessedBy.DemoDownloader, true);
                     _logger.LogInformation($"Sent demo [ {matchId} ] to DemoDownloadInstruction queue");
 
                     PublishMessage(resendModel);
