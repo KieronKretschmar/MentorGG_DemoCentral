@@ -13,12 +13,12 @@ namespace DemoCentral.Controllers.trusted
     [ApiVersion("1")]
     [Route("v{version:apiVersion}/trusted")]
     [ApiController]
-    public class ConvenienceController : ControllerBase
+    public class MatchController : ControllerBase
     {
-        private readonly ILogger<ConvenienceController> _logger;
+        private readonly ILogger<MatchController> _logger;
         private readonly IMatchWriter _matchWriter;
 
-        public ConvenienceController(ILogger<ConvenienceController> logger, IMatchWriter matchWriter)
+        public MatchController(ILogger<MatchController> logger, IMatchWriter matchWriter)
         {
             _logger = logger;
             _matchWriter = matchWriter;
