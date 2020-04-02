@@ -14,6 +14,9 @@ using DemoCentral.Communication.HTTP;
 
 namespace DemoCentral.Communication.Rabbit
 {
+    /// <summary>
+    /// Receive ManualDownloadReports from the ManualDemoDownloader, and forward them to DemoFileWorker 
+    /// </summary>
     public class ManualUploadReceiver : Consumer<ManualDownloadReport>
     {
         private readonly IDemoFileWorker _demoFileWorker;

@@ -12,6 +12,10 @@ using System.Threading.Tasks;
 
 namespace DemoCentral.Communication.Rabbit
 {
+
+    /// <summary>
+    /// Send demo removal instructions to matchwriter
+    /// </summary>
     public interface IMatchWriter : IHostedService
     {
         Task<ConsumedMessageHandling> HandleMessageAsync(BasicDeliverEventArgs ea, TaskCompletedReport consumeModel);

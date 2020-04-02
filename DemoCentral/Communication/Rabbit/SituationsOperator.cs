@@ -11,6 +11,9 @@ using System;
 
 namespace DemoCentral.Communication.Rabbit
 {
+    /// <summary>
+    /// Handle TaskCompletedReport from situationsoperator
+    /// </summary>
     public class SituationsOperator : Consumer<TaskCompletedReport>
     {
         private readonly IInQueueDBInterface _inQueueDBInterface;

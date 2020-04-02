@@ -10,6 +10,9 @@ using System;
 
 namespace DemoCentral.Communication.Rabbit
 {
+    /// <summary>
+    /// Handle TaskCompletedReports from MatchWriter
+    /// </summary>
     public class MatchDBI : Consumer<TaskCompletedReport>
     {
         private readonly IDemoCentralDBInterface _dbInterface;

@@ -14,7 +14,9 @@ using RabbitCommunicationLib.Enums;
 
 namespace DemoCentral.Communication.Rabbit
 {
-    //Implement IHostedService so the Interface can be added via AddHostedService()
+    /// <summary>
+    /// RPC system with DemoFileWorker, send demo to analyzing and track their success. Forward them to them to the fanout if successful
+    /// </summary>
     public interface IDemoFileWorker : IHostedService
     {
         /// <summary>
