@@ -118,9 +118,9 @@ namespace DemoCentral
             var AMQP_DEMODOWNLOADER_REPLY = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_DEMODOWNLOADER_REPLY");
             var demoDownloaderRpcQueue = new RPCQueueConnections(AMQP_URI, AMQP_DEMODOWNLOADER_REPLY, AMQP_DEMODOWNLOADER);
 
-            var AMQP_MATCHWRITER = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_MATCHWRITER");
-            var AMQP_MATCHWRITER_REPLY = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_MATCHWRITER_REPLY");
-            var matchWriterRpcQueue = new RPCQueueConnections(AMQP_URI, AMQP_MATCHWRITER_REPLY, AMQP_MATCHWRITER);
+            var AMQP_MATCHWRITER_DEMO_REMOVAL = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_MATCHWRITER_DEMO_REMOVAL");
+            var AMQP_MATCHWRITER_DEMO_REMOVAL_REPLY = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_MATCHWRITER_DEMO_REMOVAL_REPLY");
+            var matchWriterRpcQueue = new RPCQueueConnections(AMQP_URI, AMQP_MATCHWRITER_DEMO_REMOVAL_REPLY, AMQP_MATCHWRITER_DEMO_REMOVAL);
 
 
             var AMQP_DEMOFILEWORKER = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_DEMOFILEWORKER");
