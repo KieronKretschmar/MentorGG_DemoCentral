@@ -25,7 +25,7 @@ namespace DemoCentral.Controllers.trusted
         }
 
         /// <summary>
-        /// Remove a demo from the match database
+        /// Remove a demo from the match database and blob Storage
         /// </summary>
         /// <param name="matchId">match to remove</param>
         [HttpPost("match/{matchId}/remove-from-storage")]
