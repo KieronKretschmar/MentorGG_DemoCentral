@@ -2,6 +2,8 @@
 using System.Threading.Tasks;
 using Azure.Storage.Blobs;
 using System;
+using System.Web;
+using System.Linq;
 
 namespace DemoCentral.Communication.Rabbit
 {
@@ -26,8 +28,13 @@ namespace DemoCentral.Communication.Rabbit
         public async Task DeleteBlobAsync(string blobUrl)
         {
             _logger.LogInformation($"Attempting to delete blob at [ {blobUrl} ]");
-            var client = new BlobClient(new Uri(blobUrl));
-            var response = await client.DeleteIfExistsAsync();
+            var urlQuerySections = blobUrl.Split("/");
+
+            var blobName = urlQuerySections.Last();
+            var blobContainerName = urlQuerySections[urlQuerySections.Length - 2];
+
+            var blobClient = _client.GetBlobContainerClient(blobContainerName).GetBlobClient(blobName);
+            var response = await blobClient.DeleteIfExistsAsync();
 
             _logger.LogInformation($"Deleting blob at [ {blobUrl} ] successful");
         }
