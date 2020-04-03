@@ -21,16 +21,16 @@ namespace DemoCentral.Communication.Rabbit
     {
         private readonly IDemoCentralDBInterface _dbInterface;
         private readonly IDemoDownloader _demoDownloader;
-        private readonly IUserInfoGetter _userInfoGetter;
+        private readonly IUserIdentityRetriever _userIdentityRetriever;
         private readonly ILogger<Gatherer> _logger;
         private IInQueueDBInterface _inQueueDBInterface;
 
-        public Gatherer(IQueueConnection queueConnection, IDemoCentralDBInterface dbInterface, IDemoDownloader demoDownloader,IUserInfoGetter userInfoGetter, ILogger<Gatherer> logger, IInQueueDBInterface inQueueDBInterface) : base(queueConnection)
+        public Gatherer(IQueueConnection queueConnection, IDemoCentralDBInterface dbInterface, IDemoDownloader demoDownloader,IUserIdentityRetriever userInfoGetter, ILogger<Gatherer> logger, IInQueueDBInterface inQueueDBInterface) : base(queueConnection)
         {
 
             _dbInterface = dbInterface;
             _demoDownloader = demoDownloader;
-            _userInfoGetter = userInfoGetter;
+            _userIdentityRetriever = userInfoGetter;
             _inQueueDBInterface = inQueueDBInterface;
             _logger = logger;
         }
@@ -41,7 +41,7 @@ namespace DemoCentral.Communication.Rabbit
         public async override Task<ConsumedMessageHandling> HandleMessageAsync(BasicDeliverEventArgs ea, DemoInsertInstruction model)
         {
             _logger.LogInformation($"Received download url from DemoInsertInstruction queue \n url={model.DownloadUrl}");
-            AnalyzerQuality requestedQuality = await _userInfoGetter.GetAnalyzerQualityAsync(model.UploaderId);
+            AnalyzerQuality requestedQuality = await _userIdentityRetriever.GetAnalyzerQualityAsync(model.UploaderId);
             //TODO OPTIONAL FEATURE handle duplicate entry
             //Currently not inserted into db and forgotten afterwards
             //Maybe saved to special table or keep track of it otherwise

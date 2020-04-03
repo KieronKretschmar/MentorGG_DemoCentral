@@ -19,15 +19,15 @@ namespace DemoCentral.Communication.Rabbit
         private readonly IDemoFileWorker _demoFileWorker;
         private readonly IDemoCentralDBInterface _dBInterface;
         private readonly IInQueueDBInterface _inQueueDBInterface;
-        private readonly IUserInfoGetter _userInfoGetter;
+        private readonly IUserIdentityRetriever _userIdentityRetriever;
         private readonly ILogger<ManualUploadReceiver> _logger;
 
-        public ManualUploadReceiver(IQueueConnection queueConnection, IDemoFileWorker demoFileWorker, IDemoCentralDBInterface dBInterface, IInQueueDBInterface inQueueDBInterface,IUserInfoGetter userInfoGetter , ILogger<ManualUploadReceiver> logger) : base(queueConnection)
+        public ManualUploadReceiver(IQueueConnection queueConnection, IDemoFileWorker demoFileWorker, IDemoCentralDBInterface dBInterface, IInQueueDBInterface inQueueDBInterface,IUserIdentityRetriever userInfoGetter , ILogger<ManualUploadReceiver> logger) : base(queueConnection)
         {
             _demoFileWorker = demoFileWorker;
             _dBInterface = dBInterface;
             _inQueueDBInterface = inQueueDBInterface;
-            _userInfoGetter = userInfoGetter;
+            _userIdentityRetriever = userInfoGetter;
             _logger = logger;
         }
 
@@ -52,7 +52,7 @@ namespace DemoCentral.Communication.Rabbit
 
         private async Task InsertNewDemo(ManualDownloadReport model)
         {
-            var requestedAnalyzerQuality = await _userInfoGetter.GetAnalyzerQualityAsync(model.UploaderId);
+            var requestedAnalyzerQuality = await _userIdentityRetriever.GetAnalyzerQualityAsync(model.UploaderId);
             var matchId = _dBInterface.CreateNewDemoEntryFromManualUpload(model, requestedAnalyzerQuality);
 
             _inQueueDBInterface.Add(matchId, model.MatchDate, model.Source, model.UploaderId);

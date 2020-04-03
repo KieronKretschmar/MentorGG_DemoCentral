@@ -63,7 +63,6 @@ namespace DemoCentral
             services.AddLogging(o =>
             {
                 o.AddConsole(o => o.TimestampFormat = "[yyyy-MM-dd HH:mm:ss zzz] ");
-                o.AddDebug();
 
                 //Filter out ASP.Net and EFCore logs of LogLevel lower than LogLevel.Warning
                 o.AddFilter("Microsoft.EntityFrameworkCore.Database.Command", LogLevel.Warning);
@@ -139,17 +138,17 @@ namespace DemoCentral
             var fanoutExchangeConnection = new ExchangeConnection(AMQP_URI, AMQP_FANOUT_EXCHANGE_NAME);
 
             var MENTORINTERFACE_BASE_ADDRESS = GetRequiredEnvironmentVariable<string>(Configuration, "MENTORINTERFACE_BASE_ADDRESS");
-            services.AddHttpClient("user-subscription", c =>
+            services.AddHttpClient("mentor-interface", c =>
             {
                 c.BaseAddress = new Uri(MENTORINTERFACE_BASE_ADDRESS);
             });
 
-            services.AddTransient<IUserInfoGetter>(services =>
+            services.AddTransient<IUserIdentityRetriever>(services =>
             {
                 if (MENTORINTERFACE_BASE_ADDRESS == "mock")
                     return new MockUserInfoGetter(services.GetRequiredService<ILogger<MockUserInfoGetter>>());
 
-                return new UserInfoGetter(services.GetRequiredService<IHttpClientFactory>(), services.GetRequiredService<ILogger<UserInfoGetter>>());
+                return new UserIdentityRetriever(services.GetRequiredService<IHttpClientFactory>(), services.GetRequiredService<ILogger<UserIdentityRetriever>>());
             });
 
 
@@ -197,12 +196,12 @@ namespace DemoCentral
 
             services.AddHostedService<Gatherer>(services =>
             {
-                return new Gatherer(gathererQueue, services.GetRequiredService<IDemoCentralDBInterface>(), services.GetRequiredService<IDemoDownloader>(),services.GetRequiredService<IUserInfoGetter>(), services.GetRequiredService<ILogger<Gatherer>>(), services.GetRequiredService<IInQueueDBInterface>());
+                return new Gatherer(gathererQueue, services.GetRequiredService<IDemoCentralDBInterface>(), services.GetRequiredService<IDemoDownloader>(),services.GetRequiredService<IUserIdentityRetriever>(), services.GetRequiredService<ILogger<Gatherer>>(), services.GetRequiredService<IInQueueDBInterface>());
             });
 
             services.AddHostedService<ManualUploadReceiver>(services =>
             {
-                return new ManualUploadReceiver(manualDemoDownloadQueue, services.GetRequiredService<IDemoFileWorker>(), services.GetRequiredService<IDemoCentralDBInterface>(), services.GetRequiredService<IInQueueDBInterface>(), services.GetRequiredService<IUserInfoGetter>(), services.GetRequiredService<ILogger<ManualUploadReceiver>>());
+                return new ManualUploadReceiver(manualDemoDownloadQueue, services.GetRequiredService<IDemoFileWorker>(), services.GetRequiredService<IDemoCentralDBInterface>(), services.GetRequiredService<IInQueueDBInterface>(), services.GetRequiredService<IUserIdentityRetriever>(), services.GetRequiredService<ILogger<ManualUploadReceiver>>());
             });
         }
 
