@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace DemoCentral.Communication.HTTP
 {
-    internal class MockUserInfoGetter : IUserInfoGetter
+    internal class MockUserInfoGetter : IUserIdentityRetriever
     {
         private readonly ILogger<MockUserInfoGetter> _logger;
 
@@ -16,7 +16,7 @@ namespace DemoCentral.Communication.HTTP
 
         public Task<AnalyzerQuality> GetAnalyzerQualityAsync(long steamId)
         {
-            _logger.LogWarning($"You are using the mock for UserInfoGatherer. Request made for SteamId [ {steamId} ]");
+            _logger.LogWarning($"UserInfoGatherer is mocked, returning Medium Quality. Request made for SteamId [ {steamId} ]");
             return Task.FromResult(AnalyzerQuality.Medium);
         }
     }
