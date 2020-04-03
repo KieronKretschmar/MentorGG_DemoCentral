@@ -1,7 +1,7 @@
 ﻿namespace DemoCentral.Enumerals
 {
     /// <summary>
-    /// Oringal / Master located in MentorInterface.
+    /// Original / Master located in MentorInterface.
     /// </summary>
     public enum SubscriptionType
     {
