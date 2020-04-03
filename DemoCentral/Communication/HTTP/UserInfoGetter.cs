@@ -42,7 +42,7 @@ namespace DemoCentral.Communication.HTTP
             if (!response.IsSuccessStatusCode)
             {
                 _logger.LogWarning(
-                    $"Getting UserIdentity for SteamId [ {steamId} ]. Response: {response}. Reutning AnalyzerQuality.Low");
+                    $"Getting UserIdentity for SteamId [ {steamId} ]. Response: {response}. Returning AnalyzerQuality.Low");
 
                 return AnalyzerQuality.Low;
             }
