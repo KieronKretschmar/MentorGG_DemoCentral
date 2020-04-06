@@ -48,38 +48,6 @@ namespace DemoCentral.Communication.Rabbit
             var inQueueDemo = _inQueueDBInterface.GetDemoById(matchId);
             var dbDemo = _demoDBInterface.GetDemoById(matchId);
 
-            if (!response.Unzipped)
-            {
-                //Remove demo from queue and set file status to unzip failed
-                _demoDBInterface.SetFileWorkerStatus(dbDemo, DemoFileWorkerStatus.UnzipFailed);
-                _inQueueDBInterface.RemoveDemoFromQueue(inQueueDemo);
-                _logger.LogWarning($"Demo [ {matchId} ] could not be unzipped");
-                return;
-            }
-
-            if (!response.DuplicateChecked)
-            {
-                //Keep track of demos for which the duplicate check itself failed,
-                //they may or may not be duplicates, the check itself failed for any reason
-                _inQueueDBInterface.RemoveDemoFromQueue(inQueueDemo);
-                _demoDBInterface.SetFileWorkerStatus(dbDemo, DemoFileWorkerStatus.DuplicateCheckFailed);
-                _logger.LogWarning($"Demo [ {matchId} ] was not duplicate checked");
-                return;
-            }
-
-            if (response.IsDuplicate)
-            {
-                //Remove demo if duplicate
-                //TODO OPTIONAL FEATURE handle duplicate entry 2
-                //Currently a hash-checked demo, which is duplicated just gets removed
-                //Maybe keep track of it or just report back ?
-                _demoDBInterface.RemoveDemo(dbDemo);
-                _inQueueDBInterface.RemoveDemoFromQueue(inQueueDemo);
-
-                _logger.LogInformation($"Demo [ {matchId} ] is duplicate via MD5Hash");
-                return;
-            }
-
             if (response.Success)
             {
                 //Successfully handled in demo fileworker
@@ -104,11 +72,46 @@ namespace DemoCentral.Communication.Rabbit
                 _logger.LogInformation($"Demo [ {matchId} ] was sent to fanout");
                 return;
             }
+            else
+            {
+                // Handle failed demo according to the reason of its failure
+                if (!response.Unzipped)
+                {
+                    //Remove demo from queue and set file status to unzip failed
+                    _inQueueDBInterface.RemoveDemoFromQueue(inQueueDemo);
+                    _demoDBInterface.SetFileWorkerStatus(dbDemo, DemoFileWorkerStatus.UnzipFailed);
+                    _logger.LogWarning($"Demo [ {matchId} ] could not be unzipped");
+                    return;
+                }
 
-            //If you get here, the above if cases do not catch every statement
-            //Therefore the response has more possible statusses than handled here
-            //Probably a coding error if you update DemoFileWorker
-            _logger.LogError($"Could not handle response from DemoFileWorker. MatchId [ {matchId} ], Message [ {response.ToJson()} ]");
+                if (!response.DuplicateChecked)
+                {
+                    //Keep track of demos for which the duplicate check itself failed,
+                    //they may or may not be duplicates, the check itself failed for any reason
+                    _inQueueDBInterface.RemoveDemoFromQueue(inQueueDemo);
+                    _demoDBInterface.SetFileWorkerStatus(dbDemo, DemoFileWorkerStatus.DuplicateCheckFailed);
+                    _logger.LogWarning($"Demo [ {matchId} ] was not duplicate checked");
+                    return;
+                }
+
+                if (response.IsDuplicate)
+                {
+                    //Remove demo if duplicate
+                    //TODO OPTIONAL FEATURE handle duplicate entry 2
+                    //Currently a hash-checked demo, which is duplicated just gets removed
+                    //Maybe keep track of it or just report back ?
+                    _inQueueDBInterface.RemoveDemoFromQueue(inQueueDemo);
+                    _demoDBInterface.RemoveDemo(dbDemo);
+
+                    _logger.LogInformation($"Demo [ {matchId} ] is duplicate via MD5Hash");
+                    return;
+                }
+
+                //If you get here, the above if cases do not catch every statement
+                //Therefore the response has more possible statusses than handled here
+                //Probably a coding error if you update DemoFileWorker
+                _logger.LogError($"Could not handle response from DemoFileWorker. MatchId [ {matchId} ], Message [ {response.ToJson()} ]");
+            }
         }
 
         public async override Task<ConsumedMessageHandling> HandleMessageAsync(BasicDeliverEventArgs ea, DemoAnalyzeReport consumeModel)
