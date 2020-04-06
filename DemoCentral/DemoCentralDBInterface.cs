@@ -218,11 +218,13 @@ namespace DemoCentral
                 matchId = demo.MatchId;
                 //Check whether a new entry has to be created as the new entry
                 //would have a higher analyzer quality than the old one
-                if (!(requestedQuality > demo.Quality))
+                if (requestedQuality <= demo.Quality)
                     return false;
 
                 if (demo.HasFailedAnalysis())
                     return false;
+
+                _logger.LogInformation($"Selected Demo [ {demo.MatchId} ] for re-analysis due to higher quality. Current quality [ {demo.Quality} ], requested quality [ {requestedQuality} ].");
 
                 demo.Quality = requestedQuality;
                 demo.FramesPerSecond = FramesPerQuality.Frames[requestedQuality];

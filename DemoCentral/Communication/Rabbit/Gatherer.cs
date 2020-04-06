@@ -9,6 +9,7 @@ using RabbitCommunicationLib.Enums;
 using RabbitMQ.Client.Events;
 using DataBase.Enumerals;
 using DemoCentral.Communication.HTTP;
+using System;
 
 namespace DemoCentral.Communication.Rabbit
 {
@@ -41,35 +42,43 @@ namespace DemoCentral.Communication.Rabbit
         public async override Task<ConsumedMessageHandling> HandleMessageAsync(BasicDeliverEventArgs ea, DemoInsertInstruction model)
         {
             _logger.LogInformation($"Received download url from DemoInsertInstruction queue \n url={model.DownloadUrl}");
-            AnalyzerQuality requestedQuality = await _userIdentityRetriever.GetAnalyzerQualityAsync(model.UploaderId);
-            //TODO OPTIONAL FEATURE handle duplicate entry
-            //Currently not inserted into db and forgotten afterwards
-            //Maybe saved to special table or keep track of it otherwise
-            if (_dbInterface.TryCreateNewDemoEntryFromGatherer(model, requestedQuality, out long matchId))
+            try
             {
-                _logger.LogInformation($"Demo [ {matchId} ] assigned to [ {model.DownloadUrl} ]");
-
-                var forwardModel = new DemoDownloadInstruction
+                AnalyzerQuality requestedQuality = await _userIdentityRetriever.GetAnalyzerQualityAsync(model.UploaderId);
+                //TODO OPTIONAL FEATURE handle duplicate entry
+                //Currently not inserted into db and forgotten afterwards
+                //Maybe saved to special table or keep track of it otherwise
+                if (_dbInterface.TryCreateNewDemoEntryFromGatherer(model, requestedQuality, out long matchId))
                 {
-                    MatchId = matchId,
-                    DownloadUrl = model.DownloadUrl
-                };
+                    _logger.LogInformation($"Demo [ {matchId} ] assigned to [ {model.DownloadUrl} ]");
 
-                _inQueueDBInterface.Add(matchId, model.MatchDate, model.Source, model.UploaderId);
+                    var forwardModel = new DemoDownloadInstruction
+                    {
+                        MatchId = matchId,
+                        DownloadUrl = model.DownloadUrl
+                    };
 
-                _dbInterface.SetFileStatus(matchId, FileStatus.Downloading);
-                _inQueueDBInterface.UpdateProcessStatus(matchId, ProcessedBy.DemoDownloader, true);
-                _demoDownloader.PublishMessage(forwardModel);
+                    _inQueueDBInterface.Add(matchId, model.MatchDate, model.Source, model.UploaderId);
 
-                _logger.LogInformation($"Sent demo [ {matchId} ] to DemoDownloadInstruction queue");
+                    _dbInterface.SetFileStatus(matchId, FileStatus.Downloading);
+                    _inQueueDBInterface.UpdateProcessStatus(matchId, ProcessedBy.DemoDownloader, true);
+                    _demoDownloader.PublishMessage(forwardModel);
 
+                    _logger.LogInformation($"Sent demo [ {matchId} ] to DemoDownloadInstruction queue");
+
+                }
+                else
+                {
+                    _logger.LogInformation($"DownloadUrl [ {model.DownloadUrl} ] was duplicate of Demo [ {matchId} ]");
+                }
+
+                return ConsumedMessageHandling.Done;
             }
-            else
+            catch (Exception e)
             {
-                _logger.LogInformation($"DownloadUrl [ {model.DownloadUrl} ] was duplicate of Demo [ {matchId} ]");
+                _logger.LogError(e, $"Failed to handle message from DemoInsertInstruction queue \n url={model.DownloadUrl}");
+                return await Task.FromResult(ConsumedMessageHandling.ThrowAway);
             }
-
-            return ConsumedMessageHandling.Done;
         }
     }
 }
