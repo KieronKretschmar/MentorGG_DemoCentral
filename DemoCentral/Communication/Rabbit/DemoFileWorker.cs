@@ -107,6 +107,15 @@ namespace DemoCentral.Communication.Rabbit
                     return;
                 }
 
+                if (!response.DemoAnalyzerSucceeded)
+                {
+                    _inQueueDBInterface.RemoveDemoFromQueue(inQueueDemo);
+                    _demoDBInterface.SetFileWorkerStatus(dbDemo, DemoFileWorkerStatus.AnalyzerFailed);
+
+                    _logger.LogWarning($"Demo [ {matchId} ] failed at DemoAnalyzer.");
+                    return;
+                }
+
                 //If you get here, the above if cases do not catch every statement
                 //Therefore the response has more possible statusses than handled here
                 //Probably a coding error if you update DemoFileWorker
