@@ -119,7 +119,9 @@ namespace DemoCentral.Communication.Rabbit
                 //If you get here, the above if cases do not catch every statement
                 //Therefore the response has more possible statusses than handled here
                 //Probably a coding error if you update DemoFileWorker
-                _logger.LogError($"Could not handle response from DemoFileWorker. MatchId [ {matchId} ], Message [ {response.ToJson()} ]");
+                _inQueueDBInterface.RemoveDemoFromQueue(inQueueDemo);
+                _demoDBInterface.RemoveDemo(dbDemo);
+                _logger.LogError($"Could not handle response from DemoFileWorker. Removing match from database. MatchId [ {matchId} ], Message [ {response.ToJson()} ]");
             }
         }
 
