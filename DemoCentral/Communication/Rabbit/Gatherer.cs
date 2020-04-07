@@ -10,6 +10,7 @@ using RabbitMQ.Client.Events;
 using DataBase.Enumerals;
 using DemoCentral.Communication.HTTP;
 using System;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace DemoCentral.Communication.Rabbit
 {
@@ -20,26 +21,13 @@ namespace DemoCentral.Communication.Rabbit
     /// </summary>
     public class Gatherer : Consumer<DemoInsertInstruction>
     {
-        private readonly IDemoCentralDBInterface _dbInterface;
-        private readonly IDemoDownloader _demoDownloader;
-        private readonly IUserIdentityRetriever _userIdentityRetriever;
-        private readonly ILogger<Gatherer> _logger;
-        private IInQueueDBInterface _inQueueDBInterface;
+        private readonly IServiceProvider _serviceProvider;
 
         public Gatherer(
             IQueueConnection queueConnection,
-            IDemoCentralDBInterface dbInterface,
-            IDemoDownloader demoDownloader,
-            IUserIdentityRetriever userInfoGetter,
-            ILogger<Gatherer> logger,
-            IInQueueDBInterface inQueueDBInterface) : base(queueConnection)
+            IServiceProvider serviceProvider) : base(queueConnection)
         {
-
-            _dbInterface = dbInterface;
-            _demoDownloader = demoDownloader;
-            _userIdentityRetriever = userInfoGetter;
-            _inQueueDBInterface = inQueueDBInterface;
-            _logger = logger;
+            _serviceProvider = serviceProvider;
         }
 
         /// <summary>
@@ -47,44 +35,8 @@ namespace DemoCentral.Communication.Rabbit
         /// </summary>
         public async override Task<ConsumedMessageHandling> HandleMessageAsync(BasicDeliverEventArgs ea, DemoInsertInstruction model)
         {
-            _logger.LogInformation($"Received download url from DemoInsertInstruction queue. [ {model.DownloadUrl} ]");
-            try
-            {
-                AnalyzerQuality requestedQuality = await _userIdentityRetriever.GetAnalyzerQualityAsync(model.UploaderId);
-                //TODO OPTIONAL FEATURE handle duplicate entry
-                //Currently not inserted into db and forgotten afterwards
-                //Maybe saved to special table or keep track of it otherwise
-                if (_dbInterface.TryCreateNewDemoEntryFromGatherer(model, requestedQuality, out long matchId))
-                {
-                    _logger.LogInformation($"Demo [ {matchId} ] assigned to [ {model.DownloadUrl} ]");
-
-                    var forwardModel = new DemoDownloadInstruction
-                    {
-                        MatchId = matchId,
-                        DownloadUrl = model.DownloadUrl
-                    };
-
-                    _inQueueDBInterface.Add(matchId, model.MatchDate, model.Source, model.UploaderId);
-
-                    _dbInterface.SetFileStatus(matchId, FileStatus.Downloading);
-                    _inQueueDBInterface.UpdateProcessStatus(matchId, ProcessedBy.DemoDownloader, true);
-                    _demoDownloader.PublishMessage(forwardModel);
-
-                    _logger.LogInformation($"Sent demo [ {matchId} ] to DemoDownloadInstruction queue");
-
-                }
-                else
-                {
-                    _logger.LogInformation($"DownloadUrl [ {model.DownloadUrl} ] was duplicate of Demo [ {matchId} ]");
-                }
-
-                return ConsumedMessageHandling.Done;
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e, $"Failed to handle message from DemoInsertInstruction queue. [ {model} ]");
-                return await Task.FromResult(ConsumedMessageHandling.ThrowAway);
-            }
+            // Require the `GathererWorker` service upon receiving a message, ensuring a new instance and disposal.
+            return await _serviceProvider.GetRequiredService<GathererWorker>().WorkAsync(model);
         }
     }
 }

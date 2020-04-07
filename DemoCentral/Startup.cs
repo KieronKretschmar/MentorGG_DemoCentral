@@ -194,15 +194,13 @@ namespace DemoCentral
             services.AddHostedService<IDemoDownloader>(p => p.GetRequiredService<IDemoDownloader>());
 
 
+            services.AddTransient<GathererWorker>();
+
             services.AddHostedService<Gatherer>(services =>
             {
                 return new Gatherer(
                     gathererQueue,
-                    services.GetRequiredService<IDemoCentralDBInterface>(),
-                    services.GetRequiredService<IDemoDownloader>(),
-                    services.GetRequiredService<IUserIdentityRetriever>(),
-                    services.GetRequiredService<ILogger<Gatherer>>(),
-                    services.GetRequiredService<IInQueueDBInterface>());
+                    services);
             });
 
             services.AddHostedService<ManualUploadReceiver>(services =>
