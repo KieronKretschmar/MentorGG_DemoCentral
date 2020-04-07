@@ -196,9 +196,9 @@ namespace DemoCentral
 
             services.AddTransient<GathererWorker>();
 
-            services.AddHostedService<Gatherer>(services =>
+            services.AddHostedService<GathererConsumer>(services =>
             {
-                return new Gatherer(
+                return new GathererConsumer(
                     gathererQueue,
                     services);
             });

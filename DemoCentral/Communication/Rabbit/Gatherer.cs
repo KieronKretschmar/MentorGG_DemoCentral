@@ -19,16 +19,16 @@ namespace DemoCentral.Communication.Rabbit
     /// If a message is received , <see cref="HandleMessage(IBasicProperties, GathererTransferModel)"/> is called
     /// and the message is forwarded to the demodownloader
     /// </summary>
-    public class Gatherer : Consumer<DemoInsertInstruction>
+    public class GathererConsumer : Consumer<DemoInsertInstruction>
     {
-        private Logger<Gatherer> _logger;
+        private Logger<GathererConsumer> _logger;
         private readonly IServiceProvider _serviceProvider;
 
-        public Gatherer(
-            IQueueConnection queueConnection,,
+        public GathererConsumer(
+            IQueueConnection queueConnection,
             IServiceProvider serviceProvider) : base(queueConnection)
         {
-            _logger = serviceProvider.GetRequiredService<Logger<Gatherer>>();
+            _logger = serviceProvider.GetRequiredService<Logger<GathererConsumer>>();
             _serviceProvider = serviceProvider;
         }
 
