@@ -41,7 +41,7 @@ namespace DemoCentral.Communication.Rabbit
         /// </summary>
         public async override Task<ConsumedMessageHandling> HandleMessageAsync(BasicDeliverEventArgs ea, DemoInsertInstruction model)
         {
-            _logger.LogInformation($"Received download url from DemoInsertInstruction queue \n url={model.DownloadUrl}");
+            _logger.LogInformation($"Received download url from DemoInsertInstruction queue. [ {model.DownloadUrl} ]");
             try
             {
                 AnalyzerQuality requestedQuality = await _userIdentityRetriever.GetAnalyzerQualityAsync(model.UploaderId);
@@ -76,7 +76,7 @@ namespace DemoCentral.Communication.Rabbit
             }
             catch (Exception e)
             {
-                _logger.LogError(e, $"Failed to handle message from DemoInsertInstruction queue \n url={model.DownloadUrl}");
+                _logger.LogError(e, $"Failed to handle message from DemoInsertInstruction queue. [ {model} ]");
                 return await Task.FromResult(ConsumedMessageHandling.ThrowAway);
             }
         }
