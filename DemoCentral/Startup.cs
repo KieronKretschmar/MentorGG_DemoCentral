@@ -200,6 +200,7 @@ namespace DemoCentral
             {
                 return new GathererConsumer(
                     gathererQueue,
+                    services.GetRequiredService<ILogger<GathererConsumer>>(),
                     services);
             });
 
