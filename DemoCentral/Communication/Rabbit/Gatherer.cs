@@ -21,22 +21,33 @@ namespace DemoCentral.Communication.Rabbit
     /// </summary>
     public class Gatherer : Consumer<DemoInsertInstruction>
     {
+        private Logger<Gatherer> _logger;
         private readonly IServiceProvider _serviceProvider;
 
         public Gatherer(
-            IQueueConnection queueConnection,
+            IQueueConnection queueConnection,,
             IServiceProvider serviceProvider) : base(queueConnection)
         {
+            _logger = serviceProvider.GetRequiredService<Logger<Gatherer>>();
             _serviceProvider = serviceProvider;
         }
 
         /// <summary>
-        /// Handle downloadUrl from GathererQueue, create new entry and send to downloader if unique, else delete and forget
+        /// Handle downloadUrl from GathererQueue.
         /// </summary>
         public async override Task<ConsumedMessageHandling> HandleMessageAsync(BasicDeliverEventArgs ea, DemoInsertInstruction model)
         {
-            // Require the `GathererWorker` service upon receiving a message, ensuring a new instance and disposal.
-            return await _serviceProvider.GetRequiredService<GathererWorker>().WorkAsync(model);
+            try
+            {
+                // Require the `GathererWorker` service upon receiving a message, ensuring a new instance and disposal.
+                await _serviceProvider.GetRequiredService<GathererWorker>().WorkAsync(model);
+                return ConsumedMessageHandling.Done;
+            }
+            catch (Exception e)
+            {
+                _logger.LogCritical(e, $"Failed to handle message from DemoInsertInstruction queue. [ {model} ]");
+                return ConsumedMessageHandling.Resend;
+            }
         }
     }
 }
