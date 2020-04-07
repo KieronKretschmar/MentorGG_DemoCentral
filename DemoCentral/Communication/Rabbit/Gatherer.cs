@@ -26,7 +26,13 @@ namespace DemoCentral.Communication.Rabbit
         private readonly ILogger<Gatherer> _logger;
         private IInQueueDBInterface _inQueueDBInterface;
 
-        public Gatherer(IQueueConnection queueConnection, IDemoCentralDBInterface dbInterface, IDemoDownloader demoDownloader,IUserIdentityRetriever userInfoGetter, ILogger<Gatherer> logger, IInQueueDBInterface inQueueDBInterface) : base(queueConnection)
+        public Gatherer(
+            IQueueConnection queueConnection,
+            IDemoCentralDBInterface dbInterface,
+            IDemoDownloader demoDownloader,
+            IUserIdentityRetriever userInfoGetter,
+            ILogger<Gatherer> logger,
+            IInQueueDBInterface inQueueDBInterface) : base(queueConnection)
         {
 
             _dbInterface = dbInterface;
