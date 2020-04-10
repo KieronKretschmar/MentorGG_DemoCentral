@@ -166,20 +166,20 @@ namespace DemoCentral
 
             //WORKAROUND for requesting a hostedService
             //Hosted services cant be addressed as an API, which we want to do with the PublishMessage() method
-            //so we add a Transient and a hosted service, which returns the Transient instance
-            // from https://github.com/aspnet/Extensions/issues/553
-            services.AddTransient<IDemoFileWorker, DemoFileWorker>(services =>
-             {
-                 return new DemoFileWorker(demoFileworkerRpcQueue, services);
-             });
+            //so we add a Singleton and a hosted service, which points to the Singleton instance
+            //from https://github.com/aspnet/Extensions/issues/553
+            services.AddSingleton<IDemoFileWorker, DemoFileWorker>(services =>
+            {
+                return new DemoFileWorker(demoFileworkerRpcQueue, services);
+            });
             services.AddHostedService<IDemoFileWorker>(p => p.GetRequiredService<IDemoFileWorker>());
 
 
             //WORKAROUND for requesting a hostedService
             //Hosted services cant be addressed as an API, which we want to do with the PublishMessage() method
-            //so we add a Transient and a hosted service, which returns the Transient instance
+            //so we add a Singleton and a hosted service, which points to the Singleton instance
             //from https://github.com/aspnet/Extensions/issues/553
-            services.AddTransient<IDemoDownloader, DemoDownloader>(services =>
+            services.AddSingleton<IDemoDownloader, DemoDownloader>(services =>
              {
                  return new DemoDownloader(demoDownloaderRpcQueue, services);
              });
