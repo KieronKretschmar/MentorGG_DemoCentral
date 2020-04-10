@@ -81,7 +81,17 @@ namespace DataBase.DatabaseClasses
                 default:
                     throw new ArgumentOutOfRangeException($"Unknown DemoFileWorkerStatus [ {DemoFileWorkerStatus} ] for HasFailedAnalysis( Match [ {MatchId} ] )");
             }
+        }
 
+        /// <summary>
+        /// Resets analysis to the stage where it was before DemoFileWorker
+        /// </summary>
+        public void ToPreAnalysisState()
+        {
+            UploadStatus = UploadStatus.New;
+            Md5hash = "";
+            DemoFileWorkerStatus = DemoFileWorkerStatus.New;
+            DemoFileWorkerVersion = "";
         }
     }
 }
