@@ -58,7 +58,7 @@ namespace DemoCentral.Controllers
                     };
 
                     _producer.PublishMessage(model);
-                    _logger.LogInformation($"Put new download request from browser extension in queue \n url:{model.DownloadUrl}");
+                    _logger.LogInformation($"Put new download request from browser extension in queue, url:{model.DownloadUrl}");
 
                 }
                 catch (Exception e)
