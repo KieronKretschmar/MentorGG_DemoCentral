@@ -53,6 +53,7 @@ namespace DemoCentral.Controllers.trusted
             };
 
             _matchWriter.PublishMessage(instruction);
+            _logger.LogTrace($"Forwarded request of demo [ {matchId} ] to MatchWriter for removal from database");
             return Ok();
         }
     }
