@@ -56,6 +56,8 @@ namespace DemoCentral
         long CreateNewDemoEntryFromManualUpload(ManualDownloadReport model, AnalyzerQuality requestedQuality);
         List<Demo> GetRecentFailedMatches(long playerId, int recentMatches, int offset = 0);
         DemoDownloadInstruction CreateDownloadInstructions(Demo dbDemo);
+        List<Demo> GetUnfinishedDemos(DateTime minUploadDate);
+        bool ResetAnalysis(long matchId);
     }
 
     /// <summary>
@@ -315,6 +317,41 @@ namespace DemoCentral
             };
             
             return res;
+        }
+
+        /// <summary>
+        /// Returns IDs of demos for which the file is in BlobStorage but that were not inserted into MatchDb.
+        /// </summary>
+        /// <param name="minUploadDate"></param>
+        /// <returns></returns>
+        public List<Demo> GetUnfinishedDemos(DateTime minUploadDate)
+        {
+            var demosToReset = _context.Demo
+                .Where(x => x.UploadDate >= minUploadDate)
+                .Where(x=>x.FileStatus == FileStatus.InBlobStorage)
+                .Where(x=>x.UploadStatus != UploadStatus.Finished)
+                .ToList();
+
+            return demosToReset;
+        }
+
+        /// <summary>
+        /// Turns the match to it's state before it was sent to DemoFileWorker
+        /// </summary>
+        /// <param name="matchId"></param>
+        /// <returns></returns>
+        public bool ResetAnalysis(long matchId)
+        {
+            var demo = _context.Demo.SingleOrDefault(x => x.MatchId == matchId);
+            if(demo == null)
+            {
+                _logger.LogError($"Tried to reset demo [ {matchId} ] but it was not in database.");
+                return false;
+            }
+
+            demo.ToPreAnalysisState();
+            _context.SaveChanges();
+            return true;
         }
     }
 

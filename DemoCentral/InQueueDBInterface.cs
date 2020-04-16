@@ -16,7 +16,7 @@ namespace DemoCentral
         /// <summary>
         /// Add a new demo to the queue, and set all queue status to false
         /// </summary>
-        void Add(long matchId, DateTime matchDate, Source source, long uploaderId);
+        InQueueDemo Add(long matchId, DateTime matchDate, Source source, long uploaderId);
         InQueueDemo GetDemoById(long matchId);
         /// <summary>
         /// Get a list of all<see cref="InQueueDemo"/> for a certain player
@@ -57,10 +57,9 @@ namespace DemoCentral
             _context = context;
         }
 
-        public void Add(long matchId, DateTime matchDate, Source source, long uploaderId)
+        public InQueueDemo Add(long matchId, DateTime matchDate, Source source, long uploaderId)
         {
-
-            _context.InQueueDemo.Add(new InQueueDemo
+            var newDemo = new InQueueDemo
             {
                 MatchId = matchId,
                 MatchDate = matchDate,
@@ -70,10 +69,13 @@ namespace DemoCentral
                 SOQUEUE = false,
                 DDQUEUE = false,
                 Retries = 0,
-            });
+            };
+
+            _context.InQueueDemo.Add(newDemo);
 
             _context.SaveChanges();
 
+            return newDemo;
         }
 
         public void UpdateProcessStatus(long matchId, ProcessedBy process, bool processing)
