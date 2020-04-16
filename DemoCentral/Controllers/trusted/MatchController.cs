@@ -17,11 +17,13 @@ namespace DemoCentral.Controllers.trusted
     {
         private readonly ILogger<MatchController> _logger;
         private readonly IMatchWriter _matchWriter;
+        private readonly IDemoCentralDBInterface _dBInterface;
 
-        public MatchController(ILogger<MatchController> logger, IMatchWriter matchWriter)
+        public MatchController(ILogger<MatchController> logger, IMatchWriter matchWriter, IDemoCentralDBInterface dBInterface)
         {
             _logger = logger;
             _matchWriter = matchWriter;
+            _dBInterface = dBInterface;
         }
 
         /// <summary>
@@ -29,9 +31,21 @@ namespace DemoCentral.Controllers.trusted
         /// </summary>
         /// <param name="matchId">match to remove</param>
         [HttpPost("match/{matchId}/remove-from-storage")]
-        public void RemoveFromStorage(long matchId)
+        public ActionResult RemoveFromStorage(long matchId)
         {
             _logger.LogInformation($"Received request for removal from storage of match [ {matchId} ]");
+
+            try
+            {
+                var demo = _dBInterface.GetDemoById(matchId);
+                if (demo.FileStatus != DataBase.Enumerals.FileStatus.InBlobStorage)
+                    throw new ArgumentException($"Demo [ {matchId} ] is not in blob storage, Removal request cancelled");
+            }
+            catch (Exception e) when (e is InvalidOperationException || e is ArgumentException)
+            {
+                _logger.LogInformation(e, $"Demo [ {matchId} ] was not removed from blob storage");
+                return BadRequest();
+            }
 
             var instruction = new DemoRemovalInstruction
             {
@@ -39,6 +53,7 @@ namespace DemoCentral.Controllers.trusted
             };
 
             _matchWriter.PublishMessage(instruction);
+            return Ok();
         }
     }
 }
