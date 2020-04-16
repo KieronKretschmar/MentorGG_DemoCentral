@@ -40,7 +40,7 @@ namespace DemoCentral.Controllers
         {
             var matches = JsonConvert.DeserializeObject<JsonMatches>(data);
 
-            _logger.LogInformation($"Received {matches.Matches.Length} new matches via browser extension");
+            _logger.LogInformation($"Received {matches.Matches.Length} new matches via browser extension, UploaderId [ {matches.Matches[0].UploaderId} ]");
             bool atLeastOneMatchFailed = false;
 
             foreach (var match in matches.Matches)
