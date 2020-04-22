@@ -28,7 +28,10 @@ namespace DemoCentral.Communication.Rabbit
         private readonly ILogger<MatchWriter> _logger;
         private readonly IBlobStorage _blobStorage;
 
-        public MatchWriter(IRPCQueueConnections queueConnection, IDemoCentralDBInterface dbInterface,IBlobStorage blobStorage, ILogger<MatchWriter> logger) : base(queueConnection)
+        public MatchWriter(IRPCQueueConnections queueConnection, 
+            IDemoCentralDBInterface dbInterface,
+            IBlobStorage blobStorage, 
+            ILogger<MatchWriter> logger) : base(queueConnection)
         {
             _dbInterface = dbInterface;
             _blobStorage = blobStorage;
