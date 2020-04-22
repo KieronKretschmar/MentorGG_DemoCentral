@@ -14,7 +14,9 @@ using RabbitCommunicationLib.Enums;
 
 namespace DemoCentral.Communication.Rabbit
 {
-    //Implement IHostedService so the Interface can be added via AddHostedService()
+    /// <summary>
+    /// RPC system with the DemoDownloader, send demos to the downloader, and track their status, forward to DemoFIleWorker if successful
+    /// </summary>
     public interface IDemoDownloader : IHostedService
     {
         /// <summary>

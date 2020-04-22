@@ -118,6 +118,11 @@ namespace DemoCentral
             var AMQP_DEMODOWNLOADER_REPLY = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_DEMODOWNLOADER_REPLY");
             var demoDownloaderRpcQueue = new RPCQueueConnections(AMQP_URI, AMQP_DEMODOWNLOADER_REPLY, AMQP_DEMODOWNLOADER);
 
+            var AMQP_MATCHWRITER_DEMO_REMOVAL = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_MATCHWRITER_DEMO_REMOVAL");
+            var AMQP_MATCHWRITER_DEMO_REMOVAL_REPLY = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_MATCHWRITER_DEMO_REMOVAL_REPLY");
+            var matchWriterRpcQueue = new RPCQueueConnections(AMQP_URI, AMQP_MATCHWRITER_DEMO_REMOVAL_REPLY, AMQP_MATCHWRITER_DEMO_REMOVAL);
+
+
             var AMQP_DEMOFILEWORKER = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_DEMOFILEWORKER");
             var AMQP_DEMOFILEWORKER_REPLY = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_DEMOFILEWORKER_REPLY");
             var demoFileworkerRpcQueue = new RPCQueueConnections(AMQP_URI, AMQP_DEMOFILEWORKER_REPLY, AMQP_DEMOFILEWORKER);
@@ -143,6 +148,12 @@ namespace DemoCentral
                 c.BaseAddress = new Uri(MENTORINTERFACE_BASE_ADDRESS);
             });
 
+            var BLOBSTORAGE_CONNECTION_STRING = GetRequiredEnvironmentVariable<string>(Configuration, "BLOBSTORAGE_CONNECTION_STRING");
+            services.AddTransient<IBlobStorage>(services => 
+            {
+                return new BlobStorage(BLOBSTORAGE_CONNECTION_STRING, services.GetRequiredService<ILogger<BlobStorage>>());
+            });
+
             services.AddTransient<IUserIdentityRetriever>(services =>
             {
                 if (MENTORINTERFACE_BASE_ADDRESS == "mock")
@@ -162,6 +173,11 @@ namespace DemoCentral
             services.AddHostedService<SituationsOperator>(services =>
             {
                 return new SituationsOperator(soQueue, services.GetRequiredService<IInQueueDBInterface>(), services.GetRequiredService<ILogger<SituationsOperator>>());
+            });
+
+            services.AddHostedService<IMatchWriter>(services =>
+            {
+                return new MatchWriter(matchWriterRpcQueue, services.GetRequiredService<IDemoCentralDBInterface>(),services.GetRequiredService<IBlobStorage>(),services.GetRequiredService<ILogger<MatchWriter>>());
             });
 
             //WORKAROUND for requesting a hostedService
