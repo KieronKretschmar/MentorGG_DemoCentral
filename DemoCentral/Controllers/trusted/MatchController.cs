@@ -41,10 +41,15 @@ namespace DemoCentral.Controllers.trusted
                 if (demo.FileStatus != DataBase.Enumerals.FileStatus.InBlobStorage)
                     throw new ArgumentException($"Demo [ {matchId} ] is not in blob storage, Removal request cancelled");
             }
-            catch (Exception e) when (e is InvalidOperationException || e is ArgumentException)
+            catch (Exception e) when ( e is ArgumentException)
             {
                 _logger.LogInformation(e, $"Demo [ {matchId} ] was not removed from blob storage");
                 return BadRequest();
+            }
+            catch(Exception e) when (e is InvalidOperationException)
+            {
+                _logger.LogInformation(e, $"Demo [ {matchId} ] does not exist, Removal request cancelled");
+                return NotFound();
             }
 
             var instruction = new DemoRemovalInstruction
