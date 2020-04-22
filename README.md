@@ -10,6 +10,8 @@ Set all the required environment variables, see `Startup.cs`
 - `AMQP_URI` : URI to the rabbit cluster[*]
 - `AMQP_DEMODOWNLOADER` : Rabbit queue's name for producing messages to DemoDownloader[*]
 - `AMQP_DEMODOWNLOADER_REPLY` : Rabbit queue's name for consuming messages from DemoDownloader[*] 
+- `AMQP_MATCHWRITER_DEMO_REMOVAL` : Rabbit queue's name for producing messages to MatchWriter[*] 
+- `AMQP_MATCHWRITER_DEMO_REMOVAL_REPLY` : Rabbit queue's name for consuming messages from MatchWriter[*] 
 - `AMQP_DEMOFILEWORKER` : Rabbit queue's name for producing messages to DemoFileWorker[*]
 - `AMQP_DEMOFILEWORKER_REPLY` : Rabbit queue's name for consuming messages from DemoFileWorker[*]
 - `AMQP_GATHERER` : Rabbit queue's name for consuming messages from a Gatherer[*]
@@ -17,6 +19,7 @@ Set all the required environment variables, see `Startup.cs`
 - `AMQP_MATCHDBI` :  Rabbit queue's name for consuming messages from MatchDBI[*]
 - `AMQP_MANUALDEMODOWNLOAD` : Rabbit queue's name for consuming messages from ManualDemoDownloader[*]
 - `AMQP_FANOUT_EXCHANGE_NAME` : Rabbit's exchange name for the producing messagesto the fanout[*]
+- `BLOBSTORAGE_CONNECTION_STRING` : connection to the blobstorage, only needs to include account credentials[*]
 - `MENTORINTERFACE_BASE_ADDRESS` : URI for MentorInterface. Specify "mock" to create an endpoint that always returns the lowest subscription
 
 
