@@ -12,8 +12,8 @@ namespace DemoCentral.Enumerals
         public static Dictionary<AnalyzerQuality, byte> Frames = new Dictionary<AnalyzerQuality, byte>
         {
             {AnalyzerQuality.Low, 1},
-            {AnalyzerQuality.Medium, 8},
-            {AnalyzerQuality.High, 16}
+            {AnalyzerQuality.Medium, 4},
+            {AnalyzerQuality.High, 8}
         };
     }
 }
