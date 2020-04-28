@@ -9,21 +9,21 @@ using RabbitCommunicationLib.Enums;
 using RabbitCommunicationLib.Interfaces;
 using RabbitCommunicationLib.TransferModels;
 
-namespace DemoCentral.Communication.Workers
+namespace DemoCentral.Communication.MessageProcessors
 {
-    public class GathererWorker
+    public class GathererProcessor
     {
         private readonly IDemoCentralDBInterface _dbInterface;
         private readonly IDemoDownloader _demoDownloader;
         private readonly IUserIdentityRetriever _userIdentityRetriever;
-        private readonly ILogger<GathererWorker> _logger;
+        private readonly ILogger<GathererProcessor> _logger;
         private IInQueueDBInterface _inQueueDBInterface;
 
-        public GathererWorker(
+        public GathererProcessor(
             IDemoCentralDBInterface dbInterface,
             IDemoDownloader demoDownloader,
             IUserIdentityRetriever userInfoGetter,
-            ILogger<GathererWorker> logger,
+            ILogger<GathererProcessor> logger,
             IInQueueDBInterface inQueueDBInterface)
         {
 

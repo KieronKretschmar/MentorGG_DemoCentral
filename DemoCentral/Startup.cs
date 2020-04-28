@@ -20,7 +20,7 @@ using DemoCentral.Helpers;
 using DemoCentral.Communication.HTTP;
 using DemoCentral.Communication.Rabbit;
 using System.Net.Http;
-using DemoCentral.Communication.Workers;
+using DemoCentral.Communication.MessageProcessors;
 
 namespace DemoCentral
 {
@@ -211,7 +211,7 @@ namespace DemoCentral
             services.AddHostedService<IDemoDownloader>(p => p.GetRequiredService<IDemoDownloader>());
 
 
-            services.AddTransient<GathererWorker>();
+            services.AddTransient<GathererProcessor>();
 
             services.AddHostedService<GathererConsumer>(services =>
             {
