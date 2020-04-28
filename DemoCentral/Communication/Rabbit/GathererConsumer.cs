@@ -11,6 +11,7 @@ using DataBase.Enumerals;
 using DemoCentral.Communication.HTTP;
 using System;
 using Microsoft.Extensions.DependencyInjection;
+using DemoCentral.Communication.Workers;
 
 namespace DemoCentral.Communication.Rabbit
 {

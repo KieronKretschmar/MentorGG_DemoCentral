@@ -3,12 +3,13 @@ using System.Threading.Tasks;
 using Database.Enumerals;
 using DataBase.Enumerals;
 using DemoCentral.Communication.HTTP;
+using DemoCentral.Communication.Rabbit;
 using Microsoft.Extensions.Logging;
 using RabbitCommunicationLib.Enums;
 using RabbitCommunicationLib.Interfaces;
 using RabbitCommunicationLib.TransferModels;
 
-namespace DemoCentral.Communication.Rabbit
+namespace DemoCentral.Communication.Workers
 {
     public class GathererWorker
     {

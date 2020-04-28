@@ -20,6 +20,7 @@ using DemoCentral.Helpers;
 using DemoCentral.Communication.HTTP;
 using DemoCentral.Communication.Rabbit;
 using System.Net.Http;
+using DemoCentral.Communication.Workers;
 
 namespace DemoCentral
 {
