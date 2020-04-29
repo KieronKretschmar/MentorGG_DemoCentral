@@ -16,9 +16,8 @@ using DemoCentral.Communication.MessageProcessors;
 namespace DemoCentral.Communication.RabbitConsumers
 {
     /// <summary>
-    /// Consumer for the Gatherer queue
-    /// If a message is received , <see cref="HandleMessage(IBasicProperties, GathererTransferModel)"/> is called
-    /// and the message is forwarded to the demodownloader
+    /// Consumer for the Gatherer queue.
+    /// Messages are being processed by <see cref="GathererProcessor"/>.
     /// </summary>
     public class GathererConsumer : Consumer<DemoInsertInstruction>
     {
