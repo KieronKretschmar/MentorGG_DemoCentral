@@ -41,9 +41,12 @@ namespace DemoCentral.Communication.Rabbit
         {
             try
             {
-                // Require the `GathererWorker` service upon receiving a message, ensuring a new instance and disposal.
-                await _serviceProvider.GetRequiredService<GathererWorker>().WorkAsync(model);
-                return ConsumedMessageHandling.Done;
+                using (var scope = _serviceProvider.CreateScope())
+                {
+                    var processor = scope.ServiceProvider.GetRequiredService<GathererProcessor>();
+                    await processor.WorkAsync(model);
+                    return ConsumedMessageHandling.Done;
+                }
             }
             catch (Exception e)
             {
