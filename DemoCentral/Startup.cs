@@ -54,6 +54,7 @@ namespace DemoCentral
         //// This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            #region Controllers
             services.AddControllers()
                 .AddNewtonsoftJson(x =>
                 {
@@ -62,8 +63,9 @@ namespace DemoCentral
                     // Serialize longs (steamIds) as strings
                     x.SerializerSettings.Converters.Add(new LongToStringConverter());
                 });
+            #endregion
 
-
+            #region Logging
             services.AddLogging(o =>
             {
                 o.AddConsole(o => o.TimestampFormat = "[yyyy-MM-dd HH:mm:ss zzz] ");
@@ -77,6 +79,7 @@ namespace DemoCentral
                 o.AddFilter("Microsoft.AspNetCore.Routing.EndpointMiddleware", LogLevel.Warning);
                 o.AddFilter("Microsoft.AspNetCore.Mvc.StatusCodeResult", LogLevel.Warning);
             });
+            #endregion
 
             #region Mysql Database
             string MYSQL_CONNECTION_STRING = GetOptionalEnvironmentVariable<string>(Configuration, "MYSQL_CONNECTION_STRING", null);
@@ -115,13 +118,14 @@ namespace DemoCentral
             }
             #endregion
 
+            #region API Versioning
             services.AddApiVersioning(o =>
             {
                 o.ReportApiVersions = true;
                 o.AssumeDefaultVersionWhenUnspecified = true;
                 o.DefaultApiVersion = new ApiVersion(1, 0);
             });
-
+            #endregion
 
             #region Swagger
             services.AddSwaggerGen(options =>
@@ -134,20 +138,47 @@ namespace DemoCentral
                 var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
                 options.IncludeXmlComments(xmlPath);
             });
-            #endregion
 
-            if (Configuration.GetValue<bool>("DOC_GEN"))
+            if (GetOptionalEnvironmentVariable<bool>(Configuration, "DOC_GEN", false))
             {
-                Console.WriteLine("DOC_GEN is true! ARE YOU JUST TRYING TO BUILD THE DOCS?");
+                Console.WriteLine("WARNING: DOC_GEN is true. Only building the swagger docs. This build is non-functional.");
                 return;
             }
+            #endregion
 
+            #region Database Interfaces
             services.AddTransient<IInQueueDBInterface, InQueueDBInterface>();
             services.AddTransient<IDemoDBInterface, DemoDBInterface>();
+            #endregion
+
+            #region Rabbit - General
+            var AMQP_URI = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_URI");
+            #endregion
+
+            #region Rabbit - Consumers
+            // Gatherer
+            var AMQP_GATHERER = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_GATHERER");
+            var gathererQueue = new QueueConnection(AMQP_URI, AMQP_GATHERER);
+            services.AddHostedService<GathererConsumer>(services =>
+            {
+                return new GathererConsumer(
+                    gathererQueue,
+                    services.GetRequiredService<ILogger<GathererConsumer>>(),
+                    services);
+            });
+            #endregion
+
+            #region Rabbit - Producers
+            #endregion
+
+            #region Rabbit - MessageProcessors
+            services.AddTransient<GathererProcessor>();
+            #endregion
+
+
 
 
             //Read environment variables
-            var AMQP_URI = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_URI");
 
             var AMQP_DEMODOWNLOADER = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_DEMODOWNLOADER");
             var AMQP_DEMODOWNLOADER_REPLY = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_DEMODOWNLOADER_REPLY");
@@ -162,8 +193,6 @@ namespace DemoCentral
             var AMQP_DEMOFILEWORKER_REPLY = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_DEMOFILEWORKER_REPLY");
             var demoFileworkerRpcQueue = new RPCQueueConnections(AMQP_URI, AMQP_DEMOFILEWORKER_REPLY, AMQP_DEMOFILEWORKER);
 
-            var AMQP_GATHERER = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_GATHERER");
-            var gathererQueue = new QueueConnection(AMQP_URI, AMQP_GATHERER);
 
             var AMQP_SITUATIONSOPERATOR = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_SITUATIONSOPERATOR");
             var soQueue = new QueueConnection(AMQP_URI, AMQP_SITUATIONSOPERATOR);
@@ -245,15 +274,6 @@ namespace DemoCentral
             services.AddHostedService<IDemoDownloader>(p => p.GetRequiredService<IDemoDownloader>());
 
 
-            services.AddTransient<GathererProcessor>();
-
-            services.AddHostedService<GathererConsumer>(services =>
-            {
-                return new GathererConsumer(
-                    gathererQueue,
-                    services.GetRequiredService<ILogger<GathererConsumer>>(),
-                    services);
-            });
 
             services.AddHostedService<ManualUploadReceiver>(services =>
             {
