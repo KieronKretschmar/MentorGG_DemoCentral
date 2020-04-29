@@ -231,8 +231,8 @@ namespace DemoCentral
             var AMQP_SITUATIONSOPERATOR = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_SITUATIONSOPERATOR");
             var soQueue = new QueueConnection(AMQP_URI, AMQP_SITUATIONSOPERATOR);
 
-            var AMQP_MATCHDBI = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_MATCHDBI");
-            var matchDBIQueue = new QueueConnection(AMQP_URI, AMQP_MATCHDBI);
+            var AMQP_MATCHWRITER_UPLOAD_REPORT = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_MATCHWRITER_UPLOAD_REPORT");
+            var matchwriterUploadReportQueue = new QueueConnection(AMQP_URI, AMQP_MATCHWRITER_UPLOAD_REPORT);
 
             var AMQP_MANUALDEMODOWNLOAD = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_MANUALDEMODOWNLOAD");
             var manualDemoDownloadQueue = new QueueConnection(AMQP_URI, AMQP_MANUALDEMODOWNLOAD);
@@ -242,11 +242,10 @@ namespace DemoCentral
 
             //Add services, 
             //if 3 or more are required to initialize another one, just pass the service provider
-            services.AddHostedService<MatchDBI>(services =>
+            services.AddHostedService<MatchWriterUploadReportConsumer>(services =>
             {
-                return new MatchDBI(matchDBIQueue, services.GetRequiredService<IDemoDBInterface>(), services.GetRequiredService<ILogger<MatchDBI>>());
+                return new MatchWriterUploadReportConsumer(matchwriterUploadReportQueue, services.GetRequiredService<IDemoDBInterface>(), services.GetRequiredService<ILogger<MatchWriterUploadReportConsumer>>());
             });
-
             services.AddHostedService<SituationsOperator>(services =>
             {
                 return new SituationsOperator(soQueue, services.GetRequiredService<IInQueueDBInterface>(), services.GetRequiredService<ILogger<SituationsOperator>>());

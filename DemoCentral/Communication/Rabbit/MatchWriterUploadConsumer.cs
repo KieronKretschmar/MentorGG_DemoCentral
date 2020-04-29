@@ -11,14 +11,14 @@ using System;
 namespace DemoCentral.Communication.Rabbit
 {
     /// <summary>
-    /// Handle TaskCompletedReports from MatchWriter
+    /// Handle Upload-TaskCompletedReports from MatchWriter
     /// </summary>
-    public class MatchDBI : Consumer<TaskCompletedReport>
+    public class MatchWriterUploadReportConsumer : Consumer<TaskCompletedReport>
     {
         private readonly IDemoDBInterface _dbInterface;
-        private readonly ILogger<MatchDBI> _logger;
+        private readonly ILogger<MatchWriterUploadReportConsumer> _logger;
 
-        public MatchDBI(IQueueConnection queueConnection, IDemoDBInterface dbInterface, ILogger<MatchDBI> logger) : base(queueConnection)
+        public MatchWriterUploadReportConsumer(IQueueConnection queueConnection, IDemoDBInterface dbInterface, ILogger<MatchWriterUploadReportConsumer> logger) : base(queueConnection)
         {
             _dbInterface = dbInterface;
             _logger = logger;
