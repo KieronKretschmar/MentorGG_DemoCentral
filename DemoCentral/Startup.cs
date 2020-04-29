@@ -36,6 +36,13 @@ namespace DemoCentral
     /// </summary>
     public class Startup
     {
+        private bool IsDevelopment => Configuration.GetValue<string>("ASPNETCORE_ENVIRONMENT") == Environments.Development;
+
+        /// <summary>
+        /// Amount of times to attempt a successful MySQL connection on startup.
+        /// </summary>
+        const int MYSQL_RETRY_LIMIT = 3;
+
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -47,11 +54,6 @@ namespace DemoCentral
         //// This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            string MYSQL_CONNECTION_STRING = GetRequiredEnvironmentVariable<string>(Configuration, "MYSQL_CONNECTION_STRING");
-
-            services.AddDbContext<DemoCentralContext>(options =>
-                options.UseMySql(MYSQL_CONNECTION_STRING), ServiceLifetime.Transient, ServiceLifetime.Transient);
-
             services.AddControllers()
                 .AddNewtonsoftJson(x =>
                 {
@@ -76,11 +78,42 @@ namespace DemoCentral
                 o.AddFilter("Microsoft.AspNetCore.Mvc.StatusCodeResult", LogLevel.Warning);
             });
 
-            if (Configuration.GetValue<bool>("IS_MIGRATING"))
+            #region Mysql Database
+            string MYSQL_CONNECTION_STRING = GetOptionalEnvironmentVariable<string>(Configuration, "MYSQL_CONNECTION_STRING", null);
+            if (MYSQL_CONNECTION_STRING != null)
+            {
+                services.AddDbContext<DemoCentralContext>(o =>
+                {
+                    o.UseMySql(MYSQL_CONNECTION_STRING, sqlOptions =>
+                    {
+                        sqlOptions.EnableRetryOnFailure(MYSQL_RETRY_LIMIT);
+                    });
+
+                }, ServiceLifetime.Scoped);
+            }
+            // Use InMemoryDatabase if the connectionstring is not set in a DEV enviroment
+            else if (IsDevelopment)
+            {
+                services.AddDbContext<DemoCentralContext>(o =>
+                {
+                    o.UseInMemoryDatabase("MyTemporaryDatabase");
+
+                }, ServiceLifetime.Scoped);
+
+                Console.WriteLine("WARNING: Using InMemoryDatabase!");
+            }
+            else
+            {
+                throw new ArgumentException(
+                    "MySqlConnectionString is missing, configure the `MYSQL_CONNECTION_STRING` enviroment variable.");
+            }
+
+            if (GetOptionalEnvironmentVariable<bool>(Configuration, "IS_MIGRATING", false))
             {
                 Console.WriteLine("IS_MIGRATING is true! ARE YOU STILL MIGRATING?");
                 return;
             }
+            #endregion
 
             services.AddApiVersioning(o =>
             {
@@ -281,6 +314,26 @@ namespace DemoCentral
             else
             {
                 return value;
+            }
+        }
+
+        /// <summary>
+        /// Attempt to retrieve an Environment Variable
+        /// Returns default value if not found.
+        /// </summary>
+        /// <typeparam name="T">Type to retreive</typeparam>
+        private static T GetOptionalEnvironmentVariable<T>(IConfiguration config, string key, T defaultValue)
+        {
+            var stringValue = config.GetSection(key).Value;
+            try
+            {
+                T value = (T)Convert.ChangeType(stringValue, typeof(T), System.Globalization.CultureInfo.InvariantCulture);
+                return value;
+            }
+            catch (InvalidCastException e)
+            {
+                Console.WriteLine($"Env var [ {key} ] not specified. Defaulting to [ {defaultValue} ]");
+                return defaultValue;
             }
         }
     }
