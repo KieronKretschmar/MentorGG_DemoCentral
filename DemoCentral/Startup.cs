@@ -200,7 +200,15 @@ namespace DemoCentral
                     services.GetRequiredService<ILogger<ManualUploadReceiver>>());
             });
 
-            // Upload-StatusReport from MatchWriter
+            // Download-Reports from DemoDownloader
+            var AMQP_DEMODOWNLOADER_REPLY = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_DEMODOWNLOADER_REPLY");
+            var demoDownloaderReportQueue = new QueueConnection(AMQP_URI, AMQP_DEMODOWNLOADER_REPLY);
+            services.AddHostedService<DemoDownloaderReportConsumer>(services =>
+            {
+                return new DemoDownloaderReportConsumer(demoDownloaderReportQueue, services.GetRequiredService<ILogger<DemoDownloaderReportConsumer>>(), services);
+            });
+
+            // Upload-Reports from MatchWriter
             var AMQP_MATCHWRITER_UPLOAD_REPORT = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_MATCHWRITER_UPLOAD_REPORT");
             var matchwriterUploadReportQueue = new QueueConnection(AMQP_URI, AMQP_MATCHWRITER_UPLOAD_REPORT);
             services.AddHostedService<MatchWriterUploadReportConsumer>(services =>
@@ -241,15 +249,13 @@ namespace DemoCentral
 
             #region Rabbit - MessageProcessors
             services.AddTransient<GathererProcessor>();
+            services.AddTransient<DemoDownloaderReportProcessor>();
             #endregion
 
 
 
 
             //RPC
-            var AMQP_DEMODOWNLOADER_REPLY = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_DEMODOWNLOADER_REPLY");
-            var demoDownloaderRpcQueue = new RPCQueueConnections(AMQP_URI, AMQP_DEMODOWNLOADER_REPLY, AMQP_DEMODOWNLOADER);
-
             var AMQP_MATCHWRITER_DEMO_REMOVAL_REPLY = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_MATCHWRITER_DEMO_REMOVAL_REPLY");
             var matchWriterRpcQueue = new RPCQueueConnections(AMQP_URI, AMQP_MATCHWRITER_DEMO_REMOVAL_REPLY, AMQP_MATCHWRITER_DEMO_REMOVAL);
 
@@ -271,20 +277,6 @@ namespace DemoCentral
                 return new DemoFileWorker(demoFileworkerRpcQueue, services);
             });
             services.AddHostedService<IDemoFileWorker>(p => p.GetRequiredService<IDemoFileWorker>());
-
-
-            //WORKAROUND for requesting a hostedService
-            //Hosted services cant be addressed as an API, which we want to do with the PublishMessage() method
-            //so we add a Singleton and a hosted service, which points to the Singleton instance
-            //from https://github.com/aspnet/Extensions/issues/553
-            services.AddSingleton<IDemoDownloader, DemoDownloader>(services =>
-             {
-                 return new DemoDownloader(demoDownloaderRpcQueue, services);
-             });
-            services.AddHostedService<IDemoDownloader>(p => p.GetRequiredService<IDemoDownloader>());
-
-
-
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

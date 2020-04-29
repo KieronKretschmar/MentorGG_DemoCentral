@@ -14,21 +14,21 @@ namespace DemoCentral.Communication.MessageProcessors
     public class GathererProcessor
     {
         private readonly IDemoDBInterface _dbInterface;
-        private readonly IDemoDownloader _demoDownloader;
+        private readonly IProducer<DemoDownloadInstruction> _demoDownloaderProducer;
         private readonly IUserIdentityRetriever _userIdentityRetriever;
         private readonly ILogger<GathererProcessor> _logger;
         private IInQueueDBInterface _inQueueDBInterface;
 
         public GathererProcessor(
             IDemoDBInterface dbInterface,
-            IDemoDownloader demoDownloader,
+            IProducer<DemoDownloadInstruction> demoDownloaderProducer,
             IUserIdentityRetriever userInfoGetter,
             ILogger<GathererProcessor> logger,
             IInQueueDBInterface inQueueDBInterface)
         {
 
             _dbInterface = dbInterface;
-            _demoDownloader = demoDownloader;
+            _demoDownloaderProducer = demoDownloaderProducer;
             _userIdentityRetriever = userInfoGetter;
             _inQueueDBInterface = inQueueDBInterface;
             _logger = logger;
@@ -61,7 +61,7 @@ namespace DemoCentral.Communication.MessageProcessors
 
                 _dbInterface.SetFileStatus(matchId, FileStatus.Downloading);
                 _inQueueDBInterface.UpdateProcessStatus(matchId, ProcessedBy.DemoDownloader, true);
-                _demoDownloader.PublishMessage(forwardModel);
+                _demoDownloaderProducer.PublishMessage(forwardModel);
 
                 _logger.LogInformation($"Published demo [ {matchId} ] to DemoDownloadInstruction queue");
 
