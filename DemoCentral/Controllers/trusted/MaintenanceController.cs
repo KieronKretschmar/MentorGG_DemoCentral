@@ -6,6 +6,8 @@ using DemoCentral.Communication.Rabbit;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using RabbitCommunicationLib.Interfaces;
+using RabbitCommunicationLib.TransferModels;
 
 namespace DemoCentral.Controllers.trusted
 {
@@ -17,9 +19,9 @@ namespace DemoCentral.Controllers.trusted
         private readonly IDemoDBInterface _dbInterface;
         private readonly IInQueueDBInterface _inQueueDBInterface;
         private readonly ILogger<MaintenanceController> _logger;
-        private readonly IDemoFileWorker _demoFileWorker;
+        private readonly IProducer<DemoAnalyzeInstruction> _demoFileWorker;
 
-        public MaintenanceController(IDemoDBInterface dbInterface, IInQueueDBInterface inQueueDBInterface, ILogger<MaintenanceController> logger, IDemoFileWorker demoFileWorker)
+        public MaintenanceController(IDemoDBInterface dbInterface, IInQueueDBInterface inQueueDBInterface, ILogger<MaintenanceController> logger, IProducer<DemoAnalyzeInstruction> demoFileWorker)
         {
             _dbInterface = dbInterface;
             _inQueueDBInterface = inQueueDBInterface;

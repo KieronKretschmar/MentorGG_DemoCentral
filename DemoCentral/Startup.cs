@@ -193,14 +193,14 @@ namespace DemoCentral
             {
                 return new ManualUploadReceiver(
                     manualDemoDownloadQueue,
-                    services.GetRequiredService<IDemoFileWorker>(),
+                    services.GetRequiredService<IProducer<DemoAnalyzeInstruction>>(),
                     services.GetRequiredService<IDemoDBInterface>(),
                     services.GetRequiredService<IInQueueDBInterface>(),
                     services.GetRequiredService<IUserIdentityRetriever>(),
                     services.GetRequiredService<ILogger<ManualUploadReceiver>>());
             });
 
-            // Download-Reports from DemoDownloader
+            // Download Reports from DemoDownloader
             var AMQP_DEMODOWNLOADER_REPLY = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_DEMODOWNLOADER_REPLY");
             var demoDownloaderReportQueue = new QueueConnection(AMQP_URI, AMQP_DEMODOWNLOADER_REPLY);
             services.AddHostedService<DemoDownloaderReportConsumer>(services =>
@@ -208,7 +208,15 @@ namespace DemoCentral
                 return new DemoDownloaderReportConsumer(demoDownloaderReportQueue, services.GetRequiredService<ILogger<DemoDownloaderReportConsumer>>(), services);
             });
 
-            // Upload-Reports from MatchWriter
+            // Analyze Reports from DemoFileWorker
+            var AMQP_DEMOFILEWORKER_REPLY = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_DEMOFILEWORKER_REPLY");
+            var demoFileWorkerReportQueue = new QueueConnection(AMQP_URI, AMQP_DEMOFILEWORKER_REPLY);
+            services.AddHostedService<DemoFileWorkerReportConsumer>(services =>
+            {
+                return new DemoFileWorkerReportConsumer(demoFileWorkerReportQueue, services.GetRequiredService<ILogger<DemoFileWorkerReportConsumer>>(), services);
+            });
+
+            // Upload Reports from MatchWriter
             var AMQP_MATCHWRITER_UPLOAD_REPORT = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_MATCHWRITER_UPLOAD_REPORT");
             var matchwriterUploadReportQueue = new QueueConnection(AMQP_URI, AMQP_MATCHWRITER_UPLOAD_REPORT);
             services.AddHostedService<MatchWriterUploadReportConsumer>(services =>
@@ -216,7 +224,7 @@ namespace DemoCentral
                 return new MatchWriterUploadReportConsumer(matchwriterUploadReportQueue, services.GetRequiredService<IDemoDBInterface>(), services.GetRequiredService<ILogger<MatchWriterUploadReportConsumer>>());
             });
 
-            // StatusReport from SituationsOperator
+            // Report from SituationsOperator
             var AMQP_SITUATIONSOPERATOR_REPORT = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_SITUATIONSOPERATOR_REPORT");
             var soQueue = new QueueConnection(AMQP_URI, AMQP_SITUATIONSOPERATOR_REPORT);
             services.AddHostedService<SituationsOperatorConsumer>(services =>
@@ -250,6 +258,7 @@ namespace DemoCentral
             #region Rabbit - MessageProcessors
             services.AddTransient<GathererProcessor>();
             services.AddTransient<DemoDownloaderReportProcessor>();
+            services.AddTransient<DemoFileWorkerReportProcessor>();
             #endregion
 
 
@@ -260,23 +269,10 @@ namespace DemoCentral
             var matchWriterRpcQueue = new RPCQueueConnections(AMQP_URI, AMQP_MATCHWRITER_DEMO_REMOVAL_REPLY, AMQP_MATCHWRITER_DEMO_REMOVAL);
 
 
-            var AMQP_DEMOFILEWORKER_REPLY = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_DEMOFILEWORKER_REPLY");
-            var demoFileworkerRpcQueue = new RPCQueueConnections(AMQP_URI, AMQP_DEMOFILEWORKER_REPLY, AMQP_DEMOFILEWORKER);
-
             services.AddHostedService<IMatchWriter>(services =>
             {
                 return new MatchWriter(matchWriterRpcQueue, services.GetRequiredService<IDemoDBInterface>(),services.GetRequiredService<IBlobStorage>(),services.GetRequiredService<ILogger<MatchWriter>>());
             });
-
-            //WORKAROUND for requesting a hostedService
-            //Hosted services cant be addressed as an API, which we want to do with the PublishMessage() method
-            //so we add a Singleton and a hosted service, which points to the Singleton instance
-            //from https://github.com/aspnet/Extensions/issues/553
-            services.AddSingleton<IDemoFileWorker, DemoFileWorker>(services =>
-            {
-                return new DemoFileWorker(demoFileworkerRpcQueue, services);
-            });
-            services.AddHostedService<IDemoFileWorker>(p => p.GetRequiredService<IDemoFileWorker>());
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

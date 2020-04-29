@@ -1,60 +1,71 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using RabbitMQ.Client;
-using RabbitCommunicationLib.Interfaces;
-using RabbitCommunicationLib.RPC;
-using RabbitCommunicationLib.TransferModels;
 using System;
+using System.Threading.Tasks;
 using Database.Enumerals;
 using DataBase.Enumerals;
+using DemoCentral.Communication.HTTP;
+using DemoCentral.Communication.Rabbit;
 using Microsoft.Extensions.Logging;
-using System.Threading.Tasks;
-using RabbitMQ.Client.Events;
 using RabbitCommunicationLib.Enums;
+using RabbitCommunicationLib.Interfaces;
+using RabbitCommunicationLib.TransferModels;
 
-namespace DemoCentral.Communication.Rabbit
+namespace DemoCentral.Communication.MessageProcessors
 {
-    /// <summary>
-    /// RPC system with DemoFileWorker, send demo to analyzing and track their success. Forward them to them to the fanout if successful
-    /// </summary>
-    public interface IDemoFileWorker : IHostedService
+    public class DemoFileWorkerReportProcessor
     {
-        /// <summary>
-        /// Handle response fromm DemoFileWorker, update filepath,filestatus and queue status if success,
-        /// remove entirely if duplicate, 
-        /// remove from queue if unzip failed 
-        /// </summary>
-        Task<ConsumedMessageHandling> HandleMessageAsync(BasicDeliverEventArgs ea, DemoAnalyzeReport consumeModel);
-        void PublishMessage(DemoAnalyzeInstruction model);
-    }
+        private readonly IDemoDBInterface _demoCentralDBInterface;
+        private readonly IProducer<DemoAnalyzeInstruction> _demoFileWorkerProducer;
+        private readonly IProducer<RedisLocalizationInstruction> _fanoutProducer;
+        private readonly ILogger<DemoFileWorkerReportProcessor> _logger;
+        private IInQueueDBInterface _inQueueDBInterface;
 
-    public class DemoFileWorker : RPCClient<DemoAnalyzeInstruction, DemoAnalyzeReport>, IDemoFileWorker
-    {
-        private readonly IDemoDBInterface _demoDBInterface;
-        private readonly IInQueueDBInterface _inQueueDBInterface;
-        private readonly IProducer<RedisLocalizationInstruction> _fanoutSender;
-        private readonly ILogger<DemoFileWorker> _logger;
-
-        public DemoFileWorker(IRPCQueueConnections queueConnection, IServiceProvider provider, bool persistantMessageSending = true) : base(queueConnection, persistantMessageSending)
+        public DemoFileWorkerReportProcessor(
+            IDemoDBInterface dbInterface,
+            IProducer<DemoAnalyzeInstruction> demoFileWorkerProducer,
+            IProducer<RedisLocalizationInstruction> fanoutProducer,
+            ILogger<DemoFileWorkerReportProcessor> logger,
+            IInQueueDBInterface inQueueDBInterface)
         {
-            _demoDBInterface = provider.GetRequiredService<IDemoDBInterface>();
-            _inQueueDBInterface = provider.GetRequiredService<IInQueueDBInterface>();
-            _fanoutSender = provider.GetRequiredService<IProducer<RedisLocalizationInstruction>>();
-            _logger = provider.GetRequiredService<ILogger<DemoFileWorker>>();
+
+            _demoCentralDBInterface = dbInterface;
+            _fanoutProducer = fanoutProducer;
+            _demoFileWorkerProducer = demoFileWorkerProducer;
+            _inQueueDBInterface = inQueueDBInterface;
+            _logger = logger;
         }
+
+
+        /// <summary>
+        /// Determine Analyze Quality, Update Queue Status and Send message to DemoDownloader for Demo Retrieval.
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        public async Task WorkAsync(DemoAnalyzeReport model)
+        {
+            try
+            {
+                UpdateDBEntryFromFileWorkerResponse(model);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, $"Failed to update demo [ {model.MatchId} ] in database");
+            }
+        }
+
+
 
         private void UpdateDBEntryFromFileWorkerResponse(DemoAnalyzeReport response)
         {
             var matchId = response.MatchId;
 
             var inQueueDemo = _inQueueDBInterface.GetDemoById(matchId);
-            var dbDemo = _demoDBInterface.GetDemoById(matchId);
+            var dbDemo = _demoCentralDBInterface.GetDemoById(matchId);
 
             if (response.Success)
             {
                 //Successfully handled in demo fileworker
-                _demoDBInterface.SetFileWorkerStatus(dbDemo, DemoFileWorkerStatus.Finished);
-                _demoDBInterface.SetFrames(dbDemo, response.FramesPerSecond);
+                _demoCentralDBInterface.SetFileWorkerStatus(dbDemo, DemoFileWorkerStatus.Finished);
+                _demoCentralDBInterface.SetFrames(dbDemo, response.FramesPerSecond);
 
                 _inQueueDBInterface.UpdateProcessStatus(inQueueDemo, ProcessedBy.DemoFileWorker, false);
 
@@ -64,7 +75,7 @@ namespace DemoCentral.Communication.Rabbit
                     RedisKey = response.RedisKey,
                     ExpiryDate = response.ExpiryDate,
                 };
-                _fanoutSender.PublishMessage(forwardModel);
+                _fanoutProducer.PublishMessage(forwardModel);
 
                 //TODO IF SITUATIONOPERATOR IS OWN SERVICE
                 //Set to in queue
@@ -81,7 +92,7 @@ namespace DemoCentral.Communication.Rabbit
                 {
                     //Remove demo from queue and set file status to unzip failed
                     _inQueueDBInterface.RemoveDemoFromQueue(inQueueDemo);
-                    _demoDBInterface.SetFileWorkerStatus(dbDemo, DemoFileWorkerStatus.UnzipFailed);
+                    _demoCentralDBInterface.SetFileWorkerStatus(dbDemo, DemoFileWorkerStatus.UnzipFailed);
                     _logger.LogWarning($"Demo [ {matchId} ] could not be unzipped");
                     return;
                 }
@@ -91,7 +102,7 @@ namespace DemoCentral.Communication.Rabbit
                     //Keep track of demos for which the duplicate check itself failed,
                     //they may or may not be duplicates, the check itself failed for any reason
                     _inQueueDBInterface.RemoveDemoFromQueue(inQueueDemo);
-                    _demoDBInterface.SetFileWorkerStatus(dbDemo, DemoFileWorkerStatus.DuplicateCheckFailed);
+                    _demoCentralDBInterface.SetFileWorkerStatus(dbDemo, DemoFileWorkerStatus.DuplicateCheckFailed);
                     _logger.LogWarning($"Demo [ {matchId} ] was not duplicate checked");
                     return;
                 }
@@ -103,7 +114,7 @@ namespace DemoCentral.Communication.Rabbit
                     //Currently a hash-checked demo, which is duplicated just gets removed
                     //Maybe keep track of it or just report back ?
                     _inQueueDBInterface.RemoveDemoFromQueue(inQueueDemo);
-                    _demoDBInterface.RemoveDemo(dbDemo);
+                    _demoCentralDBInterface.RemoveDemo(dbDemo);
 
                     _logger.LogInformation($"Demo [ {matchId} ] is duplicate via MD5Hash");
                     return;
@@ -112,7 +123,7 @@ namespace DemoCentral.Communication.Rabbit
                 if (!response.DemoAnalyzerSucceeded)
                 {
                     _inQueueDBInterface.RemoveDemoFromQueue(inQueueDemo);
-                    _demoDBInterface.SetFileWorkerStatus(dbDemo, DemoFileWorkerStatus.AnalyzerFailed);
+                    _demoCentralDBInterface.SetFileWorkerStatus(dbDemo, DemoFileWorkerStatus.AnalyzerFailed);
 
                     _logger.LogWarning($"Demo [ {matchId} ] failed at DemoAnalyzer.");
                     return;
@@ -122,25 +133,9 @@ namespace DemoCentral.Communication.Rabbit
                 //Therefore the response has more possible statusses than handled here
                 //Probably a coding error if you update DemoFileWorker
                 _inQueueDBInterface.RemoveDemoFromQueue(inQueueDemo);
-                _demoDBInterface.RemoveDemo(dbDemo);
+                _demoCentralDBInterface.RemoveDemo(dbDemo);
                 _logger.LogError($"Could not handle response from DemoFileWorker. Removing match from database. MatchId [ {matchId} ], Message [ {response.ToJson()} ]");
             }
-        }
-
-        public async override Task<ConsumedMessageHandling> HandleMessageAsync(BasicDeliverEventArgs ea, DemoAnalyzeReport consumeModel)
-        {
-            _logger.LogInformation($"Received demo [ {consumeModel.MatchId} ] from DemoAnalyzeReport queue");
-
-            try
-            {
-                UpdateDBEntryFromFileWorkerResponse(consumeModel);
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e, $"Failed to update demo [ {consumeModel.MatchId} ] in database");
-                return await Task.FromResult(ConsumedMessageHandling.ThrowAway);
-            }
-            return await Task.FromResult(ConsumedMessageHandling.Done);
         }
     }
 }
