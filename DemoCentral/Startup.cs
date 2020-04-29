@@ -186,7 +186,7 @@ namespace DemoCentral
                     services);
             });
 
-            // New uploads from ManualUploader
+            // New downloads from ManualDemoDownloader
             var AMQP_MANUALDEMODOWNLOAD = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_MANUALDEMODOWNLOAD");
             var manualDemoDownloadQueue = new QueueConnection(AMQP_URI, AMQP_MANUALDEMODOWNLOAD);
             services.AddHostedService<ManualUploadReceiver>(services =>

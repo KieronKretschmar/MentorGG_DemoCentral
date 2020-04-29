@@ -40,10 +40,8 @@ namespace DemoCentral.Communication.MessageProcessors
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
-        public async Task WorkAsync(DemoInsertInstruction model){
-
-            _logger.LogInformation($"Received download url from DemoInsertInstruction queue. [ {model.DownloadUrl} ]");
-
+        public async Task WorkAsync(DemoInsertInstruction model)
+        {
             AnalyzerQuality requestedQuality = await _userIdentityRetriever.GetAnalyzerQualityAsync(model.UploaderId);
 
             //TODO OPTIONAL FEATURE handle duplicate entry

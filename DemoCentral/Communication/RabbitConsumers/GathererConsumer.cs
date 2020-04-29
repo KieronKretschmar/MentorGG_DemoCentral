@@ -38,6 +38,8 @@ namespace DemoCentral.Communication.RabbitConsumers
         /// </summary>
         public async override Task<ConsumedMessageHandling> HandleMessageAsync(BasicDeliverEventArgs ea, DemoInsertInstruction model)
         {
+            _logger.LogInformation($"Received {model.GetType()}. Message: [ {model.ToJson()} ]");
+
             try
             {
                 using (var scope = _serviceProvider.CreateScope())
