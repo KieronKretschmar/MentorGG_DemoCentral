@@ -21,6 +21,7 @@ using DemoCentral.Communication.HTTP;
 using DemoCentral.Communication.Rabbit;
 using System.Net.Http;
 using DemoCentral.Communication.MessageProcessors;
+using DemoCentral.Communication.RabbitConsumers;
 
 namespace DemoCentral
 {

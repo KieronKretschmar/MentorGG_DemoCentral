@@ -13,7 +13,7 @@ using System;
 using Microsoft.Extensions.DependencyInjection;
 using DemoCentral.Communication.MessageProcessors;
 
-namespace DemoCentral.Communication.Rabbit
+namespace DemoCentral.Communication.RabbitConsumers
 {
     /// <summary>
     /// Consumer for the Gatherer queue
