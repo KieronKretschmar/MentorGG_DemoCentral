@@ -15,7 +15,7 @@ Set all the required environment variables, see `Startup.cs`
 - `AMQP_DEMOFILEWORKER` : Rabbit queue's name for producing messages to DemoFileWorker[*]
 - `AMQP_DEMOFILEWORKER_REPLY` : Rabbit queue's name for consuming messages from DemoFileWorker[*]
 - `AMQP_GATHERER` : Rabbit queue's name for consuming messages from a Gatherer[*]
-- `AMQP_SITUATIONSOPERATOR` : Rabbit queue's name for consuming messages from SituationsOperator[*]
+- `AMQP_SITUATIONSOPERATOR_REPORT` : Rabbit queue's name for consuming messages from SituationsOperator[*]
 - `AMQP_MATCHWRITER_UPLOAD_REPORT` :  Rabbit queue's name for consuming upload statusreport messages from MatchWriter[*]
 - `AMQP_MANUALDEMODOWNLOAD` : Rabbit queue's name for consuming messages from ManualDemoDownloader[*]
 - `AMQP_FANOUT_EXCHANGE_NAME` : Rabbit's exchange name for the producing messagesto the fanout[*]

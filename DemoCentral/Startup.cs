@@ -228,8 +228,8 @@ namespace DemoCentral
             var demoFileworkerRpcQueue = new RPCQueueConnections(AMQP_URI, AMQP_DEMOFILEWORKER_REPLY, AMQP_DEMOFILEWORKER);
 
 
-            var AMQP_SITUATIONSOPERATOR = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_SITUATIONSOPERATOR");
-            var soQueue = new QueueConnection(AMQP_URI, AMQP_SITUATIONSOPERATOR);
+            var AMQP_SITUATIONSOPERATOR_REPORT = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_SITUATIONSOPERATOR_REPORT");
+            var soQueue = new QueueConnection(AMQP_URI, AMQP_SITUATIONSOPERATOR_REPORT);
 
             var AMQP_MATCHWRITER_UPLOAD_REPORT = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_MATCHWRITER_UPLOAD_REPORT");
             var matchwriterUploadReportQueue = new QueueConnection(AMQP_URI, AMQP_MATCHWRITER_UPLOAD_REPORT);
@@ -246,9 +246,9 @@ namespace DemoCentral
             {
                 return new MatchWriterUploadReportConsumer(matchwriterUploadReportQueue, services.GetRequiredService<IDemoDBInterface>(), services.GetRequiredService<ILogger<MatchWriterUploadReportConsumer>>());
             });
-            services.AddHostedService<SituationsOperator>(services =>
+            services.AddHostedService<SituationsOperatorConsumer>(services =>
             {
-                return new SituationsOperator(soQueue, services.GetRequiredService<IInQueueDBInterface>(), services.GetRequiredService<ILogger<SituationsOperator>>());
+                return new SituationsOperatorConsumer(soQueue, services.GetRequiredService<IInQueueDBInterface>(), services.GetRequiredService<ILogger<SituationsOperatorConsumer>>());
             });
 
             services.AddHostedService<IMatchWriter>(services =>
