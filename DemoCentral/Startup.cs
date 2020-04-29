@@ -28,12 +28,6 @@ namespace DemoCentral
 {
     /// <summary>
     /// DemoCentral orchestrates the entire demo acquisition and analysis.
-    /// 
-    /// 
-    /// Required environment variables
-    /// [AMQP_URI,AMQP_DEMODOWNLOADER, AMQP_DEMODOWNLOADER_REPLY,
-    ///     AMQP_DEMOFILEWORKER, AMQP_DEMOFILEWORKER_REPLY, AMQP_GATHERER,
-    ///     AMQP_SITUATIONSOPERATOR, AMQP_MATCHDBI,AMQP_MANUALDEMODOWNLOAD,AMQP_FANOUT_EXCHANGE_NAME, HTTP_USER_SUBSCRIPTION]
     /// </summary>
     public class Startup
     {
@@ -192,6 +186,20 @@ namespace DemoCentral
                     services);
             });
 
+            // New uploads from ManualUploader
+            var AMQP_MANUALDEMODOWNLOAD = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_MANUALDEMODOWNLOAD");
+            var manualDemoDownloadQueue = new QueueConnection(AMQP_URI, AMQP_MANUALDEMODOWNLOAD);
+            services.AddHostedService<ManualUploadReceiver>(services =>
+            {
+                return new ManualUploadReceiver(
+                    manualDemoDownloadQueue,
+                    services.GetRequiredService<IDemoFileWorker>(),
+                    services.GetRequiredService<IDemoDBInterface>(),
+                    services.GetRequiredService<IInQueueDBInterface>(),
+                    services.GetRequiredService<IUserIdentityRetriever>(),
+                    services.GetRequiredService<ILogger<ManualUploadReceiver>>());
+            });
+
             // Upload-StatusReport from MatchWriter
             var AMQP_MATCHWRITER_UPLOAD_REPORT = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_MATCHWRITER_UPLOAD_REPORT");
             var matchwriterUploadReportQueue = new QueueConnection(AMQP_URI, AMQP_MATCHWRITER_UPLOAD_REPORT);
@@ -249,18 +257,6 @@ namespace DemoCentral
             var AMQP_DEMOFILEWORKER_REPLY = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_DEMOFILEWORKER_REPLY");
             var demoFileworkerRpcQueue = new RPCQueueConnections(AMQP_URI, AMQP_DEMOFILEWORKER_REPLY, AMQP_DEMOFILEWORKER);
 
-
-
-
-            var AMQP_MANUALDEMODOWNLOAD = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_MANUALDEMODOWNLOAD");
-            var manualDemoDownloadQueue = new QueueConnection(AMQP_URI, AMQP_MANUALDEMODOWNLOAD);
-
-
-
-
-            //Add services, 
-            //if 3 or more are required to initialize another one, just pass the service provider
-
             services.AddHostedService<IMatchWriter>(services =>
             {
                 return new MatchWriter(matchWriterRpcQueue, services.GetRequiredService<IDemoDBInterface>(),services.GetRequiredService<IBlobStorage>(),services.GetRequiredService<ILogger<MatchWriter>>());
@@ -289,16 +285,6 @@ namespace DemoCentral
 
 
 
-            services.AddHostedService<ManualUploadReceiver>(services =>
-            {
-                return new ManualUploadReceiver(
-                    manualDemoDownloadQueue,
-                    services.GetRequiredService<IDemoFileWorker>(),
-                    services.GetRequiredService<IDemoDBInterface>(),
-                    services.GetRequiredService<IInQueueDBInterface>(),
-                    services.GetRequiredService<IUserIdentityRetriever>(),
-                    services.GetRequiredService<ILogger<ManualUploadReceiver>>());
-            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
