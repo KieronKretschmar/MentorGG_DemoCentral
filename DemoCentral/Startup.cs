@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Mvc;
 using RabbitCommunicationLib.TransferModels;
 using RabbitCommunicationLib.Interfaces;
 using RabbitCommunicationLib.Producer;
+using RabbitCommunicationLib.Extensions;
 using DemoCentral.Helpers;
 using DemoCentral.Communication.HTTP;
 using DemoCentral.Communication.Rabbit;
@@ -210,15 +211,24 @@ namespace DemoCentral
 
             #region Rabbit - Producers
             // To DemoCentral (for matches uploaded via Browser-Extension)
-            services.AddTransient<IProducer<DemoInsertInstruction>>(services => new Producer<DemoInsertInstruction>(gathererQueue));
+            services.AddProducer<DemoInsertInstruction>(AMQP_URI, AMQP_GATHERER);
+
+            // To DemoDownloader
+            var AMQP_DEMODOWNLOADER = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_DEMODOWNLOADER");
+            services.AddProducer<DemoDownloadInstruction>(AMQP_URI, AMQP_DEMODOWNLOADER);
+
+            // To DemoFileWorker
+            var AMQP_DEMOFILEWORKER = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_DEMOFILEWORKER");
+            services.AddProducer<DemoAnalyzeInstruction>(AMQP_URI, AMQP_DEMOFILEWORKER);
 
             // To MatchData-Exchange
             var AMQP_FANOUT_EXCHANGE_NAME = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_FANOUT_EXCHANGE_NAME");
-            var fanoutExchangeConnection = new ExchangeConnection(AMQP_URI, AMQP_FANOUT_EXCHANGE_NAME);
-            services.AddTransient<IProducer<RedisLocalizationInstruction>>(services =>
-            {
-                return new FanoutProducer<RedisLocalizationInstruction>(fanoutExchangeConnection);
-            });
+            services.AddFanoutProducer<RedisLocalizationInstruction>(AMQP_URI, AMQP_FANOUT_EXCHANGE_NAME);
+
+            // Removal-Instructions to MatchWriter
+            var AMQP_MATCHWRITER_DEMO_REMOVAL = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_MATCHWRITER_DEMO_REMOVAL");
+            var fanoutExchangeConnection = new ExchangeConnection(AMQP_URI, AMQP_MATCHWRITER_DEMO_REMOVAL);
+
             #endregion
 
             #region Rabbit - MessageProcessors
@@ -228,18 +238,14 @@ namespace DemoCentral
 
 
 
-            //Read environment variables
-
-            var AMQP_DEMODOWNLOADER = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_DEMODOWNLOADER");
+            //RPC
             var AMQP_DEMODOWNLOADER_REPLY = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_DEMODOWNLOADER_REPLY");
             var demoDownloaderRpcQueue = new RPCQueueConnections(AMQP_URI, AMQP_DEMODOWNLOADER_REPLY, AMQP_DEMODOWNLOADER);
 
-            var AMQP_MATCHWRITER_DEMO_REMOVAL = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_MATCHWRITER_DEMO_REMOVAL");
             var AMQP_MATCHWRITER_DEMO_REMOVAL_REPLY = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_MATCHWRITER_DEMO_REMOVAL_REPLY");
             var matchWriterRpcQueue = new RPCQueueConnections(AMQP_URI, AMQP_MATCHWRITER_DEMO_REMOVAL_REPLY, AMQP_MATCHWRITER_DEMO_REMOVAL);
 
 
-            var AMQP_DEMOFILEWORKER = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_DEMOFILEWORKER");
             var AMQP_DEMOFILEWORKER_REPLY = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_DEMOFILEWORKER_REPLY");
             var demoFileworkerRpcQueue = new RPCQueueConnections(AMQP_URI, AMQP_DEMOFILEWORKER_REPLY, AMQP_DEMOFILEWORKER);
 
