@@ -14,12 +14,12 @@ namespace DemoCentral.Controllers.trusted
     [ApiController]
     public class MaintenanceController : ControllerBase
     {
-        private readonly IDemoCentralDBInterface _dbInterface;
+        private readonly IDemoDBInterface _dbInterface;
         private readonly IInQueueDBInterface _inQueueDBInterface;
         private readonly ILogger<MaintenanceController> _logger;
         private readonly IDemoFileWorker _demoFileWorker;
 
-        public MaintenanceController(IDemoCentralDBInterface dbInterface, IInQueueDBInterface inQueueDBInterface, ILogger<MaintenanceController> logger, IDemoFileWorker demoFileWorker)
+        public MaintenanceController(IDemoDBInterface dbInterface, IInQueueDBInterface inQueueDBInterface, ILogger<MaintenanceController> logger, IDemoFileWorker demoFileWorker)
         {
             _dbInterface = dbInterface;
             _inQueueDBInterface = inQueueDBInterface;

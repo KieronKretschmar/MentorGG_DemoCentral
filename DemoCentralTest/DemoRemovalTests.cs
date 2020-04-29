@@ -39,7 +39,7 @@ namespace DemoCentralTests
         {
             var mockMatchWriter = new Mock<IMatchWriter>();
             var mockILogger = new Mock<ILogger<MatchController>>();
-            var mockDBInterface = new Mock<IDemoCentralDBInterface>();
+            var mockDBInterface = new Mock<IDemoDBInterface>();
             var testId = 123456789;
             mockDBInterface.Setup(x => x.GetDemoById(testId)).Returns(new Demo
             {
@@ -62,7 +62,7 @@ namespace DemoCentralTests
 
             var mockMatchWriter = new Mock<IMatchWriter>();
             var mockILogger = new Mock<ILogger<MatchController>>();
-            var mockDBInterface = new Mock<IDemoCentralDBInterface>();
+            var mockDBInterface = new Mock<IDemoDBInterface>();
             var testId = 123456789;
             mockDBInterface.Setup(x => x.GetDemoById(testId)).Throws<InvalidOperationException>();
 
@@ -82,7 +82,7 @@ namespace DemoCentralTests
 
             //Can not mock rpc queue connection this way
             var mockRpcConnection = new Mock<IRPCQueueConnections>();
-            var mockDbInterface = new Mock<IDemoCentralDBInterface>();
+            var mockDbInterface = new Mock<IDemoDBInterface>();
             var mockBlobStorage = new Mock<IBlobStorage>();
             var mockResponse = new TaskCompletedReport
             {

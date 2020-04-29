@@ -14,9 +14,9 @@ namespace DemoCentral.Controllers
     [ApiController]
     public class MatchDownloadController : ControllerBase
     {
-        private readonly IDemoCentralDBInterface _dBInterface;
+        private readonly IDemoDBInterface _dBInterface;
 
-        public MatchDownloadController(IDemoCentralDBInterface dBInterface)
+        public MatchDownloadController(IDemoDBInterface dBInterface)
         {
             _dBInterface = dBInterface;
         }

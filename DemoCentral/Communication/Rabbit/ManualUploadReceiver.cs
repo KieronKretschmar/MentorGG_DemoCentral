@@ -20,12 +20,12 @@ namespace DemoCentral.Communication.Rabbit
     public class ManualUploadReceiver : Consumer<ManualDownloadReport>
     {
         private readonly IDemoFileWorker _demoFileWorker;
-        private readonly IDemoCentralDBInterface _dBInterface;
+        private readonly IDemoDBInterface _dBInterface;
         private readonly IInQueueDBInterface _inQueueDBInterface;
         private readonly IUserIdentityRetriever _userIdentityRetriever;
         private readonly ILogger<ManualUploadReceiver> _logger;
 
-        public ManualUploadReceiver(IQueueConnection queueConnection, IDemoFileWorker demoFileWorker, IDemoCentralDBInterface dBInterface, IInQueueDBInterface inQueueDBInterface,IUserIdentityRetriever userInfoGetter , ILogger<ManualUploadReceiver> logger) : base(queueConnection)
+        public ManualUploadReceiver(IQueueConnection queueConnection, IDemoFileWorker demoFileWorker, IDemoDBInterface dBInterface, IInQueueDBInterface inQueueDBInterface,IUserIdentityRetriever userInfoGetter , ILogger<ManualUploadReceiver> logger) : base(queueConnection)
         {
             _demoFileWorker = demoFileWorker;
             _dBInterface = dBInterface;

@@ -17,9 +17,9 @@ namespace DemoCentral.Controllers.trusted
     {
         private readonly ILogger<MatchController> _logger;
         private readonly IMatchWriter _matchWriter;
-        private readonly IDemoCentralDBInterface _dBInterface;
+        private readonly IDemoDBInterface _dBInterface;
 
-        public MatchController(ILogger<MatchController> logger, IMatchWriter matchWriter, IDemoCentralDBInterface dBInterface)
+        public MatchController(ILogger<MatchController> logger, IMatchWriter matchWriter, IDemoDBInterface dBInterface)
         {
             _logger = logger;
             _matchWriter = matchWriter;

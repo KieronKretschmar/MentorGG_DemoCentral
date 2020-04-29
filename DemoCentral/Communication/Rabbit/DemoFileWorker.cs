@@ -30,14 +30,14 @@ namespace DemoCentral.Communication.Rabbit
 
     public class DemoFileWorker : RPCClient<DemoAnalyzeInstruction, DemoAnalyzeReport>, IDemoFileWorker
     {
-        private readonly IDemoCentralDBInterface _demoDBInterface;
+        private readonly IDemoDBInterface _demoDBInterface;
         private readonly IInQueueDBInterface _inQueueDBInterface;
         private readonly IProducer<RedisLocalizationInstruction> _fanoutSender;
         private readonly ILogger<DemoFileWorker> _logger;
 
         public DemoFileWorker(IRPCQueueConnections queueConnection, IServiceProvider provider, bool persistantMessageSending = true) : base(queueConnection, persistantMessageSending)
         {
-            _demoDBInterface = provider.GetRequiredService<IDemoCentralDBInterface>();
+            _demoDBInterface = provider.GetRequiredService<IDemoDBInterface>();
             _inQueueDBInterface = provider.GetRequiredService<IInQueueDBInterface>();
             _fanoutSender = provider.GetRequiredService<IProducer<RedisLocalizationInstruction>>();
             _logger = provider.GetRequiredService<ILogger<DemoFileWorker>>();

@@ -15,10 +15,10 @@ namespace DemoCentral.Communication.Rabbit
     /// </summary>
     public class MatchDBI : Consumer<TaskCompletedReport>
     {
-        private readonly IDemoCentralDBInterface _dbInterface;
+        private readonly IDemoDBInterface _dbInterface;
         private readonly ILogger<MatchDBI> _logger;
 
-        public MatchDBI(IQueueConnection queueConnection, IDemoCentralDBInterface dbInterface, ILogger<MatchDBI> logger) : base(queueConnection)
+        public MatchDBI(IQueueConnection queueConnection, IDemoDBInterface dbInterface, ILogger<MatchDBI> logger) : base(queueConnection)
         {
             _dbInterface = dbInterface;
             _logger = logger;

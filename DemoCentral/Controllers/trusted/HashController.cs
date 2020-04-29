@@ -20,10 +20,10 @@ namespace DemoCentral.Controllers
     [ApiController]
     public class HashController : ControllerBase
     {
-        private readonly IDemoCentralDBInterface _dbInterface;
+        private readonly IDemoDBInterface _dbInterface;
         private readonly ILogger<HashController> _logger;
 
-        public HashController(IDemoCentralDBInterface dbInterface, ILogger<HashController> logger)
+        public HashController(IDemoDBInterface dbInterface, ILogger<HashController> logger)
         {
             _dbInterface = dbInterface;
             _logger = logger;

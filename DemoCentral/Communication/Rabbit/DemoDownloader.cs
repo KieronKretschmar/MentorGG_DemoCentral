@@ -29,7 +29,7 @@ namespace DemoCentral.Communication.Rabbit
 
     public class DemoDownloader : RPCClient<DemoDownloadInstruction, DemoObtainReport>, IDemoDownloader
     {
-        private readonly IDemoCentralDBInterface _demoCentralDBInterface;
+        private readonly IDemoDBInterface _demoCentralDBInterface;
         private readonly IInQueueDBInterface _inQueueDBInterface;
         private readonly IDemoFileWorker _demoFileWorker;
         private readonly ILogger<DemoDownloader> _logger;
@@ -37,7 +37,7 @@ namespace DemoCentral.Communication.Rabbit
 
         public DemoDownloader(IRPCQueueConnections queueConnection, IServiceProvider serviceProvider, bool persistantMessageSending = true) : base(queueConnection, persistantMessageSending)
         {
-            _demoCentralDBInterface = serviceProvider.GetService<IDemoCentralDBInterface>();
+            _demoCentralDBInterface = serviceProvider.GetService<IDemoDBInterface>();
             _inQueueDBInterface = serviceProvider.GetService<IInQueueDBInterface>();
             _demoFileWorker = serviceProvider.GetRequiredService<IDemoFileWorker>();
             _logger = serviceProvider.GetRequiredService<ILogger<DemoDownloader>>();

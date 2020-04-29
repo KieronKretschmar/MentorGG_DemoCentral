@@ -24,12 +24,12 @@ namespace DemoCentral.Communication.Rabbit
 
     public class MatchWriter : RPCClient<DemoRemovalInstruction, TaskCompletedReport>, IMatchWriter
     {
-        private readonly IDemoCentralDBInterface _dbInterface;
+        private readonly IDemoDBInterface _dbInterface;
         private readonly ILogger<MatchWriter> _logger;
         private readonly IBlobStorage _blobStorage;
 
         public MatchWriter(IRPCQueueConnections queueConnection, 
-            IDemoCentralDBInterface dbInterface,
+            IDemoDBInterface dbInterface,
             IBlobStorage blobStorage, 
             ILogger<MatchWriter> logger) : base(queueConnection)
         {

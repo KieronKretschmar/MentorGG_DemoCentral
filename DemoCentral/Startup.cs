@@ -109,7 +109,7 @@ namespace DemoCentral
             }
 
             services.AddTransient<IInQueueDBInterface, InQueueDBInterface>();
-            services.AddTransient<IDemoCentralDBInterface, DemoCentralDBInterface>();
+            services.AddTransient<IDemoDBInterface, DemoDBInterface>();
 
 
             //Read environment variables
@@ -168,7 +168,7 @@ namespace DemoCentral
             //if 3 or more are required to initialize another one, just pass the service provider
             services.AddHostedService<MatchDBI>(services =>
             {
-                return new MatchDBI(matchDBIQueue, services.GetRequiredService<IDemoCentralDBInterface>(), services.GetRequiredService<ILogger<MatchDBI>>());
+                return new MatchDBI(matchDBIQueue, services.GetRequiredService<IDemoDBInterface>(), services.GetRequiredService<ILogger<MatchDBI>>());
             });
 
             services.AddHostedService<SituationsOperator>(services =>
@@ -178,7 +178,7 @@ namespace DemoCentral
 
             services.AddHostedService<IMatchWriter>(services =>
             {
-                return new MatchWriter(matchWriterRpcQueue, services.GetRequiredService<IDemoCentralDBInterface>(),services.GetRequiredService<IBlobStorage>(),services.GetRequiredService<ILogger<MatchWriter>>());
+                return new MatchWriter(matchWriterRpcQueue, services.GetRequiredService<IDemoDBInterface>(),services.GetRequiredService<IBlobStorage>(),services.GetRequiredService<ILogger<MatchWriter>>());
             });
 
             //WORKAROUND for requesting a hostedService
@@ -226,7 +226,7 @@ namespace DemoCentral
                 return new ManualUploadReceiver(
                     manualDemoDownloadQueue,
                     services.GetRequiredService<IDemoFileWorker>(),
-                    services.GetRequiredService<IDemoCentralDBInterface>(),
+                    services.GetRequiredService<IDemoDBInterface>(),
                     services.GetRequiredService<IInQueueDBInterface>(),
                     services.GetRequiredService<IUserIdentityRetriever>(),
                     services.GetRequiredService<ILogger<ManualUploadReceiver>>());

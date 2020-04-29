@@ -13,10 +13,10 @@ namespace DemoCentral.Controllers
     [ApiController]
     public class MatchHistoryController : ControllerBase
     {
-        private IDemoCentralDBInterface _dbInterface;
+        private IDemoDBInterface _dbInterface;
         private readonly ILogger<MatchHistoryController> _logger;
 
-        public MatchHistoryController(IDemoCentralDBInterface dbInterface, ILogger<MatchHistoryController> logger)
+        public MatchHistoryController(IDemoDBInterface dbInterface, ILogger<MatchHistoryController> logger)
         {
             _dbInterface = dbInterface;
             _logger = logger;

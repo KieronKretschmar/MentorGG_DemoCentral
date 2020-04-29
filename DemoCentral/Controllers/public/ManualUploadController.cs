@@ -16,11 +16,11 @@ namespace DemoCentral.Controllers
     [ApiController]
     public class ManualUploadController : ControllerBase
     {
-        private readonly IDemoCentralDBInterface _dBInterface;
+        private readonly IDemoDBInterface _dBInterface;
         private readonly IInQueueDBInterface _inQueueDBInterface;
         private readonly ILogger<ManualUploadController> _logger;
 
-        public ManualUploadController(IDemoCentralDBInterface dBInterface, IInQueueDBInterface inQueueDBInterface, ILogger<ManualUploadController> logger)
+        public ManualUploadController(IDemoDBInterface dBInterface, IInQueueDBInterface inQueueDBInterface, ILogger<ManualUploadController> logger)
         {
             _dBInterface = dBInterface ?? throw new ArgumentNullException(nameof(dBInterface));
             _inQueueDBInterface = inQueueDBInterface ?? throw new ArgumentNullException(nameof(inQueueDBInterface));

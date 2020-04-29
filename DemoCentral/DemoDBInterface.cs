@@ -14,7 +14,7 @@ namespace DemoCentral
     /// <summary>
     /// Interface for the Demo table of the database
     /// </summary>
-    public interface IDemoCentralDBInterface
+    public interface IDemoDBInterface
     {
         DemoAnalyzeInstruction CreateAnalyzeInstructions(long matchId);
         DemoAnalyzeInstruction CreateAnalyzeInstructions(Demo demo);
@@ -61,14 +61,14 @@ namespace DemoCentral
     }
 
     /// <summary>
-    /// Basic implementation of the <see cref="IDemoCentralDBInterface"/>
+    /// Basic implementation of the <see cref="IDemoDBInterface"/>
     /// </summary>
-    public class DemoCentralDBInterface : IDemoCentralDBInterface
+    public class DemoDBInterface : IDemoDBInterface
     {
         private readonly DemoCentralContext _context;
-        private readonly ILogger<DemoCentralDBInterface> _logger;
+        private readonly ILogger<DemoDBInterface> _logger;
 
-        public DemoCentralDBInterface(DemoCentralContext context, ILogger<DemoCentralDBInterface> logger)
+        public DemoDBInterface(DemoCentralContext context, ILogger<DemoDBInterface> logger)
         {
             _context = context;
             _logger = logger;
