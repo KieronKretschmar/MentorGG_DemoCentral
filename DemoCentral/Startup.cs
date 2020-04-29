@@ -151,12 +151,36 @@ namespace DemoCentral
             services.AddTransient<IDemoDBInterface, DemoDBInterface>();
             #endregion
 
+            #region Blob Storage
+            var BLOBSTORAGE_CONNECTION_STRING = GetRequiredEnvironmentVariable<string>(Configuration, "BLOBSTORAGE_CONNECTION_STRING");
+            services.AddTransient<IBlobStorage>(services =>
+            {
+                return new BlobStorage(BLOBSTORAGE_CONNECTION_STRING, services.GetRequiredService<ILogger<BlobStorage>>());
+            });
+            #endregion
+
+            #region Http related services
+            var MENTORINTERFACE_BASE_ADDRESS = GetRequiredEnvironmentVariable<string>(Configuration, "MENTORINTERFACE_BASE_ADDRESS");
+            services.AddHttpClient("mentor-interface", c =>
+            {
+                c.BaseAddress = new Uri(MENTORINTERFACE_BASE_ADDRESS);
+            });
+
+            services.AddTransient<IUserIdentityRetriever>(services =>
+            {
+                if (MENTORINTERFACE_BASE_ADDRESS == "mock")
+                    return new MockUserInfoGetter(services.GetRequiredService<ILogger<MockUserInfoGetter>>());
+
+                return new UserIdentityRetriever(services.GetRequiredService<IHttpClientFactory>(), services.GetRequiredService<ILogger<UserIdentityRetriever>>());
+            });
+            #endregion
+
             #region Rabbit - General
             var AMQP_URI = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_URI");
             #endregion
 
             #region Rabbit - Consumers
-            // Gatherer
+            // From Gatherer
             var AMQP_GATHERER = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_GATHERER");
             var gathererQueue = new QueueConnection(AMQP_URI, AMQP_GATHERER);
             services.AddHostedService<GathererConsumer>(services =>
@@ -169,6 +193,16 @@ namespace DemoCentral
             #endregion
 
             #region Rabbit - Producers
+            // To DemoCentral (for matches uploaded via Browser-Extension)
+            services.AddTransient<IProducer<DemoInsertInstruction>>(services => new Producer<DemoInsertInstruction>(gathererQueue));
+
+            // To MatchData-Exchange
+            var AMQP_FANOUT_EXCHANGE_NAME = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_FANOUT_EXCHANGE_NAME");
+            var fanoutExchangeConnection = new ExchangeConnection(AMQP_URI, AMQP_FANOUT_EXCHANGE_NAME);
+            services.AddTransient<IProducer<RedisLocalizationInstruction>>(services =>
+            {
+                return new FanoutProducer<RedisLocalizationInstruction>(fanoutExchangeConnection);
+            });
             #endregion
 
             #region Rabbit - MessageProcessors
@@ -203,28 +237,7 @@ namespace DemoCentral
             var AMQP_MANUALDEMODOWNLOAD = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_MANUALDEMODOWNLOAD");
             var manualDemoDownloadQueue = new QueueConnection(AMQP_URI, AMQP_MANUALDEMODOWNLOAD);
 
-            var AMQP_FANOUT_EXCHANGE_NAME = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_FANOUT_EXCHANGE_NAME");
-            var fanoutExchangeConnection = new ExchangeConnection(AMQP_URI, AMQP_FANOUT_EXCHANGE_NAME);
 
-            var MENTORINTERFACE_BASE_ADDRESS = GetRequiredEnvironmentVariable<string>(Configuration, "MENTORINTERFACE_BASE_ADDRESS");
-            services.AddHttpClient("mentor-interface", c =>
-            {
-                c.BaseAddress = new Uri(MENTORINTERFACE_BASE_ADDRESS);
-            });
-
-            var BLOBSTORAGE_CONNECTION_STRING = GetRequiredEnvironmentVariable<string>(Configuration, "BLOBSTORAGE_CONNECTION_STRING");
-            services.AddTransient<IBlobStorage>(services => 
-            {
-                return new BlobStorage(BLOBSTORAGE_CONNECTION_STRING, services.GetRequiredService<ILogger<BlobStorage>>());
-            });
-
-            services.AddTransient<IUserIdentityRetriever>(services =>
-            {
-                if (MENTORINTERFACE_BASE_ADDRESS == "mock")
-                    return new MockUserInfoGetter(services.GetRequiredService<ILogger<MockUserInfoGetter>>());
-
-                return new UserIdentityRetriever(services.GetRequiredService<IHttpClientFactory>(), services.GetRequiredService<ILogger<UserIdentityRetriever>>());
-            });
 
 
             //Add services, 
@@ -263,14 +276,6 @@ namespace DemoCentral
              {
                  return new DemoDownloader(demoDownloaderRpcQueue, services);
              });
-
-            services.AddTransient<IProducer<DemoInsertInstruction>>(services => new Producer<DemoInsertInstruction>(gathererQueue));
-
-
-            services.AddTransient<IProducer<RedisLocalizationInstruction>>(services =>
-            {
-                return new FanoutProducer<RedisLocalizationInstruction>(fanoutExchangeConnection);
-            });
             services.AddHostedService<IDemoDownloader>(p => p.GetRequiredService<IDemoDownloader>());
 
 
