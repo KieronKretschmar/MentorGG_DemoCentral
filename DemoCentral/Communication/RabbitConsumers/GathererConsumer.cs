@@ -21,16 +21,17 @@ namespace DemoCentral.Communication.RabbitConsumers
     /// </summary>
     public class GathererConsumer : Consumer<DemoInsertInstruction>
     {
-        private ILogger<GathererConsumer> _logger;
         private readonly IServiceProvider _serviceProvider;
+        private readonly ILogger<GathererConsumer> _logger;
 
         public GathererConsumer(
-            IQueueConnection queueConnection,
+            IServiceProvider serviceProvider,
             ILogger<GathererConsumer> logger,
-            IServiceProvider serviceProvider) : base(queueConnection)
+            IQueueConnection queueConnection
+            ) : base(queueConnection)
         {
-            _logger = logger;
             _serviceProvider = serviceProvider;
+            _logger = logger;
         }
 
         /// <summary>

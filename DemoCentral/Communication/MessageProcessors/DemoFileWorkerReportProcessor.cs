@@ -13,25 +13,24 @@ namespace DemoCentral.Communication.MessageProcessors
 {
     public class DemoFileWorkerReportProcessor
     {
+        private readonly ILogger<DemoFileWorkerReportProcessor> _logger;
         private readonly IDemoDBInterface _demoCentralDBInterface;
         private readonly IProducer<DemoAnalyzeInstruction> _demoFileWorkerProducer;
         private readonly IProducer<RedisLocalizationInstruction> _fanoutProducer;
-        private readonly ILogger<DemoFileWorkerReportProcessor> _logger;
         private IInQueueDBInterface _inQueueDBInterface;
 
         public DemoFileWorkerReportProcessor(
+            ILogger<DemoFileWorkerReportProcessor> logger,
             IDemoDBInterface dbInterface,
             IProducer<DemoAnalyzeInstruction> demoFileWorkerProducer,
             IProducer<RedisLocalizationInstruction> fanoutProducer,
-            ILogger<DemoFileWorkerReportProcessor> logger,
             IInQueueDBInterface inQueueDBInterface)
         {
-
+            _logger = logger;
             _demoCentralDBInterface = dbInterface;
             _fanoutProducer = fanoutProducer;
             _demoFileWorkerProducer = demoFileWorkerProducer;
             _inQueueDBInterface = inQueueDBInterface;
-            _logger = logger;
         }
 
 

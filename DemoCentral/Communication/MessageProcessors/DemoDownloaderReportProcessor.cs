@@ -13,27 +13,27 @@ namespace DemoCentral.Communication.MessageProcessors
 {
     public class DemoDownloaderReportProcessor
     {
+        private readonly ILogger<DemoDownloaderReportProcessor> _logger;
         private readonly IDemoDBInterface _demoCentralDBInterface;
         private readonly IProducer<DemoDownloadInstruction> _demoDownloaderProducer;
         private readonly IProducer<DemoAnalyzeInstruction> _demoFileWorkerProducer;
-        private readonly ILogger<DemoDownloaderReportProcessor> _logger;
         private IInQueueDBInterface _inQueueDBInterface;
 
         private const int MAX_RETRIES = 2;
 
         public DemoDownloaderReportProcessor(
+            ILogger<DemoDownloaderReportProcessor> logger,
             IDemoDBInterface dbInterface,
             IProducer<DemoDownloadInstruction> demoDownloaderProducer,
             IProducer<DemoAnalyzeInstruction> demoFileWorkerProducer,
-            ILogger<DemoDownloaderReportProcessor> logger,
             IInQueueDBInterface inQueueDBInterface)
         {
 
+            _logger = logger;
             _demoCentralDBInterface = dbInterface;
             _demoDownloaderProducer = demoDownloaderProducer;
             _demoFileWorkerProducer = demoFileWorkerProducer;
             _inQueueDBInterface = inQueueDBInterface;
-            _logger = logger;
         }
 
 

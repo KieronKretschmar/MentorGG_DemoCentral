@@ -23,18 +23,17 @@ namespace DemoCentral.Communication.MessageProcessors
         private const int MAX_RETRIES = 2;
 
         public ManualDownloadReportProcessor(
+            ILogger<DemoDownloaderReportProcessor> logger,
             IDemoDBInterface dbInterface,
             IUserIdentityRetriever userIdentityRetriever,
             IProducer<DemoAnalyzeInstruction> demoFileWorkerProducer,
-            ILogger<DemoDownloaderReportProcessor> logger,
             IInQueueDBInterface inQueueDBInterface)
         {
-
+            _logger = logger;
             _demoCentralDBInterface = dbInterface;
             _userIdentityRetriever = userIdentityRetriever;
             _demoFileWorkerProducer = demoFileWorkerProducer;
             _inQueueDBInterface = inQueueDBInterface;
-            _logger = logger;
         }
 
 

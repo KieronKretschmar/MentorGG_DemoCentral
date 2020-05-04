@@ -18,17 +18,17 @@ namespace DemoCentral.Communication.RabbitConsumers
     /// </summary>
     public class DemoDownloaderReportConsumer : Consumer<DemoObtainReport>
     {
-
-        private ILogger<DemoDownloaderReportConsumer> _logger;
         private readonly IServiceProvider _serviceProvider;
+        private ILogger<DemoDownloaderReportConsumer> _logger;
 
         public DemoDownloaderReportConsumer(
-            IQueueConnection queueConnection,
+            IServiceProvider serviceProvider,
             ILogger<DemoDownloaderReportConsumer> logger,
-            IServiceProvider serviceProvider) : base(queueConnection)
+            IQueueConnection queueConnection
+            ) : base(queueConnection)
         {
-            _logger = logger;
             _serviceProvider = serviceProvider;
+            _logger = logger;
         }
 
         /// <summary>

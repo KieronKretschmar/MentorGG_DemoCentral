@@ -181,9 +181,9 @@ namespace DemoCentral
             services.AddHostedService<GathererConsumer>(services =>
             {
                 return new GathererConsumer(
-                    gathererQueue,
+                    services,
                     services.GetRequiredService<ILogger<GathererConsumer>>(),
-                    services);
+                    gathererQueue);
             });
 
             // New downloads from ManualDemoDownloader
@@ -193,8 +193,8 @@ namespace DemoCentral
             {
                 return new ManualDownloadConsumer(
                     services,
-                    manualDemoDownloadQueue,
-                    services.GetRequiredService<ILogger<ManualDownloadConsumer>>()
+                    services.GetRequiredService<ILogger<ManualDownloadConsumer>>(),
+                    manualDemoDownloadQueue
                 );
             });
 
@@ -203,7 +203,7 @@ namespace DemoCentral
             var demoDownloaderReportQueue = new QueueConnection(AMQP_URI, AMQP_DEMODOWNLOADER_REPLY);
             services.AddHostedService<DemoDownloaderReportConsumer>(services =>
             {
-                return new DemoDownloaderReportConsumer(demoDownloaderReportQueue, services.GetRequiredService<ILogger<DemoDownloaderReportConsumer>>(), services);
+                return new DemoDownloaderReportConsumer(services, services.GetRequiredService<ILogger<DemoDownloaderReportConsumer>>(), demoDownloaderReportQueue);
             });
 
             // Analyze Reports from DemoFileWorker
@@ -211,7 +211,7 @@ namespace DemoCentral
             var demoFileWorkerReportQueue = new QueueConnection(AMQP_URI, AMQP_DEMOFILEWORKER_REPLY);
             services.AddHostedService<DemoFileWorkerReportConsumer>(services =>
             {
-                return new DemoFileWorkerReportConsumer(demoFileWorkerReportQueue, services.GetRequiredService<ILogger<DemoFileWorkerReportConsumer>>(), services);
+                return new DemoFileWorkerReportConsumer(services, services.GetRequiredService<ILogger<DemoFileWorkerReportConsumer>>(), demoFileWorkerReportQueue);
             });
 
             // Upload Reports from MatchWriter

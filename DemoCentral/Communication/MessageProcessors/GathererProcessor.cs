@@ -13,25 +13,24 @@ namespace DemoCentral.Communication.MessageProcessors
 {
     public class GathererProcessor
     {
+        private readonly ILogger<GathererProcessor> _logger;
         private readonly IDemoDBInterface _dbInterface;
         private readonly IProducer<DemoDownloadInstruction> _demoDownloaderProducer;
         private readonly IUserIdentityRetriever _userIdentityRetriever;
-        private readonly ILogger<GathererProcessor> _logger;
         private IInQueueDBInterface _inQueueDBInterface;
 
         public GathererProcessor(
+            ILogger<GathererProcessor> logger,
             IDemoDBInterface dbInterface,
             IProducer<DemoDownloadInstruction> demoDownloaderProducer,
             IUserIdentityRetriever userInfoGetter,
-            ILogger<GathererProcessor> logger,
             IInQueueDBInterface inQueueDBInterface)
         {
-
+            _logger = logger;
             _dbInterface = dbInterface;
             _demoDownloaderProducer = demoDownloaderProducer;
             _userIdentityRetriever = userInfoGetter;
             _inQueueDBInterface = inQueueDBInterface;
-            _logger = logger;
         }
 
 

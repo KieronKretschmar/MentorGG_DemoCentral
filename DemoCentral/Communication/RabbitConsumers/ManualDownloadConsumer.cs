@@ -26,8 +26,8 @@ namespace DemoCentral.Communication.RabbitConsumers
 
         public ManualDownloadConsumer(
             IServiceProvider serviceProvider,
-            IQueueConnection queueConnection, 
-            ILogger<ManualDownloadConsumer> logger
+            ILogger<ManualDownloadConsumer> logger,
+            IQueueConnection queueConnection
             ) : base(queueConnection)
         {
             _serviceProvider = serviceProvider;
