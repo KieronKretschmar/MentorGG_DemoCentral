@@ -1,7 +1,7 @@
 ﻿using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
-using DataBase.DatabaseClasses;
-using DataBase.Enumerals;
+using Database.DatabaseClasses;
+using Database.Enumerals;
 using DemoCentral;
 using DemoCentral.Communication.Rabbit;
 using DemoCentral.Controllers.trusted;

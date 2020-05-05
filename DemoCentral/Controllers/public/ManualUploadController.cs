@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using DataBase.DatabaseClasses;
-using DataBase.Enumerals;
+using Database.DatabaseClasses;
+using Database.Enumerals;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;

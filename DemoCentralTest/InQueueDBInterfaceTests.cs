@@ -2,7 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using DemoCentral;
 using System;
-using DataBase.DatabaseClasses;
+using Database.DatabaseClasses;
 using Moq;
 using Microsoft.EntityFrameworkCore;
 using RabbitCommunicationLib.Enums;

@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using DemoCentral.Models;
-using DataBase.DatabaseClasses;
+using Database.DatabaseClasses;
 using System.Net;
 using Microsoft.Extensions.Logging;
 using RabbitCommunicationLib.Enums;

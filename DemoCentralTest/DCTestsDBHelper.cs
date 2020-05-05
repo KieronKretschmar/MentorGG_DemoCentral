@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using DemoCentral;
-using DataBase.DatabaseClasses;
+using Database.DatabaseClasses;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.InMemory;
 

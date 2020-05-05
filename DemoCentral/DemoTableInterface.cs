@@ -1,9 +1,9 @@
-﻿using DataBase.DatabaseClasses;
+﻿using Database.DatabaseClasses;
 using RabbitCommunicationLib.TransferModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using DataBase.Enumerals;
+using Database.Enumerals;
 using Microsoft.Extensions.Logging;
 using Database.Enumerals;
 using DemoCentral.Enumerals;
