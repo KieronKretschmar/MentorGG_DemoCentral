@@ -1,9 +1,9 @@
 ﻿using System;
 using RabbitCommunicationLib.Enums;
-using DataBase.Enumerals;
+using Database.Enumerals;
 using RabbitCommunicationLib.TransferModels;
 
-namespace DataBase.DatabaseClasses
+namespace Database.DatabaseClasses
 {
     public partial class Demo
     {
