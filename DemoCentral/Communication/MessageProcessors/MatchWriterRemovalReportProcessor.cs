@@ -56,6 +56,7 @@ namespace DemoCentral.Communication.MessageProcessors
             {
                 _demoTableInterface.SetFileStatus(demo, DataBase.Enumerals.FileStatus.Removed);
                 await _blobStorage.DeleteBlobAsync(demo.BlobUrl);
+                _demoTableInterface.SetBlobUrl(demo, null);
             }
             else
             {
