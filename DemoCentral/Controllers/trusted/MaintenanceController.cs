@@ -6,6 +6,8 @@ using DemoCentral.Communication.Rabbit;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using RabbitCommunicationLib.Interfaces;
+using RabbitCommunicationLib.TransferModels;
 
 namespace DemoCentral.Controllers.trusted
 {
@@ -14,15 +16,15 @@ namespace DemoCentral.Controllers.trusted
     [ApiController]
     public class MaintenanceController : ControllerBase
     {
-        private readonly IDemoCentralDBInterface _dbInterface;
-        private readonly IInQueueDBInterface _inQueueDBInterface;
+        private readonly IDemoTableInterface _demoTableInterface;
+        private readonly IInQueueTableInterface _inQueueTableInterface;
         private readonly ILogger<MaintenanceController> _logger;
-        private readonly IDemoFileWorker _demoFileWorker;
+        private readonly IProducer<DemoAnalyzeInstruction> _demoFileWorker;
 
-        public MaintenanceController(IDemoCentralDBInterface dbInterface, IInQueueDBInterface inQueueDBInterface, ILogger<MaintenanceController> logger, IDemoFileWorker demoFileWorker)
+        public MaintenanceController(IDemoTableInterface demoTableInterface, IInQueueTableInterface inQueueTableInterface, ILogger<MaintenanceController> logger, IProducer<DemoAnalyzeInstruction> demoFileWorker)
         {
-            _dbInterface = dbInterface;
-            _inQueueDBInterface = inQueueDBInterface;
+            _demoTableInterface = demoTableInterface;
+            _inQueueTableInterface = inQueueTableInterface;
             _logger = logger;
             _demoFileWorker = demoFileWorker;
         }
@@ -35,13 +37,13 @@ namespace DemoCentral.Controllers.trusted
         [HttpPost("restart-unfinished-demos")]
         public ActionResult RestartUnfinishedDemos(DateTime minUploadDate)
         {
-            var demosToReset = _dbInterface.GetUnfinishedDemos(minUploadDate);
+            var demosToReset = _demoTableInterface.GetUnfinishedDemos(minUploadDate);
 
             int resetCount = 0;
             foreach (var demo in demosToReset)
             {
                 // Update Demo table
-                var isReset = _dbInterface.ResetAnalysis(demo.MatchId);
+                var isReset = _demoTableInterface.ResetAnalysis(demo.MatchId);
                 if (!isReset)
                 {
                     _logger.LogError($"Could not reset analysis for demo [ {demo} ]");
@@ -52,17 +54,17 @@ namespace DemoCentral.Controllers.trusted
                 // Try to remove demo from queue if it's in it
                 try
                 {
-                    _inQueueDBInterface.RemoveDemoFromQueue(demo.MatchId);
+                    _inQueueTableInterface.RemoveDemoFromQueue(demo.MatchId);
                 }
                 catch
                 {
 
                 }
-                var inQueueDemo = _inQueueDBInterface.Add(demo.MatchId, demo.MatchDate, demo.Source, demo.UploaderId);
-                _inQueueDBInterface.UpdateProcessStatus(inQueueDemo, Database.Enumerals.ProcessedBy.DemoFileWorker, true);
+                var inQueueDemo = _inQueueTableInterface.Add(demo.MatchId, demo.MatchDate, demo.Source, demo.UploaderId);
+                _inQueueTableInterface.UpdateProcessStatus(inQueueDemo, Database.Enumerals.ProcessedBy.DemoFileWorker, true);
 
                 // Publish message
-                var message = _dbInterface.CreateAnalyzeInstructions(demo);
+                var message = _demoTableInterface.CreateAnalyzeInstructions(demo);
                 _demoFileWorker.PublishMessage(message);
 
                 _logger.LogInformation($"Reset analysis for [ {demo.MatchId} ]");

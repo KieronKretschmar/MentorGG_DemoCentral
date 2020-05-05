@@ -6,6 +6,7 @@ using DemoCentral.Communication.Rabbit;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using RabbitCommunicationLib.Interfaces;
 using RabbitCommunicationLib.TransferModels;
 
 namespace DemoCentral.Controllers.trusted
@@ -16,14 +17,14 @@ namespace DemoCentral.Controllers.trusted
     public class MatchController : ControllerBase
     {
         private readonly ILogger<MatchController> _logger;
-        private readonly IMatchWriter _matchWriter;
-        private readonly IDemoCentralDBInterface _dBInterface;
+        private readonly IProducer<DemoRemovalInstruction> _matchWriterRemovalProducer;
+        private readonly IDemoTableInterface _demoTableInterface;
 
-        public MatchController(ILogger<MatchController> logger, IMatchWriter matchWriter, IDemoCentralDBInterface dBInterface)
+        public MatchController(ILogger<MatchController> logger, IProducer<DemoRemovalInstruction> matchWriterRemovalProducer, IDemoTableInterface demoTableInterface)
         {
             _logger = logger;
-            _matchWriter = matchWriter;
-            _dBInterface = dBInterface;
+            _matchWriterRemovalProducer = matchWriterRemovalProducer;
+            _demoTableInterface = demoTableInterface;
         }
 
         /// <summary>
@@ -37,7 +38,7 @@ namespace DemoCentral.Controllers.trusted
 
             try
             {
-                var demo = _dBInterface.GetDemoById(matchId);
+                var demo = _demoTableInterface.GetDemoById(matchId);
                 if (demo.FileStatus != DataBase.Enumerals.FileStatus.InBlobStorage)
                     throw new ArgumentException($"Demo [ {matchId} ] is not in blob storage, Removal request cancelled");
             }
@@ -57,7 +58,7 @@ namespace DemoCentral.Controllers.trusted
                 MatchId = matchId,
             };
 
-            _matchWriter.PublishMessage(instruction);
+            _matchWriterRemovalProducer.PublishMessage(instruction);
             _logger.LogTrace($"Forwarded request of demo [ {matchId} ] to MatchWriter for removal from database");
             return Ok();
         }

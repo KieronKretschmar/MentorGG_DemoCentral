@@ -39,16 +39,16 @@ namespace DemoCentralTests
         {
             var mockMatchWriter = new Mock<IMatchWriter>();
             var mockILogger = new Mock<ILogger<MatchController>>();
-            var mockDBInterface = new Mock<IDemoCentralDBInterface>();
+            var mockDemoTableInterface = new Mock<IDemoTableInterface>();
             var testId = 123456789;
-            mockDBInterface.Setup(x => x.GetDemoById(testId)).Returns(new Demo
+            mockDemoTableInterface.Setup(x => x.GetDemoById(testId)).Returns(new Demo
             {
                 BlobUrl = "test_url",
                 FileStatus = FileStatus.InBlobStorage,
                 MatchId = testId,
             });
 
-            var test = new MatchController(mockILogger.Object, mockMatchWriter.Object, mockDBInterface.Object);
+            var test = new MatchController(mockILogger.Object, mockMatchWriter.Object, mockDemoTableInterface.Object);
             var res = test.RemoveFromStorage(testId);
 
             mockMatchWriter.Verify(x => x.PublishMessage(It.IsAny<DemoRemovalInstruction>()), Times.Once);
@@ -62,11 +62,11 @@ namespace DemoCentralTests
 
             var mockMatchWriter = new Mock<IMatchWriter>();
             var mockILogger = new Mock<ILogger<MatchController>>();
-            var mockDBInterface = new Mock<IDemoCentralDBInterface>();
+            var mockDemoTableInterface = new Mock<IDemoTableInterface>();
             var testId = 123456789;
-            mockDBInterface.Setup(x => x.GetDemoById(testId)).Throws<InvalidOperationException>();
+            mockDemoTableInterface.Setup(x => x.GetDemoById(testId)).Throws<InvalidOperationException>();
 
-            var test = new MatchController(mockILogger.Object, mockMatchWriter.Object, mockDBInterface.Object);
+            var test = new MatchController(mockILogger.Object, mockMatchWriter.Object, mockDemoTableInterface.Object);
             var res = test.RemoveFromStorage(testId);
             Assert.IsInstanceOfType(res, typeof(BadRequestResult));
         }
@@ -82,7 +82,7 @@ namespace DemoCentralTests
 
             //Can not mock rpc queue connection this way
             var mockRpcConnection = new Mock<IRPCQueueConnections>();
-            var mockDbInterface = new Mock<IDemoCentralDBInterface>();
+            var mockDemoTableInterface = new Mock<IDemoTableInterface>();
             var mockBlobStorage = new Mock<IBlobStorage>();
             var mockResponse = new TaskCompletedReport
             {
@@ -90,11 +90,11 @@ namespace DemoCentralTests
                 Success = true,
             };
 
-            var test = new MatchWriter(mockRpcConnection.Object, mockDbInterface.Object, mockBlobStorage.Object, mockILogger.Object);
+            var test = new MatchWriter(mockRpcConnection.Object, mockDemoTableInterface.Object, mockBlobStorage.Object, mockILogger.Object);
 
             var res = await test.HandleMessageAsync(new RabbitMQ.Client.Events.BasicDeliverEventArgs(), mockResponse);
             Assert.IsTrue(res == RabbitCommunicationLib.Enums.ConsumedMessageHandling.Done);
-            mockDbInterface.Verify(x => x.SetFileStatus(It.IsAny<Demo>(), FileStatus.Removed), Times.Once);
+            mockDemoTableInterface.Verify(x => x.SetFileStatus(It.IsAny<Demo>(), FileStatus.Removed), Times.Once);
             mockBlobStorage.Verify(x => x.DeleteBlobAsync(It.IsAny<string>()), Times.Once);
         }
 

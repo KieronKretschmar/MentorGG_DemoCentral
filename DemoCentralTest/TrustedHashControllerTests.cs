@@ -18,19 +18,19 @@ namespace DemoCentralTests
     {
         private readonly DbContextOptions<DemoCentralContext> _test_config;
         private readonly ILogger<HashController> mockILogger;
-        private readonly IDemoCentralDBInterface mockIDemoDBInterface;
+        private readonly IDemoTableInterface mockIDemoDBInterface;
 
         public TrustedHashControllerTests()
         {
             _test_config = DCTestsDBHelper.test_config;
             mockILogger = new Mock<ILogger<HashController>>().Object;
-            mockIDemoDBInterface = new Mock<IDemoCentralDBInterface>().Object;
+            mockIDemoDBInterface = new Mock<IDemoTableInterface>().Object;
         }
 
         [TestMethod]
         public void CreateHashReturnsHTTPConflictIfDuplicated()
         {
-            var mockIDemoDBInterface = new Mock<IDemoCentralDBInterface>();
+            var mockIDemoDBInterface = new Mock<IDemoTableInterface>();
             long matchId = 1;
             string hash = "test_hash";
             AnalyzerQuality quality = AnalyzerQuality.High;
@@ -52,7 +52,7 @@ namespace DemoCentralTests
         [TestMethod]
         public void CreateHashReturnsHTTPOkIfNotDuplicated()
         {
-            var mockIDemoDBInterface = new Mock<IDemoCentralDBInterface>();
+            var mockIDemoDBInterface = new Mock<IDemoTableInterface>();
             long matchId = 1;
             AnalyzerQuality quality = AnalyzerQuality.Low;
             mockIDemoDBInterface.Setup(x => x.IsReanalysisRequired("", out matchId, quality)).Returns(true);
@@ -70,7 +70,7 @@ namespace DemoCentralTests
         [TestMethod]
         public void CreateHashSavesHashIfNotDuplicated()
         {
-            var mockIDemoDBInterface = new Mock<IDemoCentralDBInterface>();
+            var mockIDemoDBInterface = new Mock<IDemoTableInterface>();
             long matchId = 1;
             AnalyzerQuality quality = AnalyzerQuality.Low;
             string hash = "test_hash";

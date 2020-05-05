@@ -13,12 +13,12 @@ namespace DemoCentral.Controllers
     [ApiController]
     public class MatchHistoryController : ControllerBase
     {
-        private IDemoCentralDBInterface _dbInterface;
+        private IDemoTableInterface _demoTableInterface;
         private readonly ILogger<MatchHistoryController> _logger;
 
-        public MatchHistoryController(IDemoCentralDBInterface dbInterface, ILogger<MatchHistoryController> logger)
+        public MatchHistoryController(IDemoTableInterface demoTableInterface, ILogger<MatchHistoryController> logger)
         {
-            _dbInterface = dbInterface;
+            _demoTableInterface = demoTableInterface;
             _logger = logger;
         }
 
@@ -33,7 +33,7 @@ namespace DemoCentral.Controllers
         [HttpGet("single/{steamId}/failedmatches")]
         public MatchHistoryModel GetFailedMatchHistory(long steamId, int count, int offset)
         {
-            return MatchHistoryModel.FromRecentFailedMatches(steamId, count, offset, _dbInterface);
+            return MatchHistoryModel.FromRecentFailedMatches(steamId, count, offset, _demoTableInterface);
         }
     }
 }

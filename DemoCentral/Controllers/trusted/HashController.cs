@@ -20,12 +20,12 @@ namespace DemoCentral.Controllers
     [ApiController]
     public class HashController : ControllerBase
     {
-        private readonly IDemoCentralDBInterface _dbInterface;
+        private readonly IDemoTableInterface _demoTableInterface;
         private readonly ILogger<HashController> _logger;
 
-        public HashController(IDemoCentralDBInterface dbInterface, ILogger<HashController> logger)
+        public HashController(IDemoTableInterface demoTableInterface, ILogger<HashController> logger)
         {
-            _dbInterface = dbInterface;
+            _demoTableInterface = demoTableInterface;
             _logger = logger;
         }
 
@@ -42,7 +42,7 @@ namespace DemoCentral.Controllers
         [HttpPost("match/{matchId}/duplicatecheck")]
         public ActionResult CreateHash(long matchId,AnalyzerQuality requestedQuality, string hash)
         {
-            bool analysisrequired = _dbInterface.IsReanalysisRequired(hash, out long duplicateMatchId, requestedQuality);
+            bool analysisrequired = _demoTableInterface.IsReanalysisRequired(hash, out long duplicateMatchId, requestedQuality);
 
             if (!analysisrequired)
             {
@@ -53,7 +53,7 @@ namespace DemoCentral.Controllers
             else
             {
                 _logger.LogInformation($"Demo [ {matchId} ] is unique");
-                _dbInterface.SetHash(matchId, hash);
+                _demoTableInterface.SetHash(matchId, hash);
 
                 return Ok();
             }

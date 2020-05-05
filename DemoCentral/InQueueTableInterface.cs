@@ -11,7 +11,7 @@ namespace DemoCentral
     /// <summary>
     /// Interface for the InQueueDemo table of the database
     /// </summary>
-    public interface IInQueueDBInterface
+    public interface IInQueueTableInterface
     {
         /// <summary>
         /// Add a new demo to the queue, and set all queue status to false
@@ -46,13 +46,13 @@ namespace DemoCentral
     }
 
     /// <summary>
-    /// Basic implementation of the <see cref="IInQueueDBInterface"/>
+    /// Basic implementation of the <see cref="IInQueueTableInterface"/>
     /// </summary>
-    public class InQueueDBInterface : IInQueueDBInterface
+    public class InQueueTableInterface : IInQueueTableInterface
     {
         private readonly DemoCentralContext _context;
 
-        public InQueueDBInterface(DemoCentralContext context)
+        public InQueueTableInterface(DemoCentralContext context)
         {
             _context = context;
         }
@@ -151,10 +151,6 @@ namespace DemoCentral
 
         public int GetQueuePosition(InQueueDemo demo)
         {
-
-            //TODO OPTIONAL OPTIMIZATION queue position
-            //Currently the same demos get checked for every method call, and their insert date gets compared
-            //Maybe sort by insert date as the primary key? or add a rowindex which can be referenced ?
             return _context.InQueueDemo.Count(x => x.InsertDate < demo.InsertDate);
         }
 

@@ -16,15 +16,15 @@ namespace DemoCentral.Controllers
     [ApiController]
     public class ManualUploadController : ControllerBase
     {
-        private readonly IDemoCentralDBInterface _dBInterface;
-        private readonly IInQueueDBInterface _inQueueDBInterface;
+        private readonly IDemoTableInterface _demoTableInterface;
+        private readonly IInQueueTableInterface _inQueueTableInterface;
         private readonly ILogger<ManualUploadController> _logger;
 
-        public ManualUploadController(IDemoCentralDBInterface dBInterface, IInQueueDBInterface inQueueDBInterface, ILogger<ManualUploadController> logger)
+        public ManualUploadController(IDemoTableInterface demoTableInterface, IInQueueTableInterface inQueueTableInterface, ILogger<ManualUploadController> logger)
         {
-            _dBInterface = dBInterface ?? throw new ArgumentNullException(nameof(dBInterface));
-            _inQueueDBInterface = inQueueDBInterface ?? throw new ArgumentNullException(nameof(inQueueDBInterface));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _demoTableInterface = demoTableInterface;
+            _inQueueTableInterface = inQueueTableInterface;
+            _logger = logger;
         }
 
 
@@ -33,15 +33,15 @@ namespace DemoCentral.Controllers
         {
             _logger.LogInformation($"Received request for number of manual uploaded matches of player [ {steamId} ]");
 
-            var numberSuccessfulPlayerMatches = _dBInterface.GetMatchesByUploader(steamId).Where(x => x.UploadType == UploadType.ManualUserUpload && x.UploadStatus == UploadStatus.Finished).Count();
+            var numberSuccessfulPlayerMatches = _demoTableInterface.GetMatchesByUploader(steamId).Where(x => x.UploadType == UploadType.ManualUserUpload && x.UploadStatus == UploadStatus.Finished).Count();
 
-            var matchesInQueue = _inQueueDBInterface.GetPlayerMatchesInQueue(steamId).Select(x => x.MatchId);
+            var matchesInQueue = _inQueueTableInterface.GetPlayerMatchesInQueue(steamId).Select(x => x.MatchId);
 
 
             var numberOfManualUploadMatchesInQueue = 0;
             foreach (var matchId in matchesInQueue)
             {
-                Demo demo = _dBInterface.GetDemoById(matchId);
+                Demo demo = _demoTableInterface.GetDemoById(matchId);
                 numberOfManualUploadMatchesInQueue += Convert.ToInt32(demo.UploadType == UploadType.ManualUserUpload);
             }
 

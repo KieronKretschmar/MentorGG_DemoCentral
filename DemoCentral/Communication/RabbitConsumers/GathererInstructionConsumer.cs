@@ -11,26 +11,27 @@ using DataBase.Enumerals;
 using DemoCentral.Communication.HTTP;
 using System;
 using Microsoft.Extensions.DependencyInjection;
+using DemoCentral.Communication.MessageProcessors;
 
-namespace DemoCentral.Communication.Rabbit
+namespace DemoCentral.Communication.RabbitConsumers
 {
     /// <summary>
-    /// Consumer for the Gatherer queue
-    /// If a message is received , <see cref="HandleMessage(IBasicProperties, GathererTransferModel)"/> is called
-    /// and the message is forwarded to the demodownloader
+    /// Consumer for the Gatherer instruction queue.
+    /// Messages are being processed by <see cref="GathererInstructionProcessor"/>.
     /// </summary>
-    public class GathererConsumer : Consumer<DemoInsertInstruction>
+    public class GathererInstructionConsumer : Consumer<DemoInsertInstruction>
     {
-        private ILogger<GathererConsumer> _logger;
         private readonly IServiceProvider _serviceProvider;
+        private readonly ILogger<GathererInstructionConsumer> _logger;
 
-        public GathererConsumer(
-            IQueueConnection queueConnection,
-            ILogger<GathererConsumer> logger,
-            IServiceProvider serviceProvider) : base(queueConnection)
+        public GathererInstructionConsumer(
+            IServiceProvider serviceProvider,
+            ILogger<GathererInstructionConsumer> logger,
+            IQueueConnection queueConnection
+            ) : base(queueConnection)
         {
-            _logger = logger;
             _serviceProvider = serviceProvider;
+            _logger = logger;
         }
 
         /// <summary>
@@ -38,11 +39,16 @@ namespace DemoCentral.Communication.Rabbit
         /// </summary>
         public async override Task<ConsumedMessageHandling> HandleMessageAsync(BasicDeliverEventArgs ea, DemoInsertInstruction model)
         {
+            _logger.LogInformation($"Received {model.GetType()}. Message: [ {model.ToJson()} ]");
+
             try
             {
-                // Require the `GathererWorker` service upon receiving a message, ensuring a new instance and disposal.
-                await _serviceProvider.GetRequiredService<GathererWorker>().WorkAsync(model);
-                return ConsumedMessageHandling.Done;
+                using (var scope = _serviceProvider.CreateScope())
+                {
+                    var processor = scope.ServiceProvider.GetRequiredService<GathererInstructionProcessor>();
+                    await processor.WorkAsync(model);
+                    return ConsumedMessageHandling.Done;
+                }
             }
             catch (Exception e)
             {

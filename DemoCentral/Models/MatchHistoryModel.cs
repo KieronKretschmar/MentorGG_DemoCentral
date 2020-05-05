@@ -10,9 +10,9 @@ namespace DemoCentral.Models
     {
         public List<MatchHistoryEntry> Entries { get; set; }
 
-        public static MatchHistoryModel FromRecentFailedMatches(long playerId, int recentMatches, int offset, IDemoCentralDBInterface dBInterface)
+        public static MatchHistoryModel FromRecentFailedMatches(long playerId, int recentMatches, int offset, IDemoTableInterface demoTableInterface)
         {
-            var failedMatches = dBInterface.GetRecentFailedMatches(playerId, recentMatches, offset);
+            var failedMatches = demoTableInterface.GetRecentFailedMatches(playerId, recentMatches, offset);
             var entries = failedMatches
                 .Select(match => new MatchHistoryEntry
                 {
