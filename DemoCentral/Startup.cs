@@ -221,6 +221,14 @@ namespace DemoCentral
             {
                 return new MatchWriterUploadReportConsumer(services, services.GetRequiredService<ILogger<MatchWriterUploadReportConsumer>>(), matchwriterUploadReportQueue);
             });
+
+            // Removal Reports from MatchWriter
+            var AMQP_MATCHWRITER_DEMO_REMOVAL_REPLY = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_MATCHWRITER_DEMO_REMOVAL_REPLY");
+            var matchwriterRemovalReportQueue = new QueueConnection(AMQP_URI, AMQP_MATCHWRITER_DEMO_REMOVAL_REPLY);
+            services.AddHostedService<MatchWriterRemovalReportConsumer>(services =>
+            {
+                return new MatchWriterRemovalReportConsumer(services, services.GetRequiredService<ILogger<MatchWriterRemovalReportConsumer>>(), matchwriterRemovalReportQueue);
+            });
             #endregion
 
             #region Rabbit - Producers
@@ -241,8 +249,7 @@ namespace DemoCentral
 
             // Removal-Instructions to MatchWriter
             var AMQP_MATCHWRITER_DEMO_REMOVAL = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_MATCHWRITER_DEMO_REMOVAL");
-            var fanoutExchangeConnection = new ExchangeConnection(AMQP_URI, AMQP_MATCHWRITER_DEMO_REMOVAL);
-
+            services.AddProducer<DemoRemovalInstruction>(AMQP_URI, AMQP_MATCHWRITER_DEMO_REMOVAL);
             #endregion
 
             #region Rabbit - MessageProcessors
@@ -251,17 +258,6 @@ namespace DemoCentral
             services.AddTransient<DemoFileWorkerReportProcessor>();
             services.AddTransient<ManualDownloadReportProcessor>();
             #endregion
-
-
-            //RPC
-            var AMQP_MATCHWRITER_DEMO_REMOVAL_REPLY = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_MATCHWRITER_DEMO_REMOVAL_REPLY");
-            var matchWriterRpcQueue = new RPCQueueConnections(AMQP_URI, AMQP_MATCHWRITER_DEMO_REMOVAL_REPLY, AMQP_MATCHWRITER_DEMO_REMOVAL);
-
-
-            services.AddHostedService<IMatchWriter>(services =>
-            {
-                return new MatchWriter(matchWriterRpcQueue, services.GetRequiredService<IDemoTableInterface>(),services.GetRequiredService<IBlobStorage>(),services.GetRequiredService<ILogger<MatchWriter>>());
-            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

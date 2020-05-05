@@ -6,6 +6,7 @@ using DemoCentral.Communication.Rabbit;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using RabbitCommunicationLib.Interfaces;
 using RabbitCommunicationLib.TransferModels;
 
 namespace DemoCentral.Controllers.trusted
@@ -16,13 +17,13 @@ namespace DemoCentral.Controllers.trusted
     public class MatchController : ControllerBase
     {
         private readonly ILogger<MatchController> _logger;
-        private readonly IMatchWriter _matchWriter;
+        private readonly IProducer<DemoRemovalInstruction> _matchWriterRemovalProducer;
         private readonly IDemoTableInterface _demoTableInterface;
 
-        public MatchController(ILogger<MatchController> logger, IMatchWriter matchWriter, IDemoTableInterface demoTableInterface)
+        public MatchController(ILogger<MatchController> logger, IProducer<DemoRemovalInstruction> matchWriterRemovalProducer, IDemoTableInterface demoTableInterface)
         {
             _logger = logger;
-            _matchWriter = matchWriter;
+            _matchWriterRemovalProducer = matchWriterRemovalProducer;
             _demoTableInterface = demoTableInterface;
         }
 
@@ -57,7 +58,7 @@ namespace DemoCentral.Controllers.trusted
                 MatchId = matchId,
             };
 
-            _matchWriter.PublishMessage(instruction);
+            _matchWriterRemovalProducer.PublishMessage(instruction);
             _logger.LogTrace($"Forwarded request of demo [ {matchId} ] to MatchWriter for removal from database");
             return Ok();
         }
