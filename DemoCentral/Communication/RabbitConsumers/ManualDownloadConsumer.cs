@@ -17,7 +17,8 @@ using DemoCentral.Communication.MessageProcessors;
 namespace DemoCentral.Communication.RabbitConsumers
 {
     /// <summary>
-    /// Receive ManualDownloadReports from the ManualDemoDownloader, and forward them to DemoFileWorker 
+    /// Consumer for the ManualDownload report queue.
+    /// Messages are being processed by <see cref="ManualDownloadReportProcessor"/>.
     /// </summary>
     public class ManualDownloadConsumer : Consumer<ManualDownloadReport>
     {

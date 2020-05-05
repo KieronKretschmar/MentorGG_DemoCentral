@@ -16,7 +16,7 @@ using DemoCentral.Communication.MessageProcessors;
 namespace DemoCentral.Communication.RabbitConsumers
 {
     /// <summary>
-    /// Consumer for the Gatherer queue.
+    /// Consumer for the Gatherer instruction queue.
     /// Messages are being processed by <see cref="GathererInstructionProcessor"/>.
     /// </summary>
     public class GathererInstructionConsumer : Consumer<DemoInsertInstruction>

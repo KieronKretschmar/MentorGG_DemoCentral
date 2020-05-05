@@ -11,6 +11,9 @@ using RabbitCommunicationLib.TransferModels;
 
 namespace DemoCentral.Communication.MessageProcessors
 {
+    /// <summary>
+    /// Handles reports regarding analysis received from DemoFileWorker.
+    /// </summary>
     public class DemoFileWorkerReportProcessor
     {
         private readonly ILogger<DemoFileWorkerReportProcessor> _logger;

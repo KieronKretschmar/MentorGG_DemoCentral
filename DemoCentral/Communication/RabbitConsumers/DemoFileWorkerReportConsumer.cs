@@ -14,7 +14,8 @@ using System.Threading.Tasks;
 namespace DemoCentral.Communication.RabbitConsumers
 {
     /// <summary>
-    /// Consumer for the DemoDownloader report queue.
+    /// Consumer for the DemoFileWorker report queue.
+    /// Messages are being processed by <see cref="DemoFileWorkerReportProcessor"/>.
     /// </summary>
     public class DemoFileWorkerReportConsumer : Consumer<DemoAnalyzeReport>
     {

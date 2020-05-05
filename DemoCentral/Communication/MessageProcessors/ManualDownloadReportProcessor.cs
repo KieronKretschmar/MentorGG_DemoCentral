@@ -11,6 +11,9 @@ using RabbitCommunicationLib.TransferModels;
 
 namespace DemoCentral.Communication.MessageProcessors
 {
+    /// <summary>
+    /// Handles reports regarding the receipt of manual uploads received from DemoDownloader.
+    /// </summary>
     public class ManualDownloadReportProcessor
     {
         private readonly IDemoTableInterface _demoTableInterface;

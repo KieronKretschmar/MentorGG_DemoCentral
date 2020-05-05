@@ -11,6 +11,9 @@ using RabbitCommunicationLib.TransferModels;
 
 namespace DemoCentral.Communication.MessageProcessors
 {
+    /// <summary>
+    /// Handles instructions for insertion of new matches received from the Gatherers.
+    /// </summary>
     public class GathererInstructionProcessor
     {
         private readonly ILogger<GathererInstructionProcessor> _logger;

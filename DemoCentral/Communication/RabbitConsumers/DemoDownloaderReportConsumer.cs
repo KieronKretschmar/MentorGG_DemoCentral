@@ -15,6 +15,7 @@ namespace DemoCentral.Communication.RabbitConsumers
 {
     /// <summary>
     /// Consumer for the DemoDownloader report queue.
+    /// Messages are being processed by <see cref="DemoDownloaderReportProcessor"/>.
     /// </summary>
     public class DemoDownloaderReportConsumer : Consumer<DemoObtainReport>
     {
