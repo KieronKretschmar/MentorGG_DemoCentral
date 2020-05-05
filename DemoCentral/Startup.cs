@@ -219,7 +219,7 @@ namespace DemoCentral
             var matchwriterUploadReportQueue = new QueueConnection(AMQP_URI, AMQP_MATCHWRITER_UPLOAD_REPORT);
             services.AddHostedService<MatchWriterUploadReportConsumer>(services =>
             {
-                return new MatchWriterUploadReportConsumer(matchwriterUploadReportQueue, services.GetRequiredService<IDemoTableInterface>(), services.GetRequiredService<ILogger<MatchWriterUploadReportConsumer>>());
+                return new MatchWriterUploadReportConsumer(services, services.GetRequiredService<ILogger<MatchWriterUploadReportConsumer>>(), matchwriterUploadReportQueue);
             });
 
             // Report from SituationsOperator
