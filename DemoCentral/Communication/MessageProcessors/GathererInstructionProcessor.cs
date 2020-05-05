@@ -11,16 +11,16 @@ using RabbitCommunicationLib.TransferModels;
 
 namespace DemoCentral.Communication.MessageProcessors
 {
-    public class GathererProcessor
+    public class GathererInstructionProcessor
     {
-        private readonly ILogger<GathererProcessor> _logger;
+        private readonly ILogger<GathererInstructionProcessor> _logger;
         private readonly IDemoTableInterface _demoTableInterface;
         private readonly IProducer<DemoDownloadInstruction> _demoDownloaderProducer;
         private readonly IUserIdentityRetriever _userIdentityRetriever;
         private IInQueueTableInterface _inQueueTableInterface;
 
-        public GathererProcessor(
-            ILogger<GathererProcessor> logger,
+        public GathererInstructionProcessor(
+            ILogger<GathererInstructionProcessor> logger,
             IDemoTableInterface demoTableInterface,
             IProducer<DemoDownloadInstruction> demoDownloaderProducer,
             IUserIdentityRetriever userInfoGetter,
