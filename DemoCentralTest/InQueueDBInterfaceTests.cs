@@ -13,11 +13,11 @@ using System.Collections.Generic;
 namespace DemoCentralTests
 {
     [TestClass]
-    public class InQueueDBInterfaceTests
+    public class inQueueTableInterfaceTests
     {
         private DbContextOptions<DemoCentralContext> _test_config;
 
-        public InQueueDBInterfaceTests()
+        public inQueueTableInterfaceTests()
         {
             _test_config = DCTestsDBHelper.test_config;
         }
@@ -39,7 +39,7 @@ namespace DemoCentralTests
 
             using (var context = new DemoCentralContext(_test_config))
             {
-                InQueueDBInterface testObject = new InQueueDBInterface(context);
+                InQueueTableInterface testObject = new InQueueTableInterface(context);
                 testObject.Add(matchId, matchDate, source, uploaderId);
             }
 
@@ -63,7 +63,7 @@ namespace DemoCentralTests
 
             using (var context = new DemoCentralContext(_test_config))
             {
-                InQueueDBInterface testObject = new InQueueDBInterface(context);
+                InQueueTableInterface testObject = new InQueueTableInterface(context);
                 testObject.Add(matchId, matchDate, source, uploaderId);
             }
 
@@ -85,7 +85,7 @@ namespace DemoCentralTests
             long matchId = 1;
             using (var context = new DemoCentralContext(_test_config))
             {
-                InQueueDBInterface test = new InQueueDBInterface(context);
+                InQueueTableInterface test = new InQueueTableInterface(context);
                 test.Add(matchId, new DateTime(), Source.Faceit, 1234);
                 var inQueueDemo = test.GetDemoById(matchId);
 
@@ -112,7 +112,7 @@ namespace DemoCentralTests
 
             using (var context = new DemoCentralContext(_test_config))
             {
-                var test = new InQueueDBInterface(context);
+                var test = new InQueueTableInterface(context);
                 test.Add(1, default(DateTime), Source.Unknown, playerId);
                 test.Add(2, default(DateTime), Source.Unknown, playerId);
                 test.Add(3, default(DateTime), Source.Unknown, playerId);
@@ -131,7 +131,7 @@ namespace DemoCentralTests
         {
             using (var context = new DemoCentralContext(_test_config))
             {
-                var test = new InQueueDBInterface(context);
+                var test = new InQueueTableInterface(context);
                 var matches = test.GetPlayerMatchesInQueue(1234);
 
                 Assert.AreEqual(0, matches.Count);
@@ -144,7 +144,7 @@ namespace DemoCentralTests
             long playerId = 1234;
             using (var context = new DemoCentralContext(_test_config))
             {
-                var test = new InQueueDBInterface(context);
+                var test = new InQueueTableInterface(context);
 
                 int queueLength = test.GetTotalQueueLength();
                 Assert.AreEqual(0, queueLength);
@@ -164,7 +164,7 @@ namespace DemoCentralTests
             long matchId = 1;
             using (var context = new DemoCentralContext(_test_config))
             {
-                var test = new InQueueDBInterface(context);
+                var test = new InQueueTableInterface(context);
                 test.Add(matchId, default(DateTime), Source.Unknown, 1234);
                 test.RemoveDemoFromQueue(matchId);
             }
@@ -182,7 +182,7 @@ namespace DemoCentralTests
             long matchId = 1;
             using (var context = new DemoCentralContext(_test_config))
             {
-                var test = new InQueueDBInterface(context);
+                var test = new InQueueTableInterface(context);
                 Assert.ThrowsException<InvalidOperationException>(() => test.RemoveDemoFromQueue(matchId));
             }
         }
@@ -195,7 +195,7 @@ namespace DemoCentralTests
 
             using (var context = new DemoCentralContext(_test_config))
             {
-                var test = new InQueueDBInterface(context);
+                var test = new InQueueTableInterface(context);
 
                 test.Add(1, default(DateTime), Source.Unknown, playerId1);
                 test.Add(2, default(DateTime), Source.Unknown, playerId1);
@@ -213,7 +213,7 @@ namespace DemoCentralTests
             long matchId = 1;
             using (var context = new DemoCentralContext(_test_config))
             {
-                var test = new InQueueDBInterface(context);
+                var test = new InQueueTableInterface(context);
                 test.Add(matchId, default(DateTime), Source.Unknown, 1234);
 
                 for (int retry = 0; retry < 3; retry++)

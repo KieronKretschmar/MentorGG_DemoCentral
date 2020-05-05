@@ -142,8 +142,8 @@ namespace DemoCentral
             #endregion
 
             #region Database Interfaces
-            services.AddTransient<IInQueueDBInterface, InQueueDBInterface>();
-            services.AddTransient<IDemoDBInterface, DemoDBInterface>();
+            services.AddTransient<IInQueueTableInterface, InQueueTableInterface>();
+            services.AddTransient<IDemoTableInterface, DemoTableInterface>();
             #endregion
 
             #region Blob Storage
@@ -219,7 +219,7 @@ namespace DemoCentral
             var matchwriterUploadReportQueue = new QueueConnection(AMQP_URI, AMQP_MATCHWRITER_UPLOAD_REPORT);
             services.AddHostedService<MatchWriterUploadReportConsumer>(services =>
             {
-                return new MatchWriterUploadReportConsumer(matchwriterUploadReportQueue, services.GetRequiredService<IDemoDBInterface>(), services.GetRequiredService<ILogger<MatchWriterUploadReportConsumer>>());
+                return new MatchWriterUploadReportConsumer(matchwriterUploadReportQueue, services.GetRequiredService<IDemoTableInterface>(), services.GetRequiredService<ILogger<MatchWriterUploadReportConsumer>>());
             });
 
             // Report from SituationsOperator
@@ -227,7 +227,7 @@ namespace DemoCentral
             var soQueue = new QueueConnection(AMQP_URI, AMQP_SITUATIONSOPERATOR_REPORT);
             services.AddHostedService<SituationsOperatorConsumer>(services =>
             {
-                return new SituationsOperatorConsumer(soQueue, services.GetRequiredService<IInQueueDBInterface>(), services.GetRequiredService<ILogger<SituationsOperatorConsumer>>());
+                return new SituationsOperatorConsumer(soQueue, services.GetRequiredService<IInQueueTableInterface>(), services.GetRequiredService<ILogger<SituationsOperatorConsumer>>());
             });
             #endregion
 
@@ -270,7 +270,7 @@ namespace DemoCentral
 
             services.AddHostedService<IMatchWriter>(services =>
             {
-                return new MatchWriter(matchWriterRpcQueue, services.GetRequiredService<IDemoDBInterface>(),services.GetRequiredService<IBlobStorage>(),services.GetRequiredService<ILogger<MatchWriter>>());
+                return new MatchWriter(matchWriterRpcQueue, services.GetRequiredService<IDemoTableInterface>(),services.GetRequiredService<IBlobStorage>(),services.GetRequiredService<ILogger<MatchWriter>>());
             });
         }
 

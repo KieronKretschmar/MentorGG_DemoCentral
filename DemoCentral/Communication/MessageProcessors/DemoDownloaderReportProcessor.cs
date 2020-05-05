@@ -14,26 +14,26 @@ namespace DemoCentral.Communication.MessageProcessors
     public class DemoDownloaderReportProcessor
     {
         private readonly ILogger<DemoDownloaderReportProcessor> _logger;
-        private readonly IDemoDBInterface _demoCentralDBInterface;
+        private readonly IDemoTableInterface _demoTableInterface;
         private readonly IProducer<DemoDownloadInstruction> _demoDownloaderProducer;
         private readonly IProducer<DemoAnalyzeInstruction> _demoFileWorkerProducer;
-        private IInQueueDBInterface _inQueueDBInterface;
+        private IInQueueTableInterface _inQueueTableInterface;
 
         private const int MAX_RETRIES = 2;
 
         public DemoDownloaderReportProcessor(
             ILogger<DemoDownloaderReportProcessor> logger,
-            IDemoDBInterface dbInterface,
+            IDemoTableInterface demoTableInterface,
             IProducer<DemoDownloadInstruction> demoDownloaderProducer,
             IProducer<DemoAnalyzeInstruction> demoFileWorkerProducer,
-            IInQueueDBInterface inQueueDBInterface)
+            IInQueueTableInterface inQueueTableInterface)
         {
 
             _logger = logger;
-            _demoCentralDBInterface = dbInterface;
+            _demoTableInterface = demoTableInterface;
             _demoDownloaderProducer = demoDownloaderProducer;
             _demoFileWorkerProducer = demoFileWorkerProducer;
-            _inQueueDBInterface = inQueueDBInterface;
+            _inQueueTableInterface = inQueueTableInterface;
         }
 
 
@@ -57,39 +57,39 @@ namespace DemoCentral.Communication.MessageProcessors
         private void UpdateDemoStatusFromObtainReport(DemoObtainReport consumeModel)
         {
             long matchId = consumeModel.MatchId;
-            var inQueueDemo = _inQueueDBInterface.GetDemoById(matchId);
-            var dbDemo = _demoCentralDBInterface.GetDemoById(matchId);
+            var inQueueDemo = _inQueueTableInterface.GetDemoById(matchId);
+            var dbDemo = _demoTableInterface.GetDemoById(matchId);
 
             if (consumeModel.Success)
             {
-                _demoCentralDBInterface.SetBlobUrl(dbDemo, consumeModel.BlobUrl);
+                _demoTableInterface.SetBlobUrl(dbDemo, consumeModel.BlobUrl);
 
-                _demoCentralDBInterface.SetFileStatus(dbDemo, FileStatus.InBlobStorage);
+                _demoTableInterface.SetFileStatus(dbDemo, FileStatus.InBlobStorage);
 
-                _inQueueDBInterface.UpdateProcessStatus(inQueueDemo, ProcessedBy.DemoDownloader, false);
+                _inQueueTableInterface.UpdateProcessStatus(inQueueDemo, ProcessedBy.DemoDownloader, false);
 
-                var model = _demoCentralDBInterface.CreateAnalyzeInstructions(dbDemo);
+                var model = _demoTableInterface.CreateAnalyzeInstructions(dbDemo);
 
-                _inQueueDBInterface.UpdateProcessStatus(inQueueDemo, ProcessedBy.DemoFileWorker, true);
+                _inQueueTableInterface.UpdateProcessStatus(inQueueDemo, ProcessedBy.DemoFileWorker, true);
                 _demoFileWorkerProducer.PublishMessage(model);
             }
             else
             {
-                int attempts = _inQueueDBInterface.IncrementRetry(inQueueDemo);
+                int attempts = _inQueueTableInterface.IncrementRetry(inQueueDemo);
 
                 if (attempts > MAX_RETRIES)
                 {
-                    _inQueueDBInterface.RemoveDemoFromQueue(inQueueDemo);
-                    _demoCentralDBInterface.SetFileStatus(dbDemo, FileStatus.DownloadFailed);
+                    _inQueueTableInterface.RemoveDemoFromQueue(inQueueDemo);
+                    _demoTableInterface.SetFileStatus(dbDemo, FileStatus.DownloadFailed);
                     _logger.LogError($"Demo [ {matchId} ] failed download more than {MAX_RETRIES} times, no further analyzing");
                 }
                 else
                 {
-                    _demoCentralDBInterface.SetFileStatus(dbDemo, FileStatus.DownloadRetrying);
+                    _demoTableInterface.SetFileStatus(dbDemo, FileStatus.DownloadRetrying);
 
-                    var resendModel = _demoCentralDBInterface.CreateDownloadInstructions(dbDemo);
+                    var resendModel = _demoTableInterface.CreateDownloadInstructions(dbDemo);
 
-                    _demoCentralDBInterface.SetFileStatus(matchId, FileStatus.DownloadRetrying);
+                    _demoTableInterface.SetFileStatus(matchId, FileStatus.DownloadRetrying);
                     _logger.LogInformation($"Sent demo [ {matchId} ] to DemoDownloadInstruction queue");
 
                     _demoDownloaderProducer.PublishMessage(resendModel);
@@ -98,7 +98,7 @@ namespace DemoCentral.Communication.MessageProcessors
                 }
             }
 
-            _inQueueDBInterface.RemoveDemoIfNotInAnyQueue(inQueueDemo);
+            _inQueueTableInterface.RemoveDemoIfNotInAnyQueue(inQueueDemo);
         }
     }
 }

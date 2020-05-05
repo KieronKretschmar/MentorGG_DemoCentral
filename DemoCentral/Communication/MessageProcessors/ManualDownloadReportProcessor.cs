@@ -13,27 +13,27 @@ namespace DemoCentral.Communication.MessageProcessors
 {
     public class ManualDownloadReportProcessor
     {
-        private readonly IDemoDBInterface _demoCentralDBInterface;
+        private readonly IDemoTableInterface _demoTableInterface;
         private readonly IUserIdentityRetriever _userIdentityRetriever;
         private readonly IProducer<DemoDownloadInstruction> _demoDownloaderProducer;
         private readonly IProducer<DemoAnalyzeInstruction> _demoFileWorkerProducer;
         private readonly ILogger<DemoDownloaderReportProcessor> _logger;
-        private IInQueueDBInterface _inQueueDBInterface;
+        private IInQueueTableInterface _inQueueTableInterface;
 
         private const int MAX_RETRIES = 2;
 
         public ManualDownloadReportProcessor(
             ILogger<DemoDownloaderReportProcessor> logger,
-            IDemoDBInterface dbInterface,
+            IDemoTableInterface demoTableInterface,
             IUserIdentityRetriever userIdentityRetriever,
             IProducer<DemoAnalyzeInstruction> demoFileWorkerProducer,
-            IInQueueDBInterface inQueueDBInterface)
+            IInQueueTableInterface inQueueTableInterface)
         {
             _logger = logger;
-            _demoCentralDBInterface = dbInterface;
+            _demoTableInterface = demoTableInterface;
             _userIdentityRetriever = userIdentityRetriever;
             _demoFileWorkerProducer = demoFileWorkerProducer;
-            _inQueueDBInterface = inQueueDBInterface;
+            _inQueueTableInterface = inQueueTableInterface;
         }
 
 
@@ -59,14 +59,14 @@ namespace DemoCentral.Communication.MessageProcessors
         private async Task InsertNewDemo(ManualDownloadReport model)
         {
             var requestedAnalyzerQuality = await _userIdentityRetriever.GetAnalyzerQualityAsync(model.UploaderId);
-            var matchId = _demoCentralDBInterface.CreateNewDemoEntryFromManualUpload(model, requestedAnalyzerQuality);
+            var matchId = _demoTableInterface.CreateNewDemoEntryFromManualUpload(model, requestedAnalyzerQuality);
 
-            _inQueueDBInterface.Add(matchId, model.MatchDate, model.Source, model.UploaderId);
-            var analyzeInstructions = _demoCentralDBInterface.CreateAnalyzeInstructions(matchId);
+            _inQueueTableInterface.Add(matchId, model.MatchDate, model.Source, model.UploaderId);
+            var analyzeInstructions = _demoTableInterface.CreateAnalyzeInstructions(matchId);
 
             _demoFileWorkerProducer.PublishMessage(analyzeInstructions);
             _logger.LogInformation($"Sent demo [ {matchId} ] to DemoAnalyzeInstruction queue");
-            _inQueueDBInterface.UpdateProcessStatus(matchId, ProcessedBy.DemoFileWorker, true);
+            _inQueueTableInterface.UpdateProcessStatus(matchId, ProcessedBy.DemoFileWorker, true);
         }
     }
 }

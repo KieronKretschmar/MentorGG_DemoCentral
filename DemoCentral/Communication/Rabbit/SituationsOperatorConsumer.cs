@@ -16,10 +16,10 @@ namespace DemoCentral.Communication.Rabbit
     /// </summary>
     public class SituationsOperatorConsumer : Consumer<TaskCompletedReport>
     {
-        private readonly IInQueueDBInterface _inQueueDBInterface;
+        private readonly IInQueueTableInterface _inQueueDBInterface;
         private readonly ILogger<SituationsOperatorConsumer> _logger;
 
-        public SituationsOperatorConsumer(IQueueConnection queueConnection, IInQueueDBInterface inQueueDBInterface, ILogger<SituationsOperatorConsumer> logger) : base(queueConnection)
+        public SituationsOperatorConsumer(IQueueConnection queueConnection, IInQueueTableInterface inQueueDBInterface, ILogger<SituationsOperatorConsumer> logger) : base(queueConnection)
         {
             _inQueueDBInterface = inQueueDBInterface;
             _logger = logger;

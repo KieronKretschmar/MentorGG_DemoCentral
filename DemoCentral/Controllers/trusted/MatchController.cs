@@ -17,13 +17,13 @@ namespace DemoCentral.Controllers.trusted
     {
         private readonly ILogger<MatchController> _logger;
         private readonly IMatchWriter _matchWriter;
-        private readonly IDemoDBInterface _dBInterface;
+        private readonly IDemoTableInterface _demoTableInterface;
 
-        public MatchController(ILogger<MatchController> logger, IMatchWriter matchWriter, IDemoDBInterface dBInterface)
+        public MatchController(ILogger<MatchController> logger, IMatchWriter matchWriter, IDemoTableInterface demoTableInterface)
         {
             _logger = logger;
             _matchWriter = matchWriter;
-            _dBInterface = dBInterface;
+            _demoTableInterface = demoTableInterface;
         }
 
         /// <summary>
@@ -37,7 +37,7 @@ namespace DemoCentral.Controllers.trusted
 
             try
             {
-                var demo = _dBInterface.GetDemoById(matchId);
+                var demo = _demoTableInterface.GetDemoById(matchId);
                 if (demo.FileStatus != DataBase.Enumerals.FileStatus.InBlobStorage)
                     throw new ArgumentException($"Demo [ {matchId} ] is not in blob storage, Removal request cancelled");
             }

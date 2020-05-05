@@ -14,11 +14,11 @@ namespace DemoCentral.Controllers
     [ApiController]
     public class MatchDownloadController : ControllerBase
     {
-        private readonly IDemoDBInterface _dBInterface;
+        private readonly IDemoTableInterface _demoTableInterface;
 
-        public MatchDownloadController(IDemoDBInterface dBInterface)
+        public MatchDownloadController(IDemoTableInterface demoTableInterface)
         {
-            _dBInterface = dBInterface;
+            _demoTableInterface = demoTableInterface;
         }
 
         [HttpGet("matches/{matchIds}/download-urls")]
@@ -29,7 +29,7 @@ namespace DemoCentral.Controllers
             foreach (var matchId in matchIds)
             {
                 var demoUrlPair = new DemoUrlPair();
-                var demo = _dBInterface.GetDemoById(matchId);
+                var demo = _demoTableInterface.GetDemoById(matchId);
                 
                 demoUrlPair.MatchId = matchId;
                 demoUrlPair.DownloadUrl = demo.BlobUrl;

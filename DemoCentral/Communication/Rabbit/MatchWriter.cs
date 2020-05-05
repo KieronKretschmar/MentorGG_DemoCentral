@@ -24,16 +24,16 @@ namespace DemoCentral.Communication.Rabbit
 
     public class MatchWriter : RPCClient<DemoRemovalInstruction, TaskCompletedReport>, IMatchWriter
     {
-        private readonly IDemoDBInterface _dbInterface;
+        private readonly IDemoTableInterface _demoTableInterface;
         private readonly ILogger<MatchWriter> _logger;
         private readonly IBlobStorage _blobStorage;
 
         public MatchWriter(IRPCQueueConnections queueConnection, 
-            IDemoDBInterface dbInterface,
+            IDemoTableInterface demoTableInterface,
             IBlobStorage blobStorage, 
             ILogger<MatchWriter> logger) : base(queueConnection)
         {
-            _dbInterface = dbInterface;
+            _demoTableInterface = demoTableInterface;
             _blobStorage = blobStorage;
             _logger = logger;
         }
@@ -42,11 +42,11 @@ namespace DemoCentral.Communication.Rabbit
         {
             var matchId = consumeModel.MatchId;
             _logger.LogInformation($"Received report for demo [ {matchId} ] storage removal - success : [ {consumeModel.Success} ] ");
-            var demo = _dbInterface.GetDemoById(matchId);
+            var demo = _demoTableInterface.GetDemoById(matchId);
             
             if (consumeModel.Success)
             {
-                _dbInterface.SetFileStatus(demo, DataBase.Enumerals.FileStatus.Removed);
+                _demoTableInterface.SetFileStatus(demo, DataBase.Enumerals.FileStatus.Removed);
                 await _blobStorage.DeleteBlobAsync(demo.BlobUrl);
                 return ConsumedMessageHandling.Done;
             }

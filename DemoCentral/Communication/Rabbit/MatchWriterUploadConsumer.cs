@@ -15,12 +15,16 @@ namespace DemoCentral.Communication.Rabbit
     /// </summary>
     public class MatchWriterUploadReportConsumer : Consumer<TaskCompletedReport>
     {
-        private readonly IDemoDBInterface _dbInterface;
+        private readonly IDemoTableInterface _demoTableInterface;
         private readonly ILogger<MatchWriterUploadReportConsumer> _logger;
 
-        public MatchWriterUploadReportConsumer(IQueueConnection queueConnection, IDemoDBInterface dbInterface, ILogger<MatchWriterUploadReportConsumer> logger) : base(queueConnection)
+        public MatchWriterUploadReportConsumer(
+            IQueueConnection queueConnection, 
+            IDemoTableInterface demoTableInterface, 
+            ILogger<MatchWriterUploadReportConsumer> logger
+            ) : base(queueConnection)
         {
-            _dbInterface = dbInterface;
+            _demoTableInterface = demoTableInterface;
             _logger = logger;
         }
 
@@ -46,12 +50,12 @@ namespace DemoCentral.Communication.Rabbit
         private void UpdateDBFromResponse(TaskCompletedReport model)
         {
             long matchId = model.MatchId;
-            var dbDemo = _dbInterface.GetDemoById(matchId);
-            _dbInterface.SetUploadStatus(dbDemo, model.Success);
+            var dbDemo = _demoTableInterface.GetDemoById(matchId);
+            _demoTableInterface.SetUploadStatus(dbDemo, model.Success);
 
             if (model.Success)
             {
-                _dbInterface.SetDatabaseVersion(dbDemo, model.Version);
+                _demoTableInterface.SetDatabaseVersion(dbDemo, model.Version);
             }
 
             string log = model.Success ? "was uploaded" : "failed upload";

@@ -14,23 +14,23 @@ namespace DemoCentral.Communication.MessageProcessors
     public class GathererProcessor
     {
         private readonly ILogger<GathererProcessor> _logger;
-        private readonly IDemoDBInterface _dbInterface;
+        private readonly IDemoTableInterface _demoTableInterface;
         private readonly IProducer<DemoDownloadInstruction> _demoDownloaderProducer;
         private readonly IUserIdentityRetriever _userIdentityRetriever;
-        private IInQueueDBInterface _inQueueDBInterface;
+        private IInQueueTableInterface _inQueueTableInterface;
 
         public GathererProcessor(
             ILogger<GathererProcessor> logger,
-            IDemoDBInterface dbInterface,
+            IDemoTableInterface demoTableInterface,
             IProducer<DemoDownloadInstruction> demoDownloaderProducer,
             IUserIdentityRetriever userInfoGetter,
-            IInQueueDBInterface inQueueDBInterface)
+            IInQueueTableInterface inQueueTableInterface)
         {
             _logger = logger;
-            _dbInterface = dbInterface;
+            _demoTableInterface = demoTableInterface;
             _demoDownloaderProducer = demoDownloaderProducer;
             _userIdentityRetriever = userInfoGetter;
-            _inQueueDBInterface = inQueueDBInterface;
+            _inQueueTableInterface = inQueueTableInterface;
         }
 
 
@@ -43,7 +43,7 @@ namespace DemoCentral.Communication.MessageProcessors
         {
             AnalyzerQuality requestedQuality = await _userIdentityRetriever.GetAnalyzerQualityAsync(model.UploaderId);
 
-            if (_dbInterface.TryCreateNewDemoEntryFromGatherer(model, requestedQuality, out long matchId))
+            if (_demoTableInterface.TryCreateNewDemoEntryFromGatherer(model, requestedQuality, out long matchId))
             {
                 _logger.LogInformation($"Demo [ {matchId} ] assigned to [ {model.DownloadUrl} ]");
 
@@ -53,10 +53,10 @@ namespace DemoCentral.Communication.MessageProcessors
                     DownloadUrl = model.DownloadUrl
                 };
 
-                _inQueueDBInterface.Add(matchId, model.MatchDate, model.Source, model.UploaderId);
+                _inQueueTableInterface.Add(matchId, model.MatchDate, model.Source, model.UploaderId);
 
-                _dbInterface.SetFileStatus(matchId, FileStatus.Downloading);
-                _inQueueDBInterface.UpdateProcessStatus(matchId, ProcessedBy.DemoDownloader, true);
+                _demoTableInterface.SetFileStatus(matchId, FileStatus.Downloading);
+                _inQueueTableInterface.UpdateProcessStatus(matchId, ProcessedBy.DemoDownloader, true);
                 _demoDownloaderProducer.PublishMessage(forwardModel);
 
                 _logger.LogInformation($"Published demo [ {matchId} ] to DemoDownloadInstruction queue");
