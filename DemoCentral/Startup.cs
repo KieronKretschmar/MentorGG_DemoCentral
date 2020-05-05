@@ -221,14 +221,6 @@ namespace DemoCentral
             {
                 return new MatchWriterUploadReportConsumer(services, services.GetRequiredService<ILogger<MatchWriterUploadReportConsumer>>(), matchwriterUploadReportQueue);
             });
-
-            // Report from SituationsOperator
-            var AMQP_SITUATIONSOPERATOR_REPORT = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_SITUATIONSOPERATOR_REPORT");
-            var soQueue = new QueueConnection(AMQP_URI, AMQP_SITUATIONSOPERATOR_REPORT);
-            services.AddHostedService<SituationsOperatorConsumer>(services =>
-            {
-                return new SituationsOperatorConsumer(soQueue, services.GetRequiredService<IInQueueTableInterface>(), services.GetRequiredService<ILogger<SituationsOperatorConsumer>>());
-            });
             #endregion
 
             #region Rabbit - Producers
@@ -259,8 +251,6 @@ namespace DemoCentral
             services.AddTransient<DemoFileWorkerReportProcessor>();
             services.AddTransient<ManualDownloadReportProcessor>();
             #endregion
-
-
 
 
             //RPC
