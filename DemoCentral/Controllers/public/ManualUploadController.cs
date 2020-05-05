@@ -22,9 +22,9 @@ namespace DemoCentral.Controllers
 
         public ManualUploadController(IDemoTableInterface demoTableInterface, IInQueueTableInterface inQueueTableInterface, ILogger<ManualUploadController> logger)
         {
-            _demoTableInterface = demoTableInterface ?? throw new ArgumentNullException(nameof(demoTableInterface));
-            _inQueueTableInterface = inQueueTableInterface ?? throw new ArgumentNullException(nameof(inQueueTableInterface));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _demoTableInterface = demoTableInterface;
+            _inQueueTableInterface = inQueueTableInterface;
+            _logger = logger;
         }
 
 
