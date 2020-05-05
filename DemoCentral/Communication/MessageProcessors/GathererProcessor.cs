@@ -43,9 +43,6 @@ namespace DemoCentral.Communication.MessageProcessors
         {
             AnalyzerQuality requestedQuality = await _userIdentityRetriever.GetAnalyzerQualityAsync(model.UploaderId);
 
-            //TODO OPTIONAL FEATURE handle duplicate entry
-            //Currently not inserted into db and forgotten afterwards
-            //Maybe saved to special table or keep track of it otherwise
             if (_dbInterface.TryCreateNewDemoEntryFromGatherer(model, requestedQuality, out long matchId))
             {
                 _logger.LogInformation($"Demo [ {matchId} ] assigned to [ {model.DownloadUrl} ]");
