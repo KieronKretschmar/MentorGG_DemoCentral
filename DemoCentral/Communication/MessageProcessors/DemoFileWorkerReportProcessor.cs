@@ -87,7 +87,10 @@ namespace DemoCentral.Communication.MessageProcessors
             // The analysis has failed, act on the cause.
             switch (response.Failure){
                 case DemoAnalyzeFailure.BlobDownload:
-                    // BlobDownload failed, this could be a temporary issue - Try again
+                    // BlobDownload failed.
+                    // This may be a temporary issue - Try again.
+                    _inQueueTableInterface.IncrementRetry(inQueueDemo);
+                    _demoTableInterface.SetFileWorkerStatus(dbDemo, DemoFileWorkerStatus.)
                     break;
 
                 case DemoAnalyzeFailure.Unzip:
@@ -99,14 +102,15 @@ namespace DemoCentral.Communication.MessageProcessors
                     return;
 
                 case DemoAnalyzeFailure.HttpHashCheck:
-                    //Keep track of demos for which the duplicate check itself failed,
-                    //they may or may not be duplicates, the check itself failed for any reason
+                    // Contacting DemoCentral to confirm if the Demo was a Duplicate failed.
+                    // This may be a temporary issue - Try again.
                     _inQueueTableInterface.RemoveDemoFromQueue(inQueueDemo);
                     _demoTableInterface.SetFileWorkerStatus(dbDemo, DemoFileWorkerStatus.DuplicateCheckFailed);
                     _logger.LogWarning($"Demo [ {matchId} ] was not duplicate checked");
                     return;
 
                 case DemoAnalyzeFailure.Duplicate:
+                    // Demo has been indentified as a Duplicate.
                     _inQueueTableInterface.RemoveDemoFromQueue(inQueueDemo);
                     _demoTableInterface.RemoveDemo(dbDemo);
 
@@ -114,15 +118,19 @@ namespace DemoCentral.Communication.MessageProcessors
                     return;
 
                 case DemoAnalyzeFailure.Analyze:
+                    // DemoFileWorker failed on the Analyze step.
                     _inQueueTableInterface.RemoveDemoFromQueue(inQueueDemo);
                     _demoTableInterface.SetFileWorkerStatus(dbDemo, DemoFileWorkerStatus.AnalyzerFailed);
                     _logger.LogWarning($"Demo [ {matchId} ] failed at DemoAnalyzer.");
                     return;
 
                 case DemoAnalyzeFailure.Enrich:
+                    // DemoFileWorker failed on the Enrich step.
                     break;
 
                 case DemoAnalyzeFailure.RedisStorage:
+                    // DemoFileWorker failed to store the MatchDataSet in Redis,
+                    // This may be a temporary issue - Try again.
                     break;
 
                 case DemoAnalyzeFailure.Unknown:
