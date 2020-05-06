@@ -16,9 +16,28 @@ namespace DemoCentral.Controllers
     {
         private readonly IDemoTableInterface _demoTableInterface;
 
-        public MatchDownloadController(IDemoTableInterface demoTableInterface)
+        public MatchDownloadController(IDemoTableInterface demoTableInterface, Communication.Rabbit.IBlobStorage blobStorage)
         {
             _demoTableInterface = demoTableInterface;
+        }
+        
+        [HttpGet("match/{matchId}/download-url")]
+        public ActionResult<string> GetDownloadUrl(long matchId)
+        {
+            Database.DatabaseClasses.Demo demo;
+            try
+            {
+                demo = _demoTableInterface.GetDemoById(matchId);
+                if (!String.IsNullOrEmpty(demo.BlobUrl))
+                {
+                    return demo.BlobUrl;
+                }
+                return NotFound();
+            }
+            catch (InvalidOperationException)
+            {
+                return NotFound();
+            }
         }
 
         [HttpGet("matches/{matchIds}/download-urls")]
