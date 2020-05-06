@@ -83,53 +83,53 @@ namespace DemoCentral.Communication.MessageProcessors
                 _logger.LogInformation($"Demo [ {matchId} ] was sent to fanout");
                 return;
             }
-            else
-            {
-                // Handle failed demo according to the reason of its failure
-                if (!response.Unzipped)
-                {
-                    //Remove demo from queue and set file status to unzip failed
+            
+            // The analysis has failed, act on the cause.
+            switch (response.Failure){
+                case DemoAnalyzeFailure.BlobDownload:
+                    // BlobDownload failed, this could be a temporary issue - Try again
+                    break;
+
+                case DemoAnalyzeFailure.Unzip:
+                    // Unzip failed, this could indicate that we do not support the file type, or the demo is
+                    // corrupt - Delete the blob and mark this as failed.
                     _inQueueTableInterface.RemoveDemoFromQueue(inQueueDemo);
                     _demoTableInterface.SetFileWorkerStatus(dbDemo, DemoFileWorkerStatus.UnzipFailed);
                     _logger.LogWarning($"Demo [ {matchId} ] could not be unzipped");
                     return;
-                }
 
-                if (!response.DuplicateChecked)
-                {
+                case DemoAnalyzeFailure.HttpHashCheck:
                     //Keep track of demos for which the duplicate check itself failed,
                     //they may or may not be duplicates, the check itself failed for any reason
                     _inQueueTableInterface.RemoveDemoFromQueue(inQueueDemo);
                     _demoTableInterface.SetFileWorkerStatus(dbDemo, DemoFileWorkerStatus.DuplicateCheckFailed);
                     _logger.LogWarning($"Demo [ {matchId} ] was not duplicate checked");
                     return;
-                }
 
-                if (response.IsDuplicate)
-                {
+                case DemoAnalyzeFailure.Duplicate:
                     _inQueueTableInterface.RemoveDemoFromQueue(inQueueDemo);
                     _demoTableInterface.RemoveDemo(dbDemo);
 
                     _logger.LogInformation($"Demo [ {matchId} ] is duplicate via MD5Hash");
                     return;
-                }
 
-                if (!response.DemoAnalyzerSucceeded)
-                {
+                case DemoAnalyzeFailure.Analyze:
                     _inQueueTableInterface.RemoveDemoFromQueue(inQueueDemo);
                     _demoTableInterface.SetFileWorkerStatus(dbDemo, DemoFileWorkerStatus.AnalyzerFailed);
-
                     _logger.LogWarning($"Demo [ {matchId} ] failed at DemoAnalyzer.");
                     return;
-                }
 
-                //If you get here, the above if cases do not catch every statement
-                //Therefore the response has more possible statusses than handled here
-                //Probably a coding error if you update DemoFileWorker
-                _inQueueTableInterface.RemoveDemoFromQueue(inQueueDemo);
-                _demoTableInterface.RemoveDemo(dbDemo);
-                _logger.LogError($"Could not handle response from DemoFileWorker. Removing match from database. MatchId [ {matchId} ], Message [ {response.ToJson()} ]");
-            }
+                case DemoAnalyzeFailure.Enrich:
+                    break;
+
+                case DemoAnalyzeFailure.RedisStorage:
+                    break;
+
+                case DemoAnalyzeFailure.Unknown:
+                default:
+                    break;
+
+            }            
         }
     }
 }
