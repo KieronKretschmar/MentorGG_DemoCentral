@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace DataBase.Enumerals
+namespace Database.Enumerals
 {
     /// <summary>
     /// This enum contains all possible values from demofileworker

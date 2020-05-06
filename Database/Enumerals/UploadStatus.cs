@@ -1,4 +1,4 @@
-﻿namespace DataBase.Enumerals
+﻿namespace Database.Enumerals
 {
     public enum UploadStatus : byte
     {

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace DataBase.DatabaseClasses
+namespace Database.DatabaseClasses
 {
     public partial class InQueueDemo
     {

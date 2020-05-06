@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using DataBase.DatabaseClasses;
+using Database.DatabaseClasses;
 using Microsoft.EntityFrameworkCore;
 using DemoCentral.Communication;
 using RabbitCommunicationLib.Queues;

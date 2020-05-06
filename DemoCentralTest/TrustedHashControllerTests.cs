@@ -1,4 +1,4 @@
-﻿using DataBase.DatabaseClasses;
+﻿using Database.DatabaseClasses;
 using DemoCentral.Controllers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;

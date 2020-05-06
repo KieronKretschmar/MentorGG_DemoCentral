@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 using RabbitCommunicationLib.Enums;
-using DataBase.DatabaseClasses;
+using Database.DatabaseClasses;
 using Database.Enumerals;
 using System.Collections.Generic;
 

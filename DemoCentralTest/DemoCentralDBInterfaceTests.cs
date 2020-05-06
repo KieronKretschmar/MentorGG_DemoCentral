@@ -4,11 +4,11 @@ using RabbitCommunicationLib.TransferModels;
 using DemoCentral;
 using Moq;
 using Microsoft.EntityFrameworkCore;
-using DataBase.DatabaseClasses;
+using Database.DatabaseClasses;
 using System.Linq;
 using System;
 using RabbitCommunicationLib.Enums;
-using DataBase.Enumerals;
+using Database.Enumerals;
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 

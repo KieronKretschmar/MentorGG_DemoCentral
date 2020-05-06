@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Pomelo.EntityFrameworkCore.MySql;
 using RabbitCommunicationLib.Enums;
-using DataBase.Enumerals;
+using Database.Enumerals;
 
-namespace DataBase.DatabaseClasses
+namespace Database.DatabaseClasses
 {
     public partial class DemoCentralContext : DbContext
     {

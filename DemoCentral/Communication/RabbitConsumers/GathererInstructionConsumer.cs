@@ -7,7 +7,7 @@ using RabbitCommunicationLib.TransferModels;
 using System.Threading.Tasks;
 using RabbitCommunicationLib.Enums;
 using RabbitMQ.Client.Events;
-using DataBase.Enumerals;
+using Database.Enumerals;
 using DemoCentral.Communication.HTTP;
 using System;
 using Microsoft.Extensions.DependencyInjection;
