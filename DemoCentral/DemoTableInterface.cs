@@ -41,7 +41,11 @@ namespace DemoCentral
         void SetAnalyzeState(Demo demo, bool analysisFinishedSuccessfully, DemoAnalysisBlock? block = null);
 
         void SetHash(Demo demo, string hash);
-        
+        void SetHash(long matchId, string hash);
+        void SetUploadStatus(Demo demo, bool success);
+        void SetUploadStatus(long matchId, bool success);
+        List<long> GetExpiredDemosId(TimeSpan allowedTimeAfterExpiration);
+
         /// <summary>
         /// try to create a new entry in the demo table. Returns false and the matchId of the match, if the downloadUrl is already known, return true otherwise
         /// </summary>
@@ -267,6 +271,12 @@ namespace DemoCentral
                 demo.AnalysisBlockReason = block;
             }
             _context.SaveChanges();
+        }
+        }
+
+        public List<long> GetExpiredDemosId(TimeSpan allowedTimeAfterExpiration)
+        {
+            throw new NotImplementedException();
         }
     }
 

@@ -16,6 +16,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace DemoCentralTests
@@ -37,38 +38,31 @@ namespace DemoCentralTests
         [TestMethod]
         public void ControllerForwardsToMatchWriter()
         {
-            var mockMatchWriter = new Mock<IMatchWriter>();
             var mockILogger = new Mock<ILogger<MatchController>>();
-            var mockDBInterface = new Mock<IDemoCentralDBInterface>();
+            var mockDemoRemover = new Mock<IDemoRemover>();
             var testId = 123456789;
-            mockDBInterface.Setup(x => x.GetDemoById(testId)).Returns(new Demo
-            {
-                BlobUrl = "test_url",
-                FileStatus = FileStatus.InBlobStorage,
-                MatchId = testId,
-            });
 
-            var test = new MatchController(mockILogger.Object, mockMatchWriter.Object, mockDBInterface.Object);
+            var test = new MatchController(mockILogger.Object, mockDemoRemover.Object);
             var res = test.RemoveFromStorage(testId);
 
-            mockMatchWriter.Verify(x => x.PublishMessage(It.IsAny<DemoRemovalInstruction>()), Times.Once);
-            Assert.IsInstanceOfType(res, typeof(OkResult));
+            mockDemoRemover.Verify(x => x.RemoveDemo(testId), Times.Once);
         }
 
 
         [TestMethod]
-        public void ControllerChecksIfDemoExists()
+        public void RemoverChecksIfDemoExists()
         {
 
             var mockMatchWriter = new Mock<IMatchWriter>();
-            var mockILogger = new Mock<ILogger<MatchController>>();
+            var mockILogger = new Mock<ILogger<DemoRemover>>();
             var mockDBInterface = new Mock<IDemoCentralDBInterface>();
+            var mockDemoRemover = new Mock<IDemoRemover>();
             var testId = 123456789;
             mockDBInterface.Setup(x => x.GetDemoById(testId)).Throws<InvalidOperationException>();
 
-            var test = new MatchController(mockILogger.Object, mockMatchWriter.Object, mockDBInterface.Object);
-            var res = test.RemoveFromStorage(testId);
-            Assert.IsInstanceOfType(res, typeof(NotFoundResult));
+            var test = new DemoRemover(mockDBInterface.Object, mockILogger.Object, mockMatchWriter.Object);
+            var res = test.RemoveDemo(testId);
+            Assert.AreEqual(res, DemoRemover.DemoRemovalResult.NotFound);
         }
 
         //Currently ignored as mocking an `IRPCQueueConnection` is not possible
@@ -98,6 +92,45 @@ namespace DemoCentralTests
             mockBlobStorage.Verify(x => x.DeleteBlobAsync(It.IsAny<string>()), Times.Once);
         }
 
+
+        [TestMethod]
+        public void TimedDemoRemovalCallsDemoRemover()
+        {
+            var testInterval = TimeSpan.FromMilliseconds(25);
+            var testTimeSpan = TimeSpan.FromMilliseconds(10);
+            var mockDemoRemover = new Mock<IDemoRemover>();
+            var mockLogger = new Mock<ILogger<TimedDemoRemovalCaller>>();
+
+
+            var test = new TimedDemoRemovalCaller(testInterval, testTimeSpan, mockDemoRemover.Object, mockLogger.Object);
+
+            var cancellationToken = new CancellationToken();
+
+            test.StartAsync(cancellationToken);
+
+            Thread.Sleep(50);
+
+            test.StopAsync(cancellationToken);
+
+            mockDemoRemover.Verify(x => x.RemoveExpiredDemos(testTimeSpan), Times.AtLeastOnce);
+        }
+
+        [TestMethod]
+        public void DemoRemoverRemovesDemo()
+        {
+            var testId = 123456789;
+
+            var mockDbInterface = new Mock<IDemoCentralDBInterface>();
+            var mockLogger = new Mock<ILogger<DemoRemover>>();
+            var mockMatchWriter = new Mock<IMatchWriter>();
+
+
+            var test = new DemoRemover(mockDbInterface.Object, mockLogger.Object, mockMatchWriter.Object);
+
+            test.RemoveDemo(testId);
+        }
+
+        #region BlobStorage related tests
         [TestMethod]
         [Ignore]
         public async Task BlobStorageDeleteWorksAsync()
@@ -128,7 +161,7 @@ namespace DemoCentralTests
                 DeleteBlobstorageTestContainer();
             }
         }
-
+        #endregion
 
         [TestCleanup]
         public void Cleanup()

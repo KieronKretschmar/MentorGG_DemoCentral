@@ -1,6 +1,7 @@
 ﻿using DemoCentral.Communication.HTTP;
 using Microsoft.Extensions.Logging;
 using RabbitCommunicationLib.Enums;
+using System;
 using System.Threading.Tasks;
 
 namespace DemoCentral.Communication.HTTP

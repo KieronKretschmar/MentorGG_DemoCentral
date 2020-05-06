@@ -171,6 +171,16 @@ namespace DemoCentral
             }
             #endregion
 
+            var ALLOWED_TIME_AFTER_EXPIRATION_DAYS = GetRequiredEnvironmentVariable<int>(Configuration, "ALLOWED_TIME_AFTER_EXPIRATION_DAYS");
+            var FREQUENCY_FOR_EXPIRED_DEMO_REMOVAL_HOURS = GetRequiredEnvironmentVariable<int>(Configuration, "FREQUENCY_FOR_EXPIRED_DEMO_REMOVAL_HOURS");
+            services.AddHostedService<TimedDemoRemovalCaller>(services =>
+            {
+                return new TimedDemoRemovalCaller(TimeSpan.FromHours(FREQUENCY_FOR_EXPIRED_DEMO_REMOVAL_HOURS),
+                    TimeSpan.FromDays(ALLOWED_TIME_AFTER_EXPIRATION_DAYS), 
+                    services.GetRequiredService<IDemoRemover>(), 
+                    services.GetRequiredService<ILogger<TimedDemoRemovalCaller>>());
+            });
+
             #region Http related services
             var MENTORINTERFACE_BASE_ADDRESS = GetRequiredEnvironmentVariable<string>(Configuration, "MENTORINTERFACE_BASE_ADDRESS");
             services.AddHttpClient("mentor-interface", c =>
