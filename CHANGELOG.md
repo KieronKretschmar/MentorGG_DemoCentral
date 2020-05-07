@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Rename env vars
 	- AMQP_MATCHDBI -> AMQP_MATCHWRITER_UPLOAD_REPORT
 	- AMQP_SITUATIONSOPERATOR -> AMQP_SITUATIONSOPERATOR_REPORT
+- Add downloadurl endpoint v1/public/match/{matchId}/download-url
 
 ## [1.1.1] - 2020-04-22
 ### Added
