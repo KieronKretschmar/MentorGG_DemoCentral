@@ -135,7 +135,16 @@ namespace DemoCentral.Communication.MessageProcessors
 
             // If the amount of retries exceeds the maximum allowed - stop retrying this demo.
             // OR if the demo is a duplicate.
-            if (inQueueDemo.RetryAttemptsOnCurrentFailure > MAX_RETRIES || failure == DemoAnalyzeFailure.Duplicate)
+            if (inQueueDemo.RetryAttemptsOnCurrentFailure > MAX_RETRIES || )
+            {
+                _blobStorage.DeleteBlobAsync(dbDemo.BlobUrl);
+                _inQueueTableInterface.RemoveDemoFromQueue(inQueueDemo);
+                _demoTableInterface.RemoveDemo(dbDemo);
+                _logger.LogInformation($"Demo [ {matchId} ]. Exceeded the maximum retry limit of [ {MAX_RETRIES} ]");
+                return;
+            }
+            // If the demo is a duplicate.
+            if (failure == DemoAnalyzeFailure.Duplicate)
             {
                 _blobStorage.DeleteBlobAsync(dbDemo.BlobUrl);
                 _inQueueTableInterface.RemoveDemoFromQueue(inQueueDemo);
