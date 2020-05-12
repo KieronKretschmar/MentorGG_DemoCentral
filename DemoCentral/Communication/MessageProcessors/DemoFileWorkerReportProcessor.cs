@@ -97,9 +97,9 @@ namespace DemoCentral.Communication.MessageProcessors
 
             _inQueueTableInterface.UpdateProcessStatus(inQueueDemo, ProcessedBy.DemoFileWorker, false);
 
-            _inQueueTableInterface.RemoveDemoIfNotInAnyQueue(inQueueDemo);
-
             PublishRedisInstruction(response);
+            _inQueueTableInterface.RemoveDemoFromQueue(inQueueDemo);
+
         }
 
         /// <summary>
