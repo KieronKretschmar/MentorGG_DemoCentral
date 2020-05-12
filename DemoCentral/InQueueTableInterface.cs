@@ -25,6 +25,7 @@ namespace DemoCentral
         int GetQueuePosition(InQueueDemo demo);
         int GetTotalQueueLength();
         int IncrementRetry(InQueueDemo demo);
+        void ResetRetry(InQueueDemo demo);
         void RemoveDemoFromQueue(InQueueDemo demo);
         void RemoveDemoIfNotInAnyQueue(InQueueDemo demo);
         /// <summary>
@@ -122,6 +123,12 @@ namespace DemoCentral
 
             _context.SaveChanges();
             return attempts;
+        }
+
+        public void ResetRetry(InQueueDemo demo)
+        {
+            demo.RetryAttemptsOnCurrentFailure = 0;
+            _context.SaveChanges();
         }
 
         public InQueueDemo GetDemoById(long matchId)
