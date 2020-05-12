@@ -107,7 +107,8 @@ namespace DemoCentral.Communication.MessageProcessors
         /// </summary>
         /// <param name="matchId"></param>
         /// <param name="failure"></param>
-        private void ActOnAnalyzeFailure(long matchId, DemoAnalyzeFailure failure){
+        private void ActOnAnalyzeFailure(long matchId, DemoAnalyzeFailure failure)
+        {
             InQueueDemo inQueueDemo = _inQueueTableInterface.GetDemoById(matchId);
             Demo dbDemo = _demoTableInterface.GetDemoById(matchId);
 
