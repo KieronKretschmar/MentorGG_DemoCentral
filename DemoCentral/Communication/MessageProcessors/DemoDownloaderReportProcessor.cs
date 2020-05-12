@@ -92,7 +92,7 @@ namespace DemoCentral.Communication.MessageProcessors
 
                     var resendModel = _demoTableInterface.CreateDownloadInstructions(dbDemo);
 
-                    _demoTableInterface.SetFileStatus(matchId, FileStatus.DownloadRetrying);
+                    _demoTableInterface.SetFileStatus(dbDemo, FileStatus.DownloadRetrying);
                     _logger.LogInformation($"Sent demo [ {matchId} ] to DemoDownloadInstruction queue");
 
                     _demoDownloaderProducer.PublishMessage(resendModel);

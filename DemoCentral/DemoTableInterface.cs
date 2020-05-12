@@ -16,32 +16,34 @@ namespace DemoCentral
     /// </summary>
     public interface IDemoTableInterface
     {
-        DemoAnalyzeInstruction CreateAnalyzeInstructions(long matchId);
-        DemoAnalyzeInstruction CreateAnalyzeInstructions(Demo demo);
         Demo GetDemoById(long matchId);
+
         /// <summary>
         /// Returns the player matches in queue , empty list if none found
         /// </summary>
         List<Demo> GetRecentMatches(long playerId, int recentMatches, int offset = 0);
         List<long> GetRecentMatchIds(long playerId, int recentMatches, int offset = 0);
+
         bool IsReanalysisRequired(string hash, out long matchId, AnalyzerQuality requestedQuality);
-        void RemoveDemo(Demo demo);
-        void RemoveDemo(long matchId);
-        void SetDatabaseVersion(Demo demo, string databaseVersion);
-        void SetDatabaseVersion(long matchId, string databaseVersion);
+
+        DemoAnalyzeInstruction CreateAnalyzeInstructions(Demo demo);
+
         List<Demo> GetMatchesByUploader(long steamId);
+
+        void RemoveDemo(Demo demo);
+
         void SetBlobUrl(Demo demo, string blobUrl);
-        void SetBlobUrl(long matchId, string blobUrl);
+
         void SetFileStatus(Demo demo, FileStatus status);
-        void SetFileStatus(long matchId, FileStatus status);
-        void SetFileWorkerStatus(Demo demo, DemoFileWorkerStatus status);
-        void SetFileWorkerStatus(long matchId, DemoFileWorkerStatus status);
+
+        void SetAnalyzeState(Demo demo, bool success, DemoAnalyzeFailure failure = DemoAnalyzeFailure.Unknown);
+
         void SetFrames(Demo demo, int framesPerSecond);
-        void SetFrames(long matchId, int framesPerSecond);
+
         void SetHash(Demo demo, string hash);
-        void SetHash(long matchId, string hash);
+
         void SetUploadStatus(Demo demo, bool success);
-        void SetUploadStatus(long matchId, bool success);
+        
         /// <summary>
         /// try to create a new entry in the demo table. Returns false and the matchId of the match, if the downloadUrl is already known, return true otherwise
         /// </summary>
@@ -95,15 +97,8 @@ namespace DemoCentral
 
         public void SetHash(Demo demo, string hash)
         {
-            demo.Md5hash = hash;
+            demo.MD5Hash = hash;
             _context.SaveChanges();
-        }
-
-        public DemoAnalyzeInstruction CreateAnalyzeInstructions(long matchId)
-        {
-            var demo = GetDemoById(matchId);
-
-            return CreateAnalyzeInstructions(demo);
         }
 
         public DemoAnalyzeInstruction CreateAnalyzeInstructions(Demo demo)
@@ -127,22 +122,10 @@ namespace DemoCentral
             return recentMatchesId;
         }
 
-        public void SetFileStatus(long matchId, FileStatus status)
-        {
-            var demo = GetDemoById(matchId);
-            SetFileStatus(demo, status);
-        }
-
         public void SetFileStatus(Demo demo, FileStatus status)
         {
             demo.FileStatus = status;
             _context.SaveChanges();
-        }
-
-        public void SetBlobUrl(long matchId, string blobUrl)
-        {
-            var demo = GetDemoById(matchId);
-            SetBlobUrl(demo, blobUrl);
         }
 
         public void SetBlobUrl(Demo demo, string blobUrl)
@@ -151,28 +134,15 @@ namespace DemoCentral
             _context.SaveChanges();
         }
 
-        public void RemoveDemo(long matchId)
-        {
-            var demo = GetDemoById(matchId);
-            RemoveDemo(demo);
-        }
-
         public void RemoveDemo(Demo demo)
         {
             _context.Demo.Remove(demo);
             _context.SaveChanges();
         }
 
-        public void SetUploadStatus(long matchId, bool success)
-        {
-            var demo = GetDemoById(matchId);
-            SetUploadStatus(demo, success);
-
-        }
-
         public void SetUploadStatus(Demo demo, bool success)
         {
-            demo.UploadStatus = success ? UploadStatus.Finished : UploadStatus.Failed;
+            demo.MatchWriterStatus = success ? GenericStatus.Success : GenericStatus.Failure;
             _context.SaveChanges();
         }
 
@@ -188,7 +158,7 @@ namespace DemoCentral
         {
             var recentMatchesId = _context.Demo
                 .Where(x => x.UploaderId == playerId)
-                .Where(x => FileStatusCollections.Failed.Contains(x.FileStatus) || DemoFileWorkerStatusCollections.Failed.Contains(x.DemoFileWorkerStatus))
+                .Where(x => FileStatusCollections.Failed.Contains(x.FileStatus) || x.DemoFileWorkerStatus == GenericStatus.Failure)
                 .Take(recentMatches + offset)
                 .ToList();
             recentMatchesId.RemoveRange(0, offset);
@@ -203,7 +173,7 @@ namespace DemoCentral
         /// <param name="matchId">id of the original match or -1 if hash is unique</param>
         public bool IsReanalysisRequired(string hash, out long matchId, AnalyzerQuality requestedQuality)
         {
-            var demo = _context.Demo.Where(x => x.Md5hash.Equals(hash)).SingleOrDefault();
+            var demo = _context.Demo.Where(x => x.MD5Hash.Equals(hash)).SingleOrDefault();
 
             matchId = demo == null ? -1 : demo.MatchId;
 
@@ -223,7 +193,7 @@ namespace DemoCentral
                 if (requestedQuality <= demo.Quality)
                     return false;
 
-                if (demo.HasFailedAnalysis())
+                if (demo.DemoFileWorkerStatus == GenericStatus.Failure)
                     return false;
 
                 _logger.LogInformation($"Selected Demo [ {demo.MatchId} ] for re-analysis due to higher quality. Current quality [ {demo.Quality} ], requested quality [ {requestedQuality} ].");
@@ -266,40 +236,9 @@ namespace DemoCentral
             return _context.Demo.Single(x => x.MatchId == matchId);
         }
 
-        public void SetDatabaseVersion(long matchId, string databaseVersion)
-        {
-            var demo = GetDemoById(matchId);
-            SetDatabaseVersion(demo, databaseVersion);
-        }
-
-        public void SetDatabaseVersion(Demo demo, string databaseVersion)
-        {
-            demo.DatabaseVersion = databaseVersion;
-            _context.SaveChanges();
-        }
-
-        public void SetFrames(long matchId, int framesPerSecond)
-        {
-            Demo demo = GetDemoById(matchId);
-
-            SetFrames(demo, framesPerSecond);
-        }
-
         public void SetFrames(Demo demo, int framesPerSecond)
         {
             demo.FramesPerSecond = (byte) framesPerSecond;
-            _context.SaveChanges();
-        }
-
-        public void SetFileWorkerStatus(long matchId, DemoFileWorkerStatus status)
-        {
-            Demo demo = GetDemoById(matchId);
-            SetFileWorkerStatus(demo, status);
-        }
-
-        public void SetFileWorkerStatus(Demo demo, DemoFileWorkerStatus status)
-        {
-            demo.DemoFileWorkerStatus = status;
             _context.SaveChanges();
         }
 
@@ -329,7 +268,7 @@ namespace DemoCentral
             var demosToReset = _context.Demo
                 .Where(x => x.UploadDate >= minUploadDate)
                 .Where(x=>x.FileStatus == FileStatus.InBlobStorage)
-                .Where(x=>x.UploadStatus != UploadStatus.Finished)
+                .Where(x=>x.MatchWriterStatus != GenericStatus.Success)
                 .ToList();
 
             return demosToReset;
@@ -352,6 +291,27 @@ namespace DemoCentral
             demo.ToPreAnalysisState();
             _context.SaveChanges();
             return true;
+        }
+
+        /// <summary>
+        /// Set's the Analze state
+        /// If success if true `failure` is ignored.
+        /// </summary>
+        /// <param name="demo"></param>
+        /// <param name="success"></param>
+        /// <param name="failure"></param>
+        public void SetAnalyzeState(Demo demo, bool success, DemoAnalyzeFailure failure = DemoAnalyzeFailure.Unknown)
+        {
+            if (success)
+            {
+                demo.DemoFileWorkerStatus = GenericStatus.Success;
+            }
+            else
+            {
+                demo.DemoFileWorkerStatus = GenericStatus.Failure;
+                demo.DemoAnalyzeFailure = failure;
+            }
+            _context.SaveChanges();
         }
     }
 

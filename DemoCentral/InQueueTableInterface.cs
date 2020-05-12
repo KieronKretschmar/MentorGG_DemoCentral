@@ -23,20 +23,10 @@ namespace DemoCentral
         /// </summary>
         List<InQueueDemo> GetPlayerMatchesInQueue(long uploaderId);
         int GetQueuePosition(InQueueDemo demo);
-        int GetQueuePosition(long matchId);
         int GetTotalQueueLength();
         int IncrementRetry(InQueueDemo demo);
-        int IncrementRetry(long matchId);
         void RemoveDemoFromQueue(InQueueDemo demo);
-        void RemoveDemoFromQueue(long matchId);
         void RemoveDemoIfNotInAnyQueue(InQueueDemo demo);
-        void RemoveDemoIfNotInAnyQueue(long matchId);
-        /// <summary>
-        /// Update the status for a certain queue
-        /// </summary>
-        /// <remarks>if all queues are set to false after execution the demo gets removed from the table</remarks>
-        /// <param name="inQueue">bool if it is in that queue</param>
-        void UpdateProcessStatus(long matchId, ProcessedBy process, bool processing);
         /// <summary>
         /// Update the status for a certain queue
         /// </summary>
@@ -62,13 +52,8 @@ namespace DemoCentral
             var newDemo = new InQueueDemo
             {
                 MatchId = matchId,
-                MatchDate = matchDate,
                 InsertDate = DateTime.UtcNow,
-                UploaderId = uploaderId,
-                DFWQUEUE = false,
-                SOQUEUE = false,
-                DDQUEUE = false,
-                Retries = 0,
+                CurrentQueue =  Queue.UnQueued,
             };
 
             _context.InQueueDemo.Add(newDemo);
@@ -78,24 +63,18 @@ namespace DemoCentral
             return newDemo;
         }
 
-        public void UpdateProcessStatus(long matchId, ProcessedBy process, bool processing)
-        {
-            InQueueDemo demo = GetDemoById(matchId);
-            UpdateProcessStatus(demo,process, processing);
-        }
-
         public void UpdateProcessStatus(InQueueDemo demo, ProcessedBy process, bool processing)
         {
             switch (process)
             {
                 case ProcessedBy.DemoDownloader:
-                    demo.DDQUEUE = processing;
+                    demo.CurrentQueue = Queue.DemoDownloader;
                     break;
                 case ProcessedBy.DemoFileWorker:
-                    demo.DFWQUEUE = processing;
+                    demo.CurrentQueue = Queue.DemoFileWorker;
                     break;
-                case ProcessedBy.SituationsOperator:
-                    demo.SOQUEUE = processing;
+                case ProcessedBy.SituationOperator:
+                    demo.CurrentQueue = Queue.SitutationOperator;
                     break;
                 default:
                     throw new InvalidOperationException("Unknown queue name");
@@ -104,16 +83,9 @@ namespace DemoCentral
             _context.SaveChanges();
         }
 
-        public void RemoveDemoIfNotInAnyQueue(long matchId)
-        {
-            var demo = GetDemoById(matchId);
-
-            RemoveDemoIfNotInAnyQueue(demo);
-        }
-
         public void RemoveDemoIfNotInAnyQueue(InQueueDemo demo)
         {
-            if (!demo.InAnyQueue())
+            if (demo.CurrentQueue == Queue.UnQueued)
             {
                 _context.InQueueDemo.Remove(demo);
             }
@@ -122,7 +94,7 @@ namespace DemoCentral
 
         public List<InQueueDemo> GetPlayerMatchesInQueue(long uploaderId)
         {
-            return _context.InQueueDemo.Where(x => x.UploaderId == uploaderId).ToList();
+            return _context.InQueueDemo.Where(x => x.Demo.UploaderId == uploaderId).ToList();
         }
 
         public int GetTotalQueueLength()
@@ -130,23 +102,10 @@ namespace DemoCentral
             return _context.InQueueDemo.Count();
         }
 
-        public void RemoveDemoFromQueue(long matchId)
-        {
-            var demo = GetDemoById(matchId);
-
-            RemoveDemoFromQueue(demo);
-        }
-
         public void RemoveDemoFromQueue(InQueueDemo demo)
         {
             _context.InQueueDemo.Remove(demo);
             _context.SaveChanges();
-        }
-
-        public int GetQueuePosition(long matchId)
-        {
-            var demo = GetDemoById(matchId);
-            return GetQueuePosition(demo);
         }
 
         public int GetQueuePosition(InQueueDemo demo)
@@ -157,20 +116,9 @@ namespace DemoCentral
         /// <summary>
         /// Increments the number of retries for this demo and return the new number
         /// </summary>
-        /// <param name="matchId"></param>
-        /// <returns></returns>
-        public int IncrementRetry(long matchId)
-        {
-            var demo = GetDemoById(matchId);
-            return IncrementRetry(demo);
-        }
-
-        /// <summary>
-        /// Increments the number of retries for this demo and return the new number
-        /// </summary>
         public int IncrementRetry(InQueueDemo demo)
         {
-            var attempts = demo.Retries++;
+            var attempts = demo.RetryAttemptsOnCurrentFailure++;
 
             _context.SaveChanges();
             return attempts;

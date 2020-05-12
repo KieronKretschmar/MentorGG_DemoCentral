@@ -58,8 +58,11 @@ namespace DemoCentral.Communication.MessageProcessors
 
                 _inQueueTableInterface.Add(matchId, model.MatchDate, model.Source, model.UploaderId);
 
-                _demoTableInterface.SetFileStatus(matchId, FileStatus.Downloading);
-                _inQueueTableInterface.UpdateProcessStatus(matchId, ProcessedBy.DemoDownloader, true);
+                var demo = _demoTableInterface.GetDemoById(matchId);
+                _demoTableInterface.SetFileStatus(demo, FileStatus.Downloading);
+                
+                var queuedDemo = _inQueueTableInterface.GetDemoById(matchId);
+                _inQueueTableInterface.UpdateProcessStatus(queuedDemo, ProcessedBy.DemoDownloader, true);
                 _demoDownloaderProducer.PublishMessage(forwardModel);
 
                 _logger.LogInformation($"Published demo [ {matchId} ] to DemoDownloadInstruction queue");

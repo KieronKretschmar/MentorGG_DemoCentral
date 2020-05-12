@@ -48,12 +48,6 @@ namespace DemoCentral.Communication.MessageProcessors
             long matchId = model.MatchId;
             var dbDemo = _demoTableInterface.GetDemoById(matchId);
             _demoTableInterface.SetUploadStatus(dbDemo, model.Success);
-
-            if (model.Success)
-            {
-                _demoTableInterface.SetDatabaseVersion(dbDemo, model.Version);
-            }
-
             string log = model.Success ? "was uploaded" : "failed upload";
             _logger.LogInformation($"Demo [ {matchId} ] {log}.");
         }

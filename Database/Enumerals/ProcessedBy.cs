@@ -8,6 +8,6 @@ namespace Database.Enumerals
     {
         DemoDownloader = 10,
         DemoFileWorker = 20,
-        SituationsOperator = 30,
+        SituationOperator = 30,
     }
 }
