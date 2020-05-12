@@ -21,8 +21,7 @@ namespace DemoCentral.Communication.MessageProcessors
         private IInQueueTableInterface _inQueueTableInterface;
         private readonly IBlobStorage _blobStorage;
 
-        private const int MAX_RETRIES = 3;
-
+        private const int MAX_RETRIES = 2;
         public DemoFileWorkerReportProcessor(
             ILogger<DemoFileWorkerReportProcessor> logger,
             IDemoTableInterface demoTableInterface,
