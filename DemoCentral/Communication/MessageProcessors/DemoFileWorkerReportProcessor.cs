@@ -158,19 +158,19 @@ namespace DemoCentral.Communication.MessageProcessors
                     // BlobDownload failed.
                     // This may be a temporary issue - Try again.
                     _logger.LogWarning($"Demo [ {matchId} ]. Failed to download blob.");
-                    return;
+                    break;
 
                 case DemoAnalyzeFailure.Unzip:
                     // Unzip failed, this could indicate that we do not support the file type, or the demo is
                     // corrupt - Delete the blob and mark this as failed.
                     _logger.LogWarning($"Demo [ {matchId} ]. Could not be unzipped");
-                    return;
+                    break;
 
                 case DemoAnalyzeFailure.HttpHashCheck:
                     // Contacting DemoCentral to confirm if the Demo was a Duplicate failed.
                     // This may be a temporary issue - Try again.
                     _logger.LogWarning($"Demo [ {matchId} ]. Failed to complete the Hash check for duplicate checking.");
-                    return;
+                    break;
 
                 case DemoAnalyzeFailure.Duplicate:
                     // Demo has been indentified as a Duplicate.
@@ -178,7 +178,7 @@ namespace DemoCentral.Communication.MessageProcessors
                 case DemoAnalyzeFailure.Analyze:
                     // DemoFileWorker failed on the Analyze step.
                     _logger.LogWarning($"Demo [ {matchId} ]. Analyze Failure");
-                    return;
+                    break;
 
                 case DemoAnalyzeFailure.Enrich:
                     // DemoFileWorker failed on the Enrich step.
