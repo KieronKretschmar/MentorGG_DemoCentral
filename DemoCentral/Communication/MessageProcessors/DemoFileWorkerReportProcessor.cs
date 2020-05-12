@@ -51,7 +51,6 @@ namespace DemoCentral.Communication.MessageProcessors
                 if (model.Success)
                 {
                     ActOnAnalyzeSuccess(model);
-                    PublishRedisInstruction(model);
                 }
                 else
                 {
@@ -99,6 +98,8 @@ namespace DemoCentral.Communication.MessageProcessors
             _inQueueTableInterface.UpdateProcessStatus(inQueueDemo, ProcessedBy.DemoFileWorker, false);
 
             _inQueueTableInterface.RemoveDemoIfNotInAnyQueue(inQueueDemo);
+
+            PublishRedisInstruction(response);
         }
 
         /// <summary>
