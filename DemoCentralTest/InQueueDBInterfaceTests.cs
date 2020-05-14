@@ -117,7 +117,7 @@ namespace DemoCentralTests
             {
                 var test = new InQueueTableInterface(context);
                 test.Add(matchId, default(DateTime), Source.Unknown, 1234);
-                test.RemoveDemoFromQueue(test.GetDemoById(matchId));
+                test.UpdateCurrentQueue(test.GetDemoById(matchId), Queue.UnQueued);
             }
 
             using (var context = new DemoCentralContext(_test_config))
@@ -134,7 +134,7 @@ namespace DemoCentralTests
             using (var context = new DemoCentralContext(_test_config))
             {
                 var test = new InQueueTableInterface(context);
-                Assert.ThrowsException<InvalidOperationException>(() => test.RemoveDemoFromQueue(test.GetDemoById(matchId)));
+                Assert.ThrowsException<InvalidOperationException>(() => test.UpdateCurrentQueue(test.GetDemoById(matchId), Queue.UnQueued));
             }
         }
 

@@ -95,10 +95,9 @@ namespace DemoCentral.Communication.MessageProcessors
             _demoTableInterface.SetAnalyzeState(dbDemo, success: true);
             _demoTableInterface.SetFrames(dbDemo, response.FramesPerSecond);
 
-            _inQueueTableInterface.UpdateProcessStatus(inQueueDemo, ProcessedBy.DemoFileWorker, false);
+            _inQueueTableInterface.UpdateCurrentQueue(inQueueDemo, Queue.UnQueued);
 
             PublishRedisInstruction(response);
-            _inQueueTableInterface.RemoveDemoFromQueue(inQueueDemo);
 
         }
 
@@ -135,10 +134,10 @@ namespace DemoCentral.Communication.MessageProcessors
 
             // If the amount of retries exceeds the maximum allowed - stop retrying this demo.
             // OR if the demo is a duplicate.
-            if (inQueueDemo.RetryAttemptsOnCurrentFailure > MAX_RETRIES || )
+            if (inQueueDemo.RetryAttemptsOnCurrentFailure > MAX_RETRIES)
             {
                 _blobStorage.DeleteBlobAsync(dbDemo.BlobUrl);
-                _inQueueTableInterface.RemoveDemoFromQueue(inQueueDemo);
+                _inQueueTableInterface.UpdateCurrentQueue(inQueueDemo, Queue.UnQueued);
                 _demoTableInterface.RemoveDemo(dbDemo);
                 _logger.LogInformation($"Demo [ {matchId} ]. Exceeded the maximum retry limit of [ {MAX_RETRIES} ]");
                 return;
@@ -147,7 +146,7 @@ namespace DemoCentral.Communication.MessageProcessors
             if (failure == DemoAnalyzeFailure.Duplicate)
             {
                 _blobStorage.DeleteBlobAsync(dbDemo.BlobUrl);
-                _inQueueTableInterface.RemoveDemoFromQueue(inQueueDemo);
+                _inQueueTableInterface.UpdateCurrentQueue(inQueueDemo, Queue.UnQueued);
                 _demoTableInterface.RemoveDemo(dbDemo);
                 _logger.LogInformation($"Demo [ {matchId} ]. Duplicate, determinted by the MD5Hash");
                 return;

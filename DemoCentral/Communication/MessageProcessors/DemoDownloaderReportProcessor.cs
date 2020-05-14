@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Database.DatabaseClasses;
 using Database.Enumerals;
 using Database.Enumerals;
 using DemoCentral.Communication.HTTP;
@@ -69,11 +70,9 @@ namespace DemoCentral.Communication.MessageProcessors
 
                 _demoTableInterface.SetFileStatus(dbDemo, FileStatus.InBlobStorage);
 
-                _inQueueTableInterface.UpdateProcessStatus(inQueueDemo, ProcessedBy.DemoDownloader, false);
-
                 var model = _demoTableInterface.CreateAnalyzeInstructions(dbDemo);
 
-                _inQueueTableInterface.UpdateProcessStatus(inQueueDemo, ProcessedBy.DemoFileWorker, true);
+                _inQueueTableInterface.UpdateCurrentQueue(inQueueDemo, Queue.DemoFileWorker);
                 _demoFileWorkerProducer.PublishMessage(model);
             }
             else
@@ -82,7 +81,7 @@ namespace DemoCentral.Communication.MessageProcessors
 
                 if (attempts > MAX_RETRIES)
                 {
-                    _inQueueTableInterface.RemoveDemoFromQueue(inQueueDemo);
+                    _inQueueTableInterface.UpdateCurrentQueue(inQueueDemo, Queue.UnQueued);
                     _demoTableInterface.SetFileStatus(dbDemo, FileStatus.DownloadFailed);
                     _logger.LogError($"Demo [ {matchId} ] failed download more than {MAX_RETRIES} times, no further analyzing");
                 }
@@ -100,8 +99,6 @@ namespace DemoCentral.Communication.MessageProcessors
                     _logger.LogWarning($"Demo [ {matchId} ] failed download, retrying");
                 }
             }
-
-            _inQueueTableInterface.RemoveDemoIfNotInAnyQueue(inQueueDemo);
         }
     }
 }

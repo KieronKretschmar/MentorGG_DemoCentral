@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Database.DatabaseClasses;
 using DemoCentral.Communication.Rabbit;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -55,14 +56,14 @@ namespace DemoCentral.Controllers.trusted
                 try
                 {
                     var queuedDemo = _inQueueTableInterface.GetDemoById(demo.MatchId);
-                    _inQueueTableInterface.RemoveDemoFromQueue(queuedDemo);
+                    _inQueueTableInterface.UpdateCurrentQueue(queuedDemo, Queue.UnQueued);
                 }
                 catch
                 {
 
                 }
                 var inQueueDemo = _inQueueTableInterface.Add(demo.MatchId, demo.MatchDate, demo.Source, demo.UploaderId);
-                _inQueueTableInterface.UpdateProcessStatus(inQueueDemo, Database.Enumerals.ProcessedBy.DemoFileWorker, true);
+                _inQueueTableInterface.UpdateCurrentQueue(inQueueDemo, Queue.DemoFileWorker);
 
                 // Publish message
                 var message = _demoTableInterface.CreateAnalyzeInstructions(demo);

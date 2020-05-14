@@ -26,14 +26,14 @@ namespace DemoCentral
         int GetTotalQueueLength();
         int IncrementRetry(InQueueDemo demo);
         void ResetRetry(InQueueDemo demo);
-        void RemoveDemoFromQueue(InQueueDemo demo);
-        void RemoveDemoIfNotInAnyQueue(InQueueDemo demo);
+
         /// <summary>
-        /// Update the status for a certain queue
+        /// Update the current queue, in Queue is set to Queue.UnQueued
+        /// The Demo is removed from the InQueue table
         /// </summary>
-        /// <remarks>if all queues are set to false after execution the demo gets removed from the table</remarks>
-        /// <param name="inQueue">bool if it is in that queue</param>
-        void UpdateProcessStatus(InQueueDemo demo,ProcessedBy process, bool processing );
+        /// <param name="demo"></param>
+        /// <param name="queue"></param>
+        void UpdateCurrentQueue(InQueueDemo demo, Queue queue);
     }
 
     /// <summary>
@@ -64,31 +64,15 @@ namespace DemoCentral
             return newDemo;
         }
 
-        public void UpdateProcessStatus(InQueueDemo demo, ProcessedBy process, bool processing)
-        {
-            switch (process)
-            {
-                case ProcessedBy.DemoDownloader:
-                    demo.CurrentQueue = Queue.DemoDownloader;
-                    break;
-                case ProcessedBy.DemoFileWorker:
-                    demo.CurrentQueue = Queue.DemoFileWorker;
-                    break;
-                case ProcessedBy.SituationOperator:
-                    demo.CurrentQueue = Queue.SitutationOperator;
-                    break;
-                default:
-                    throw new InvalidOperationException("Unknown queue name");
-            }
-
-            _context.SaveChanges();
-        }
-
-        public void RemoveDemoIfNotInAnyQueue(InQueueDemo demo)
+        public void UpdateCurrentQueue(InQueueDemo demo, Queue queue)
         {
             if (demo.CurrentQueue == Queue.UnQueued)
             {
                 _context.InQueueDemo.Remove(demo);
+            }
+            else
+            {
+                demo.CurrentQueue = queue;
             }
             _context.SaveChanges();
         }
@@ -101,12 +85,6 @@ namespace DemoCentral
         public int GetTotalQueueLength()
         {
             return _context.InQueueDemo.Count();
-        }
-
-        public void RemoveDemoFromQueue(InQueueDemo demo)
-        {
-            _context.InQueueDemo.Remove(demo);
-            _context.SaveChanges();
         }
 
         public int GetQueuePosition(InQueueDemo demo)

@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Database.DatabaseClasses;
 using Database.Enumerals;
 using Database.Enumerals;
 using DemoCentral.Communication.HTTP;
@@ -73,7 +74,7 @@ namespace DemoCentral.Communication.MessageProcessors
             _logger.LogInformation($"Sent demo [ {matchId} ] to DemoAnalyzeInstruction queue");
 
             var queuedDemo = _inQueueTableInterface.GetDemoById(matchId);
-            _inQueueTableInterface.UpdateProcessStatus(queuedDemo, ProcessedBy.DemoFileWorker, true);
+            _inQueueTableInterface.UpdateCurrentQueue(queuedDemo, Queue.DemoFileWorker);
         }
     }
 }
