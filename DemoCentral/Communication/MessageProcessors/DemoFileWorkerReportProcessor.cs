@@ -1,11 +1,9 @@
 using System;
 using System.Threading.Tasks;
+using Database.DatabaseClasses;
 using Database.Enumerals;
-using Database.Enumerals;
-using DemoCentral.Communication.HTTP;
 using DemoCentral.Communication.Rabbit;
 using Microsoft.Extensions.Logging;
-using RabbitCommunicationLib.Enums;
 using RabbitCommunicationLib.Interfaces;
 using RabbitCommunicationLib.TransferModels;
 
@@ -21,19 +19,23 @@ namespace DemoCentral.Communication.MessageProcessors
         private readonly IProducer<DemoAnalyzeInstruction> _demoFileWorkerProducer;
         private readonly IProducer<RedisLocalizationInstruction> _fanoutProducer;
         private IInQueueTableInterface _inQueueTableInterface;
+        private readonly IBlobStorage _blobStorage;
 
+        private const int MAX_RETRIES = 2;
         public DemoFileWorkerReportProcessor(
             ILogger<DemoFileWorkerReportProcessor> logger,
             IDemoTableInterface demoTableInterface,
             IProducer<DemoAnalyzeInstruction> demoFileWorkerProducer,
             IProducer<RedisLocalizationInstruction> fanoutProducer,
-            IInQueueTableInterface inQueueTableInterface)
+            IInQueueTableInterface inQueueTableInterface,
+            IBlobStorage blobStorage)
         {
             _logger = logger;
             _demoTableInterface = demoTableInterface;
             _fanoutProducer = fanoutProducer;
             _demoFileWorkerProducer = demoFileWorkerProducer;
             _inQueueTableInterface = inQueueTableInterface;
+            _blobStorage = blobStorage;
         }
 
 
@@ -46,7 +48,14 @@ namespace DemoCentral.Communication.MessageProcessors
         {
             try
             {
-                UpdateDBEntryFromFileWorkerResponse(model);
+                if (model.Success)
+                {
+                    ActOnAnalyzeSuccess(model);
+                }
+                else
+                {
+                    ActOnAnalyzeFailure(model.MatchId, model.Failure);
+                }
             }
             catch (Exception e)
             {
@@ -54,82 +63,139 @@ namespace DemoCentral.Communication.MessageProcessors
             }
         }
 
+        /// <summary>
+        /// Publish Redis Instructions, ensuring data is present.
+        /// </summary>
+        /// <param name="model"></param>
+        private void PublishRedisInstruction(DemoAnalyzeReport model){
+            if (String.IsNullOrEmpty(model.RedisKey))
+            {
+                throw new ArgumentException("RedisKey must be defined!");
+            }
+            var forwardModel = new RedisLocalizationInstruction
+            {
+                MatchId = model.MatchId,
+                RedisKey = model.RedisKey,
+                ExpiryDate = model.ExpiryDate,
+            };
+            _fanoutProducer.PublishMessage(forwardModel);
+            _logger.LogInformation($"Demo [ {model.MatchId} ]. RedisInstruction sent.");
+        }
 
-
-        private void UpdateDBEntryFromFileWorkerResponse(DemoAnalyzeReport response)
+        /// <summary>
+        /// Act upon a successful analyzation of a Demo.
+        /// </summary>
+        /// <param name="response"></param>
+        private void ActOnAnalyzeSuccess(DemoAnalyzeReport response)
         {
             var matchId = response.MatchId;
+            InQueueDemo inQueueDemo = _inQueueTableInterface.GetDemoById(matchId);
+            Demo dbDemo = _demoTableInterface.GetDemoById(matchId);
 
-            var inQueueDemo = _inQueueTableInterface.GetDemoById(matchId);
-            var dbDemo = _demoTableInterface.GetDemoById(matchId);
+            _demoTableInterface.SetAnalyzeState(dbDemo, success: true);
+            _demoTableInterface.SetFrames(dbDemo, response.FramesPerSecond);
 
-            if (response.Success)
+            _inQueueTableInterface.UpdateCurrentQueue(inQueueDemo, Queue.UnQueued);
+
+            PublishRedisInstruction(response);
+
+        }
+
+        /// <summary>
+        /// Determine the cause of failure and act.
+        /// </summary>
+        /// <param name="matchId"></param>
+        /// <param name="failure"></param>
+        private void ActOnAnalyzeFailure(long matchId, DemoAnalyzeFailure failure)
+        {
+            InQueueDemo inQueueDemo = _inQueueTableInterface.GetDemoById(matchId);
+            Demo dbDemo = _demoTableInterface.GetDemoById(matchId);
+
+            if(dbDemo.DemoFileWorkerStatus != GenericStatus.Failure)
             {
-                //Successfully handled in demo fileworker
-                _demoTableInterface.SetFileWorkerStatus(dbDemo, DemoFileWorkerStatus.Finished);
-                _demoTableInterface.SetFrames(dbDemo, response.FramesPerSecond);
+                throw new ArgumentException(
+                    $"Demo [ {matchId} ] does not have status: `Failure` Incorrect usage.");
+            }
 
-                _inQueueTableInterface.UpdateProcessStatus(inQueueDemo, ProcessedBy.DemoFileWorker, false);
-
-                var forwardModel = new RedisLocalizationInstruction
-                {
-                    MatchId = response.MatchId,
-                    RedisKey = response.RedisKey,
-                    ExpiryDate = response.ExpiryDate,
-                };
-                _fanoutProducer.PublishMessage(forwardModel);
-
-                _inQueueTableInterface.RemoveDemoIfNotInAnyQueue(inQueueDemo);
-                _logger.LogInformation($"Demo [ {matchId} ] was sent to fanout");
-                return;
+            // If what is currently stored in DemoAnalyzeFailure does not match the current failure
+            // Reset the retry counter
+            // If not, increment the counter.
+            if (dbDemo.DemoAnalyzeFailure != failure)
+            {
+                _inQueueTableInterface.ResetRetry(inQueueDemo);
             }
             else
             {
-                // Handle failed demo according to the reason of its failure
-                if (!response.Unzipped)
-                {
-                    //Remove demo from queue and set file status to unzip failed
-                    _inQueueTableInterface.RemoveDemoFromQueue(inQueueDemo);
-                    _demoTableInterface.SetFileWorkerStatus(dbDemo, DemoFileWorkerStatus.UnzipFailed);
-                    _logger.LogWarning($"Demo [ {matchId} ] could not be unzipped");
-                    return;
-                }
-
-                if (!response.DuplicateChecked)
-                {
-                    //Keep track of demos for which the duplicate check itself failed,
-                    //they may or may not be duplicates, the check itself failed for any reason
-                    _inQueueTableInterface.RemoveDemoFromQueue(inQueueDemo);
-                    _demoTableInterface.SetFileWorkerStatus(dbDemo, DemoFileWorkerStatus.DuplicateCheckFailed);
-                    _logger.LogWarning($"Demo [ {matchId} ] was not duplicate checked");
-                    return;
-                }
-
-                if (response.IsDuplicate)
-                {
-                    _inQueueTableInterface.RemoveDemoFromQueue(inQueueDemo);
-                    _demoTableInterface.RemoveDemo(dbDemo);
-
-                    _logger.LogInformation($"Demo [ {matchId} ] is duplicate via MD5Hash");
-                    return;
-                }
-
-                if (!response.DemoAnalyzerSucceeded)
-                {
-                    _inQueueTableInterface.RemoveDemoFromQueue(inQueueDemo);
-                    _demoTableInterface.SetFileWorkerStatus(dbDemo, DemoFileWorkerStatus.AnalyzerFailed);
-
-                    _logger.LogWarning($"Demo [ {matchId} ] failed at DemoAnalyzer.");
-                    return;
-                }
-
-                //If you get here, the above if cases do not catch every statement
-                //Therefore the response has more possible statusses than handled here
-                //Probably a coding error if you update DemoFileWorker
-                _inQueueTableInterface.RemoveDemoFromQueue(inQueueDemo);
-                _demoTableInterface.RemoveDemo(dbDemo);
-                _logger.LogError($"Could not handle response from DemoFileWorker. Removing match from database. MatchId [ {matchId} ], Message [ {response.ToJson()} ]");
+                _inQueueTableInterface.IncrementRetry(inQueueDemo);
             }
+
+            // Store the Analyze state with the current failure
+            _demoTableInterface.SetAnalyzeState(dbDemo, success: false, failure);
+
+            // If the amount of retries exceeds the maximum allowed - stop retrying this demo.
+            // OR if the demo is a duplicate.
+            if (inQueueDemo.RetryAttemptsOnCurrentFailure > MAX_RETRIES)
+            {
+                _blobStorage.DeleteBlobAsync(dbDemo.BlobUrl);
+                _inQueueTableInterface.UpdateCurrentQueue(inQueueDemo, Queue.UnQueued);
+                _demoTableInterface.RemoveDemo(dbDemo);
+                _logger.LogInformation($"Demo [ {matchId} ]. Exceeded the maximum retry limit of [ {MAX_RETRIES} ]");
+                return;
+            }
+            // If the demo is a duplicate.
+            if (failure == DemoAnalyzeFailure.Duplicate)
+            {
+                _blobStorage.DeleteBlobAsync(dbDemo.BlobUrl);
+                _inQueueTableInterface.UpdateCurrentQueue(inQueueDemo, Queue.UnQueued);
+                _demoTableInterface.RemoveDemo(dbDemo);
+                _logger.LogInformation($"Demo [ {matchId} ]. Duplicate, determinted by the MD5Hash");
+                return;
+            }
+
+            switch (failure){
+                case DemoAnalyzeFailure.BlobDownload:
+                    // BlobDownload failed.
+                    // This may be a temporary issue - Try again.
+                    _logger.LogWarning($"Demo [ {matchId} ]. Failed to download blob.");
+                    break;
+
+                case DemoAnalyzeFailure.Unzip:
+                    // Unzip failed, this could indicate that we do not support the file type, or the demo is
+                    // corrupt - Delete the blob and mark this as failed.
+                    _logger.LogWarning($"Demo [ {matchId} ]. Could not be unzipped");
+                    break;
+
+                case DemoAnalyzeFailure.HttpHashCheck:
+                    // Contacting DemoCentral to confirm if the Demo was a Duplicate failed.
+                    // This may be a temporary issue - Try again.
+                    _logger.LogWarning($"Demo [ {matchId} ]. Failed to complete the Hash check for duplicate checking.");
+                    break;
+
+                case DemoAnalyzeFailure.Duplicate:
+                    // Demo has been indentified as a Duplicate.
+                    throw new InvalidOperationException("Duplicate handling should have already happened!");
+                case DemoAnalyzeFailure.Analyze:
+                    // DemoFileWorker failed on the Analyze step.
+                    _logger.LogWarning($"Demo [ {matchId} ]. Analyze Failure");
+                    break;
+
+                case DemoAnalyzeFailure.Enrich:
+                    // DemoFileWorker failed on the Enrich step.
+                    _logger.LogWarning($"Demo [ {matchId} ]. Enrich Failure");
+                    break;
+
+                case DemoAnalyzeFailure.RedisStorage:
+                    // DemoFileWorker failed to store the MatchDataSet in Redis,
+                    // This may be a temporary issue - Try again.
+                    _logger.LogWarning($"Demo [ {matchId} ]. RedisStorage Failure");
+                    break;
+
+                case DemoAnalyzeFailure.Unknown:
+                default:
+                    _logger.LogCritical($"Demo [ {matchId} ]. Unknown Failure!");
+                    break;
+
+            }   
         }
     }
 }

@@ -53,7 +53,9 @@ namespace DemoCentral.Controllers
             else
             {
                 _logger.LogInformation($"Demo [ {matchId} ] is unique");
-                _demoTableInterface.SetHash(matchId, hash);
+                
+                var demo = _demoTableInterface.GetDemoById(matchId);
+                _demoTableInterface.SetHash(demo, hash);
 
                 return Ok();
             }

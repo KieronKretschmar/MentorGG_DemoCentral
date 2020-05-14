@@ -37,7 +37,6 @@ namespace DemoCentralTests
                 MatchDate = default(DateTime),
                 Quality = AnalyzerQuality.Low,
                 Source = Source.Unknown,
-                DemoFileWorkerVersion = "",
                 UploaderId = 1234,
             };
         }
@@ -172,7 +171,7 @@ namespace DemoCentralTests
                 test.SetHash(matchId, new_hash);
             }
 
-            Assert.AreEqual(new_hash, demo.Md5hash);
+            Assert.AreEqual(new_hash, demo.MD5Hash);
         }
 
         [TestMethod]
@@ -198,7 +197,6 @@ namespace DemoCentralTests
             DemoAnalyzeInstruction assertModel;
             Demo demo = CopyDemo(_standardDemo);
             demo.BlobUrl = "abc";
-            demo.Event = "TESTING";
             demo.Source = Source.ManualUpload;
 
             using (var context = new DemoCentralContext(_test_config))
@@ -208,7 +206,7 @@ namespace DemoCentralTests
                 AddDemoToDB(demo, context);
 
                 matchId = demo.MatchId;
-                assertModel = test.CreateAnalyzeInstructions(matchId);
+                assertModel = test.CreateAnalyzeInstructions(demo);
             }
 
             Assert.AreEqual(demo.BlobUrl, assertModel.BlobUrl);
@@ -336,7 +334,7 @@ namespace DemoCentralTests
                 ;
                 AddDemoToDB(demo, context);
 
-                test.SetFileStatus(demo.MatchId, FileStatus.InBlobStorage);
+                test.SetFileStatus(demo, FileStatus.InBlobStorage);
             }
 
             Assert.IsTrue(demo.FileStatus == FileStatus.InBlobStorage);
@@ -355,7 +353,7 @@ namespace DemoCentralTests
                 ;
                 AddDemoToDB(demo, context);
 
-                test.SetBlobUrl(demo.MatchId, test_path);
+                test.SetBlobUrl(demo, test_path);
             }
 
             Assert.AreEqual(test_path, demo.BlobUrl);
@@ -372,7 +370,7 @@ namespace DemoCentralTests
                 DemoTableInterface test = new DemoTableInterface(context, _mockILogger);
                 ;
                 AddDemoToDB(demo, context);
-                test.RemoveDemo(demo.MatchId);
+                test.RemoveDemo(demo);
             }
 
             using (var context = new DemoCentralContext(_test_config))
@@ -393,10 +391,10 @@ namespace DemoCentralTests
                 ;
                 AddDemoToDB(demo, context);
 
-                test.SetUploadStatus(demo.MatchId, true);
+                test.SetUploadStatus(demo, true);
             }
 
-            Assert.IsTrue(demo.UploadStatus == UploadStatus.Finished);
+            Assert.IsTrue(demo.MatchWriterStatus == GenericStatus.Success);
         }
 
         [TestMethod]
@@ -519,7 +517,7 @@ namespace DemoCentralTests
 
             string duplicate_hash = "test_hash_duplicate";
 
-            demo.Md5hash = duplicate_hash;
+            demo.MD5Hash = duplicate_hash;
 
             using (var context = new DemoCentralContext(_test_config))
             {
@@ -545,7 +543,7 @@ namespace DemoCentralTests
             string second_hash = "test_hash_non_duplicate_2";
 
 
-            demo.Md5hash = first_hash;
+            demo.MD5Hash = first_hash;
 
             using (var context = new DemoCentralContext(_test_config))
             {
@@ -582,7 +580,6 @@ namespace DemoCentralTests
                 UploadType = demo1.UploadType,
                 MatchDate = demo1.MatchDate,
                 Source = demo1.Source,
-                DemoFileWorkerVersion = demo1.DemoFileWorkerVersion,
                 UploaderId = demo1.UploaderId,
             };
         }

@@ -18,7 +18,7 @@ namespace DemoCentral.Models
                 {
                     MatchId = match.MatchId,
                     MatchDate = match.MatchDate,
-                    Success = match.DemoFileWorkerStatus == DemoFileWorkerStatus.Finished
+                    Success = match.DemoFileWorkerStatus == GenericStatus.Success
                 })
                 .ToList();
 

@@ -67,23 +67,5 @@ namespace DemoCentralTests
         }
 
 
-        [TestMethod]
-        public void CreateHashSavesHashIfNotDuplicated()
-        {
-            var mockIDemoDBInterface = new Mock<IDemoTableInterface>();
-            long matchId = 1;
-            AnalyzerQuality quality = AnalyzerQuality.Low;
-            string hash = "test_hash";
-            mockIDemoDBInterface.Setup(x => x.IsReanalysisRequired(hash, out matchId,quality)).Returns(true);
-            ActionResult response;
-
-            using (var context = new DemoCentralContext(_test_config))
-            {
-                var test = new HashController(mockIDemoDBInterface.Object, mockILogger);
-                response = test.CreateHash(matchId,quality, hash);
-            }
-            mockIDemoDBInterface.Verify(x => x.SetHash(matchId, hash), Times.Once);
-            Assert.IsInstanceOfType(response, typeof(OkResult));
-        }
     }
 }

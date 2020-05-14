@@ -49,60 +49,11 @@ namespace DemoCentralTests
                 InQueueDemo demo = GetDemoByMatchId(context, matchId);
 
                 Assert.AreEqual(matchId, demo.MatchId);
-                Assert.AreEqual(matchDate, demo.MatchDate);
-            }
-        }
-
-        [TestMethod]
-        public void AddCreatesANewDemoEntryNotInAnyQueues()
-        {
-            long matchId = 1;
-            DateTime matchDate = new DateTime();
-            Source source = Source.ManualUpload;
-            long uploaderId = 1234;
-
-            using (var context = new DemoCentralContext(_test_config))
-            {
-                InQueueTableInterface testObject = new InQueueTableInterface(context);
-                testObject.Add(matchId, matchDate, source, uploaderId);
-            }
-
-            using (var context = new DemoCentralContext(_test_config))
-            {
-                //Throws exception if entry not found or more than one are present
-                InQueueDemo demo = GetDemoByMatchId(context, matchId);
-
-                Assert.IsFalse(demo.SOQUEUE);
-                Assert.IsFalse(demo.DFWQUEUE);
-                Assert.IsFalse(demo.DDQUEUE);
+                Assert.AreEqual(matchDate, demo.Demo.MatchDate);
             }
         }
 
 
-        [TestMethod]
-        public void UpdateQueueStatusSetsStatusOnKnownQueue()
-        {
-            long matchId = 1;
-            using (var context = new DemoCentralContext(_test_config))
-            {
-                InQueueTableInterface test = new InQueueTableInterface(context);
-                test.Add(matchId, new DateTime(), Source.Faceit, 1234);
-                var inQueueDemo = test.GetDemoById(matchId);
-
-                test.UpdateProcessStatus(inQueueDemo, ProcessedBy.DemoDownloader, true);
-                test.UpdateProcessStatus(inQueueDemo, ProcessedBy.DemoFileWorker, true);
-                test.UpdateProcessStatus(inQueueDemo, ProcessedBy.SituationsOperator, true);
-            }
-
-            using (var context = new DemoCentralContext(_test_config))
-            {
-                InQueueDemo demo = GetDemoByMatchId(context, matchId);
-
-                Assert.IsTrue(demo.DDQUEUE);
-                Assert.IsTrue(demo.SOQUEUE);
-                Assert.IsTrue(demo.DFWQUEUE);
-            }
-        }
 
         [TestMethod]
         public void GetPlayerMatchesInQueueReturnsMatches()
@@ -122,7 +73,7 @@ namespace DemoCentralTests
 
             Assert.AreEqual(3, matches.Count);
             foreach (var match in matches)
-                Assert.AreEqual(match.UploaderId, playerId);
+                Assert.AreEqual(match.Demo.UploaderId, playerId);
         }
 
 
@@ -166,7 +117,7 @@ namespace DemoCentralTests
             {
                 var test = new InQueueTableInterface(context);
                 test.Add(matchId, default(DateTime), Source.Unknown, 1234);
-                test.RemoveDemoFromQueue(matchId);
+                test.UpdateCurrentQueue(test.GetDemoById(matchId), Queue.UnQueued);
             }
 
             using (var context = new DemoCentralContext(_test_config))
@@ -183,7 +134,7 @@ namespace DemoCentralTests
             using (var context = new DemoCentralContext(_test_config))
             {
                 var test = new InQueueTableInterface(context);
-                Assert.ThrowsException<InvalidOperationException>(() => test.RemoveDemoFromQueue(matchId));
+                Assert.ThrowsException<InvalidOperationException>(() => test.UpdateCurrentQueue(test.GetDemoById(matchId), Queue.UnQueued));
             }
         }
 
@@ -203,7 +154,7 @@ namespace DemoCentralTests
                 test.Add(4, default(DateTime), Source.Unknown, playerId2);
 
                 for (int i = 1; i < 5; i++)
-                    Assert.AreEqual(i - 1, test.GetQueuePosition(i));
+                    Assert.AreEqual(i - 1, test.GetQueuePosition(test.GetDemoById(i)));
             }
         }
 
@@ -218,7 +169,7 @@ namespace DemoCentralTests
 
                 for (int retry = 0; retry < 3; retry++)
                 {
-                    Assert.AreEqual(retry, test.IncrementRetry(matchId));
+                    Assert.AreEqual(retry, test.IncrementRetry(test.GetDemoById(matchId)));
                 }
             }
         }
