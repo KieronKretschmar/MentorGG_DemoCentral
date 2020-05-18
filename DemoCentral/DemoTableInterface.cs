@@ -44,7 +44,7 @@ namespace DemoCentral
         void SetHash(long matchId, string hash);
         void SetUploadStatus(Demo demo, bool success);
         void SetUploadStatus(long matchId, bool success);
-        List<long> GetExpiredDemosId(TimeSpan allowedTimeAfterExpiration);
+        List<long> GetExpiredDemosId();
 
         /// <summary>
         /// try to create a new entry in the demo table. Returns false and the matchId of the match, if the downloadUrl is already known, return true otherwise
@@ -272,9 +272,9 @@ namespace DemoCentral
             }
             _context.SaveChanges();
         }
-        }
+        
 
-        public List<long> GetExpiredDemosId(TimeSpan allowedTimeAfterExpiration)
+        public List<long> GetExpiredDemosId()
         {
             throw new NotImplementedException();
         }

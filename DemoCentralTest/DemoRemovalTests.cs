@@ -3,6 +3,7 @@ using Azure.Storage.Blobs.Models;
 using DataBase.DatabaseClasses;
 using DataBase.Enumerals;
 using DemoCentral;
+using DemoCentral.Communication.HTTP;
 using DemoCentral.Communication.Rabbit;
 using DemoCentral.Controllers.trusted;
 using Microsoft.AspNetCore.Mvc;
@@ -52,15 +53,15 @@ namespace DemoCentralTests
         [TestMethod]
         public void RemoverChecksIfDemoExists()
         {
-
             var mockMatchWriter = new Mock<IMatchWriter>();
             var mockILogger = new Mock<ILogger<DemoRemover>>();
             var mockDBInterface = new Mock<IDemoCentralDBInterface>();
             var mockDemoRemover = new Mock<IDemoRemover>();
+            var mockMatchInfoGetter = new Mock<IMatchInfoGetter>();
             var testId = 123456789;
             mockDBInterface.Setup(x => x.GetDemoById(testId)).Throws<InvalidOperationException>();
 
-            var test = new DemoRemover(mockDBInterface.Object, mockILogger.Object, mockMatchWriter.Object);
+            var test = new DemoRemover(mockDBInterface.Object, mockILogger.Object, mockMatchWriter.Object,mockMatchInfoGetter.Object);
             var res = test.RemoveDemo(testId);
             Assert.AreEqual(res, DemoRemover.DemoRemovalResult.NotFound);
         }
@@ -92,7 +93,6 @@ namespace DemoCentralTests
             mockBlobStorage.Verify(x => x.DeleteBlobAsync(It.IsAny<string>()), Times.Once);
         }
 
-
         [TestMethod]
         public void TimedDemoRemovalCallsDemoRemover()
         {
@@ -116,18 +116,52 @@ namespace DemoCentralTests
         }
 
         [TestMethod]
-        public void DemoRemoverRemovesDemo()
+        public void DemoRemoverRemovesFoundDemo()
         {
             var testId = 123456789;
+            var testDemo = new Demo
+            {
+                MatchId = testId,
+                FileStatus = FileStatus.InBlobStorage,
+            };
 
+            var mockDbInterface = new Mock<IDemoCentralDBInterface>();
+
+            mockDbInterface.Setup(x => x.GetDemoById(testId)).Returns(testDemo);
+            var mockLogger = new Mock<ILogger<DemoRemover>>();
+            var mockMatchWriter = new Mock<IMatchWriter>();
+            var mockMatchInfoGetter = new Mock<IMatchInfoGetter>();
+
+
+            var test = new DemoRemover(mockDbInterface.Object, mockLogger.Object, mockMatchWriter.Object, mockMatchInfoGetter.Object);
+
+            var res = test.RemoveDemo(testId);
+
+            Assert.AreEqual(DemoRemover.DemoRemovalResult.Successful, res);
+            mockMatchWriter.Verify(x => x.PublishMessage(It.IsAny<DemoRemovalInstruction>()), Times.Once);
+  
+        }
+
+
+        [TestMethod]
+        public async Task DemoRemoverChecksRemovalDateAsync()
+        {
+            var testId = 123456789;
             var mockDbInterface = new Mock<IDemoCentralDBInterface>();
             var mockLogger = new Mock<ILogger<DemoRemover>>();
             var mockMatchWriter = new Mock<IMatchWriter>();
+            var mockMatchInfoGetter = new Mock<IMatchInfoGetter>();
 
+            mockDbInterface.Setup(x => x.GetExpiredDemosId()).Returns(new List<long> { testId });
+            mockDbInterface.Setup(x => x.GetDemoById(testId)).Throws<InvalidOperationException>();
+            int hasCalled = 0;
+            mockMatchInfoGetter.Setup(x => x.CalculateDemoRemovalDateAsync(It.IsAny<Demo>())).Callback(() => hasCalled += 1);
+            mockMatchInfoGetter.Setup(x => x.CalculateDemoRemovalDateAsync(It.IsAny<long>())).Callback(() => hasCalled += 1);
 
-            var test = new DemoRemover(mockDbInterface.Object, mockLogger.Object, mockMatchWriter.Object);
+            var test = new DemoRemover(mockDbInterface.Object, mockLogger.Object, mockMatchWriter.Object, mockMatchInfoGetter.Object);
+            await test.RemoveExpiredDemos(TimeSpan.Zero);
 
-            test.RemoveDemo(testId);
+            Assert.AreEqual(1, hasCalled);
         }
 
         #region BlobStorage related tests
@@ -163,6 +197,7 @@ namespace DemoCentralTests
         }
         #endregion
 
+        #region CleanUp methods
         [TestCleanup]
         public void Cleanup()
         {
@@ -177,5 +212,6 @@ namespace DemoCentralTests
             var client = new BlobServiceClient(_test_blobConnectionString);
             client.DeleteBlobContainer(_test_blobContainer);
         }
+        #endregion
     }
 }

@@ -1,15 +1,18 @@
-﻿using DemoCentral.Communication.Rabbit;
+﻿using DemoCentral.Communication.HTTP;
+using DemoCentral.Communication.Rabbit;
+using DemoCentral.Enumerals;
 using Microsoft.Extensions.Logging;
 using RabbitCommunicationLib.TransferModels;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace DemoCentral
 {
     public interface IDemoRemover
     {
         DemoRemover.DemoRemovalResult RemoveDemo(long matchId);
-        void RemoveExpiredDemos(TimeSpan allowedTimeAfterExpiration);
+        Task RemoveExpiredDemos(TimeSpan allowedTimeAfterExpiration);
     }
 
     public class DemoRemover : IDemoRemover
@@ -17,12 +20,14 @@ namespace DemoCentral
         private readonly IDemoCentralDBInterface _dBInterface;
         private readonly ILogger<DemoRemover> _logger;
         private readonly IMatchWriter _matchWriter;
+        private readonly IMatchInfoGetter _matchInfoGetter;
 
-        public DemoRemover(IDemoCentralDBInterface dBInterface, ILogger<DemoRemover> logger, IMatchWriter matchWriter)
+        public DemoRemover(IDemoCentralDBInterface dBInterface, ILogger<DemoRemover> logger, IMatchWriter matchWriter, IMatchInfoGetter matchInfoGetter)
         {
             _dBInterface = dBInterface;
             _logger = logger;
             _matchWriter = matchWriter;
+            _matchInfoGetter = matchInfoGetter;
         }
 
         public DemoRemovalResult RemoveDemo(long matchId)
@@ -54,16 +59,23 @@ namespace DemoCentral
             return DemoRemovalResult.Successful;
         }
 
-        public void RemoveExpiredDemos(TimeSpan allowedTimeAfterExpiration)
+        public async Task RemoveExpiredDemos(TimeSpan removalDelay)
         {
             _logger.LogInformation("Removing expired demos.");
 
-            List<long> expiredDemos  = _dBInterface.GetExpiredDemosId(allowedTimeAfterExpiration);
+            List<long> expiredDemos  = _dBInterface.GetExpiredDemosId();
             _logger.LogInformation($"Removing demos [ {string.Join(", ", expiredDemos)} ] ");
 
             foreach (var demo in expiredDemos)
-                RemoveDemo(demo);
+            {
+                DateTime removalDate = await _matchInfoGetter.CalculateDemoRemovalDateAsync(demo);
+                var outdated = removalDate + removalDelay < DateTime.UtcNow;
+
+                if (outdated)
+                    RemoveDemo(demo);
+            }
         }
+
 
 
         public enum DemoRemovalResult

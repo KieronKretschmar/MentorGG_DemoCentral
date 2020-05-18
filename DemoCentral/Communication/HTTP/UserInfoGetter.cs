@@ -11,6 +11,7 @@ namespace DemoCentral.Communication.HTTP
     public interface IUserIdentityRetriever
     {
         public Task<AnalyzerQuality> GetAnalyzerQualityAsync(long steamId);
+        public Task<UserIdentity> GetUserIdentityAsync(long player);
     }
 
     /// <summary>
@@ -37,18 +38,7 @@ namespace DemoCentral.Communication.HTTP
         /// <returns></returns>
         public async Task<AnalyzerQuality> GetAnalyzerQualityAsync(long steamId)
         {
-            var response = await Client.GetAsync($"/identity/{steamId}");
-
-            if (!response.IsSuccessStatusCode)
-            {
-                _logger.LogWarning(
-                    $"Getting UserIdentity for SteamId [ {steamId} ]. Response: [ {response} ]. Returning AnalyzerQuality.Low");
-
-                return AnalyzerQuality.Low;
-            }
-
-            var reponseContent = await response.Content.ReadAsStringAsync();
-            var userIdentity = JsonConvert.DeserializeObject<UserIdentity>(reponseContent);
+            var userIdentity = await GetUserIdentityAsync(steamId);
 
             switch (userIdentity.SubscriptionType)
             {
@@ -63,5 +53,23 @@ namespace DemoCentral.Communication.HTTP
                     return AnalyzerQuality.Low;
             }
         }
+
+
+        public async Task<UserIdentity> GetUserIdentityAsync(long steamId)
+        {
+            var response = await Client.GetAsync($"/identity/{steamId}");
+
+            if (!response.IsSuccessStatusCode)
+            {
+                _logger.LogWarning(
+                    $"Getting UserIdentity for SteamId [ {steamId} ]. Response: [ {response} ]. Returning AnalyzerQuality.Low");
+            }
+
+            var reponseContent = await response.Content.ReadAsStringAsync();
+            var userIdentity = JsonConvert.DeserializeObject<UserIdentity>(reponseContent);
+
+            return userIdentity;
+        }
     }
+
 }
