@@ -36,13 +36,11 @@ namespace DemoCentral
 
         void SetFileStatus(Demo demo, FileStatus status);
 
-        void SetAnalyzeState(Demo demo, bool success, DemoAnalyzeFailure failure = DemoAnalyzeFailure.Unknown);
+        void SetAnalyzeState(Demo demo, bool success, DemoAnalysisBlock failure = DemoAnalysisBlock.Unknown);
 
         void SetFrames(Demo demo, int framesPerSecond);
 
         void SetHash(Demo demo, string hash);
-
-        void SetUploadStatus(Demo demo, bool success);
         
         /// <summary>
         /// try to create a new entry in the demo table. Returns false and the matchId of the match, if the downloadUrl is already known, return true otherwise
@@ -140,12 +138,6 @@ namespace DemoCentral
             _context.SaveChanges();
         }
 
-        public void SetUploadStatus(Demo demo, bool success)
-        {
-            demo.MatchWriterStatus = success ? GenericStatus.Success : GenericStatus.Failure;
-            _context.SaveChanges();
-        }
-
         public List<Demo> GetRecentMatches(long playerId, int recentMatches, int offset = 0)
         {
             var recentMatchesId = _context.Demo.Where(x => x.UploaderId == playerId).Take(recentMatches + offset).ToList();
@@ -158,7 +150,7 @@ namespace DemoCentral
         {
             var recentMatchesId = _context.Demo
                 .Where(x => x.UploaderId == playerId)
-                .Where(x => FileStatusCollections.Failed.Contains(x.FileStatus) || x.DemoFileWorkerStatus == GenericStatus.Failure)
+                .Where(x => FileStatusCollections.Failed.Contains(x.FileStatus) || x.AnalysisStatus == GenericStatus.Failure)
                 .Take(recentMatches + offset)
                 .ToList();
             recentMatchesId.RemoveRange(0, offset);
@@ -193,7 +185,7 @@ namespace DemoCentral
                 if (requestedQuality <= demo.Quality)
                     return false;
 
-                if (demo.DemoFileWorkerStatus == GenericStatus.Failure)
+                if (demo.AnalysisStatus == GenericStatus.Failure)
                     return false;
 
                 _logger.LogInformation($"Selected Demo [ {demo.MatchId} ] for re-analysis due to higher quality. Current quality [ {demo.Quality} ], requested quality [ {requestedQuality} ].");
@@ -259,7 +251,7 @@ namespace DemoCentral
         }
 
         /// <summary>
-        /// Returns IDs of demos for which the file is in BlobStorage but that were not inserted into MatchDb.
+        /// Returns IDs of demos for which the file is in BlobStorage where AnalysisStatus is not Success.
         /// </summary>
         /// <param name="minUploadDate"></param>
         /// <returns></returns>
@@ -268,7 +260,7 @@ namespace DemoCentral
             var demosToReset = _context.Demo
                 .Where(x => x.UploadDate >= minUploadDate)
                 .Where(x=>x.FileStatus == FileStatus.InBlobStorage)
-                .Where(x=>x.MatchWriterStatus != GenericStatus.Success)
+                .Where(x=>x.AnalysisStatus != GenericStatus.Success)
                 .ToList();
 
             return demosToReset;
@@ -300,16 +292,16 @@ namespace DemoCentral
         /// <param name="demo"></param>
         /// <param name="success"></param>
         /// <param name="failure"></param>
-        public void SetAnalyzeState(Demo demo, bool success, DemoAnalyzeFailure failure = DemoAnalyzeFailure.Unknown)
+        public void SetAnalyzeState(Demo demo, bool success, DemoAnalysisBlock failure = DemoAnalysisBlock.Unknown)
         {
             if (success)
             {
-                demo.DemoFileWorkerStatus = GenericStatus.Success;
+                demo.AnalysisStatus = GenericStatus.Success;
             }
             else
             {
-                demo.DemoFileWorkerStatus = GenericStatus.Failure;
-                demo.DemoAnalyzeFailure = failure;
+                demo.AnalysisStatus = GenericStatus.Failure;
+                demo.DemoAnalysisBlock = failure;
             }
             _context.SaveChanges();
         }

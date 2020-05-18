@@ -36,12 +36,6 @@ namespace Database.DatabaseClasses
         public UploadType UploadType { get; set; }
 
         /// <summary>
-        /// Matchwriter Storage status.
-        /// </summary>
-        /// <value></value>    
-        public GenericStatus MatchWriterStatus {get; set; }
-
-        /// <summary>
         /// Source of the Demo.
         /// Where the demo came from.
         /// </summary>
@@ -85,16 +79,16 @@ namespace Database.DatabaseClasses
         public byte FramesPerSecond { get; set; }
 
         /// <summary>
-        /// DemoFileWorker general status
+        /// General status of the demo Analysis.
         /// </summary>
         /// <value></value>
-        public GenericStatus DemoFileWorkerStatus { get; set; } = GenericStatus.Unknown;
+        public GenericStatus AnalysisStatus { get; set; } = GenericStatus.Unknown;
 
         /// <summary>
-        /// If DemoFileWorkerStatus is `Failure`, How DemoFileWorker failed.
+        /// If DemoFileWorkerStatus is `Failure`, Why the demo has stopped being analysed.
         /// </summary>
         /// <value></value>
-        public DemoAnalyzeFailure DemoAnalyzeFailure { get; set; } = DemoAnalyzeFailure.Unknown;
+        public DemoAnalysisBlock DemoAnalysisBlock { get; set; } = DemoAnalysisBlock.Unknown;
 
         /// <summary>
         /// When the Demo was first seen.
@@ -110,7 +104,6 @@ namespace Database.DatabaseClasses
                 MatchDate = model.MatchDate,
                 UploaderId = model.UploaderId,
                 UploadType = model.UploadType,
-                MatchWriterStatus = GenericStatus.Unknown,
                 Source = model.Source,
                 DownloadUrl = model.DownloadUrl,
                 BlobUrl = "",
@@ -127,7 +120,6 @@ namespace Database.DatabaseClasses
                 MatchDate = model.MatchDate,
                 UploaderId = model.UploaderId,
                 UploadType = model.UploadType,
-                MatchWriterStatus = GenericStatus.Unknown,
                 Source = model.Source,
                 DownloadUrl = null,
                 BlobUrl = model.BlobUrl,
@@ -142,9 +134,9 @@ namespace Database.DatabaseClasses
         /// </summary>
         public void ToPreAnalysisState()
         {
-            MatchWriterStatus = GenericStatus.Unknown;
             MD5Hash = "";
-            DemoFileWorkerStatus = GenericStatus.Unknown;
+            AnalysisStatus = GenericStatus.Unknown;
+            DemoAnalysisBlock = DemoAnalysisBlock.Unknown;
         }
     }
 }

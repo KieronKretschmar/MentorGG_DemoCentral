@@ -4,6 +4,7 @@ using Database.DatabaseClasses;
 using Database.Enumerals;
 using DemoCentral.Communication.Rabbit;
 using Microsoft.Extensions.Logging;
+using RabbitCommunicationLib.Enums;
 using RabbitCommunicationLib.Interfaces;
 using RabbitCommunicationLib.TransferModels;
 
@@ -54,7 +55,7 @@ namespace DemoCentral.Communication.MessageProcessors
                 }
                 else
                 {
-                    ActOnAnalyzeFailure(model.MatchId, model.Failure);
+                    ActOnAnalyzeFailure(model.MatchId, model.Block);
                 }
             }
             catch (Exception e)
@@ -105,22 +106,22 @@ namespace DemoCentral.Communication.MessageProcessors
         /// Determine the cause of failure and act.
         /// </summary>
         /// <param name="matchId"></param>
-        /// <param name="failure"></param>
-        private void ActOnAnalyzeFailure(long matchId, DemoAnalyzeFailure failure)
+        /// <param name="block"></param>
+        private void ActOnAnalyzeFailure(long matchId, DemoAnalysisBlock block)
         {
             InQueueDemo inQueueDemo = _inQueueTableInterface.GetDemoById(matchId);
             Demo dbDemo = _demoTableInterface.GetDemoById(matchId);
 
-            if(dbDemo.DemoFileWorkerStatus != GenericStatus.Failure)
+            if(dbDemo.AnalysisStatus != GenericStatus.Failure)
             {
                 throw new ArgumentException(
                     $"Demo [ {matchId} ] does not have status: `Failure` Incorrect usage.");
             }
 
-            // If what is currently stored in DemoAnalyzeFailure does not match the current failure
+            // If what is currently stored in DemoAnalysisBlock does not match the current failure
             // Reset the retry counter
             // If not, increment the counter.
-            if (dbDemo.DemoAnalyzeFailure != failure)
+            if (dbDemo.DemoAnalysisBlock != block)
             {
                 _inQueueTableInterface.ResetRetry(inQueueDemo);
             }
@@ -130,7 +131,7 @@ namespace DemoCentral.Communication.MessageProcessors
             }
 
             // Store the Analyze state with the current failure
-            _demoTableInterface.SetAnalyzeState(dbDemo, success: false, failure);
+            _demoTableInterface.SetAnalyzeState(dbDemo, success: false, block);
 
             // If the amount of retries exceeds the maximum allowed - stop retrying this demo.
             // OR if the demo is a duplicate.
@@ -143,7 +144,7 @@ namespace DemoCentral.Communication.MessageProcessors
                 return;
             }
             // If the demo is a duplicate.
-            if (failure == DemoAnalyzeFailure.Duplicate)
+            if (block == DemoAnalysisBlock.Duplicate)
             {
                 _blobStorage.DeleteBlobAsync(dbDemo.BlobUrl);
                 _inQueueTableInterface.UpdateCurrentQueue(inQueueDemo, Queue.UnQueued);
@@ -152,45 +153,45 @@ namespace DemoCentral.Communication.MessageProcessors
                 return;
             }
 
-            switch (failure){
-                case DemoAnalyzeFailure.BlobDownload:
+            switch (block){
+                case DemoAnalysisBlock.BlobDownload:
                     // BlobDownload failed.
                     // This may be a temporary issue - Try again.
                     _logger.LogWarning($"Demo [ {matchId} ]. Failed to download blob.");
                     break;
 
-                case DemoAnalyzeFailure.Unzip:
+                case DemoAnalysisBlock.Unzip:
                     // Unzip failed, this could indicate that we do not support the file type, or the demo is
                     // corrupt - Delete the blob and mark this as failed.
                     _logger.LogWarning($"Demo [ {matchId} ]. Could not be unzipped");
                     break;
 
-                case DemoAnalyzeFailure.HttpHashCheck:
+                case DemoAnalysisBlock.HttpHashCheck:
                     // Contacting DemoCentral to confirm if the Demo was a Duplicate failed.
                     // This may be a temporary issue - Try again.
                     _logger.LogWarning($"Demo [ {matchId} ]. Failed to complete the Hash check for duplicate checking.");
                     break;
 
-                case DemoAnalyzeFailure.Duplicate:
+                case DemoAnalysisBlock.Duplicate:
                     // Demo has been indentified as a Duplicate.
                     throw new InvalidOperationException("Duplicate handling should have already happened!");
-                case DemoAnalyzeFailure.Analyze:
+                case DemoAnalysisBlock.Analyze:
                     // DemoFileWorker failed on the Analyze step.
                     _logger.LogWarning($"Demo [ {matchId} ]. Analyze Failure");
                     break;
 
-                case DemoAnalyzeFailure.Enrich:
+                case DemoAnalysisBlock.Enrich:
                     // DemoFileWorker failed on the Enrich step.
                     _logger.LogWarning($"Demo [ {matchId} ]. Enrich Failure");
                     break;
 
-                case DemoAnalyzeFailure.RedisStorage:
+                case DemoAnalysisBlock.RedisStorage:
                     // DemoFileWorker failed to store the MatchDataSet in Redis,
                     // This may be a temporary issue - Try again.
                     _logger.LogWarning($"Demo [ {matchId} ]. RedisStorage Failure");
                     break;
 
-                case DemoAnalyzeFailure.Unknown:
+                case DemoAnalysisBlock.Unknown:
                 default:
                     _logger.LogCritical($"Demo [ {matchId} ]. Unknown Failure!");
                     break;

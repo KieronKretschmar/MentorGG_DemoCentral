@@ -20,7 +20,10 @@ namespace DemoCentral.Controllers
         private readonly IInQueueTableInterface _inQueueTableInterface;
         private readonly ILogger<ManualUploadController> _logger;
 
-        public ManualUploadController(IDemoTableInterface demoTableInterface, IInQueueTableInterface inQueueTableInterface, ILogger<ManualUploadController> logger)
+        public ManualUploadController(
+            IDemoTableInterface demoTableInterface,
+            IInQueueTableInterface inQueueTableInterface,
+            ILogger<ManualUploadController> logger)
         {
             _demoTableInterface = demoTableInterface;
             _inQueueTableInterface = inQueueTableInterface;
@@ -33,7 +36,8 @@ namespace DemoCentral.Controllers
         {
             _logger.LogInformation($"Received request for number of manual uploaded matches of player [ {steamId} ]");
 
-            var numberSuccessfulPlayerMatches = _demoTableInterface.GetMatchesByUploader(steamId).Where(x => x.UploadType == UploadType.ManualUserUpload && x.MatchWriterStatus == GenericStatus.Success).Count();
+            var numberSuccessfulPlayerMatches = _demoTableInterface.GetMatchesByUploader(
+                steamId).Where(x => x.UploadType == UploadType.ManualUserUpload && x.AnalysisStatus == GenericStatus.Success).Count();
 
             var matchesInQueue = _inQueueTableInterface.GetPlayerMatchesInQueue(steamId).Select(x => x.Demo.MatchId);
 
