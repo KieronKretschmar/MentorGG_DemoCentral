@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using DataBase.DatabaseClasses;
 using DemoCentral.Helpers;
 using DemoCentral.Models;
 using Microsoft.AspNetCore.Http;
@@ -19,6 +20,25 @@ namespace DemoCentral.Controllers
         public MatchDownloadController(IDemoCentralDBInterface dBInterface)
         {
             _dBInterface = dBInterface;
+        }
+        
+        [HttpGet("match/{matchId}/download-url")]
+        public ActionResult<string> GetDownloadUrl(long matchId)
+        {
+            Demo demo;
+            try
+            {
+                demo = _dBInterface.GetDemoById(matchId);
+                if (!String.IsNullOrEmpty(demo.BlobUrl))
+                {
+                    return demo.BlobUrl;
+                }
+                return NotFound();
+            }
+            catch (InvalidOperationException)
+            {
+                return NotFound();
+            }
         }
 
         [HttpGet("matches/{matchIds}/download-urls")]
