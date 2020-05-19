@@ -39,10 +39,12 @@ namespace Database.DatabaseClasses
     {
         UnQueued = 0,
 
-        DemoDownloader = 1,
+        DemoDownloader = 10,
 
-        DemoFileWorker = 2,
+        DemoFileWorker = 20,
 
-        SitutationOperator = 3,
+        MatchWriter = 30,
+
+        SitutationOperator = 40,
     }
 }
