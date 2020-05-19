@@ -10,7 +10,7 @@ namespace Database.DatabaseClasses
         /// <summary>
         /// Navigational Propery.
         /// </summary>
-        public Demo Demo;
+        public Demo Demo { get; set; }
 
         /// <summary>
         /// MatchId.
