@@ -48,13 +48,23 @@ namespace DemoCentral.Communication.MessageProcessors
             long matchId = model.MatchId;
             var dbDemo = _demoTableInterface.GetDemoById(matchId);
             
-            _demoTableInterface.SetAnalyzeState(
-                dbDemo,
-                model.Success,
-                DemoAnalysisBlock.UnknownMatchWriter);
+            if (model.Success)
+            {
+                _demoTableInterface.SetAnalyzeState(
+                    dbDemo,
+                    true);
 
-            string log = model.Success ? "was uploaded" : "failed upload";
-            _logger.LogInformation($"Demo [ {matchId} ] {log}.");
+                _logger.LogInformation($"Demo [ {matchId} ]. MatchWriter stored the MatchData successfully.");
+            }
+            else
+            {
+                _demoTableInterface.SetAnalyzeState(
+                    dbDemo,
+                    false,
+                    DemoAnalysisBlock.UnknownMatchWriter);
+
+                _logger.LogError($"Demo [ {matchId} ]. MatchWriter failed to store the MatchData!");
+            }
         }
     }
 }

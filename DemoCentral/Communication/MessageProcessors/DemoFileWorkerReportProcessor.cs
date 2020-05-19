@@ -96,8 +96,7 @@ namespace DemoCentral.Communication.MessageProcessors
             _demoTableInterface.SetAnalyzeState(dbDemo, success: true);
             _demoTableInterface.SetFrames(dbDemo, response.FramesPerSecond);
 
-            _inQueueTableInterface.UpdateCurrentQueue(inQueueDemo, Queue.UnQueued);
-
+            _inQueueTableInterface.UpdateCurrentQueue(inQueueDemo, Queue.MatchWriter);
             PublishRedisInstruction(response);
 
         }
