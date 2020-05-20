@@ -107,11 +107,11 @@ namespace Database.Migrations
             #endregion
 
 
-            // Convert DemoFileWorkerStatus to DemoAnalysisBlock
+            // Convert DemoFileWorkerStatus to AnalysisBlockReason
             migrationBuilder.Sql(
             @"
                 UPDATE Demo
-                SET DemoAnalysisBlock = CASE
+                SET AnalysisBlockReason = CASE
                     WHEN DemoFileWorkerStatus = 0 THEN NULL
                     WHEN DemoFileWorkerStatus = 1 THEN NULL
                     WHEN DemoFileWorkerStatus = 2 THEN NULL
@@ -131,7 +131,7 @@ namespace Database.Migrations
             @"
                 UPDATE Demo
                 SET AnalysisStatus = CASE
-                    WHEN UploadStatus = 10 AND DemoFileWorkerStatus == 2 THEN 10
+                    WHEN UploadStatus = 10 AND DemoFileWorkerStatus = 2 THEN 10
                     ELSE 20
                     END
             ");
@@ -158,12 +158,6 @@ namespace Database.Migrations
                 oldClrType: typeof(long),
                 oldType: "bigint")
                 .OldAnnotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn);
-
-            migrationBuilder.AddColumn<byte>(
-                name: "CurrentQueue",
-                table: "InQueueDemo",
-                nullable: false,
-                defaultValue: (byte)0);
 
             migrationBuilder.AddForeignKey(
                 name: "FK_InQueueDemo_Demo_MatchId",
