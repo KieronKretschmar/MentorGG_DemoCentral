@@ -35,7 +35,8 @@ namespace Database.Migrations
             #endregion
 
             #region Replacement
-            // No custom migration code added for this section under the premise that we will truncate the InQueueDemo table when applying this migration.
+            // No custom migration code added for this section
+            //under the premise that we will truncate the InQueueDemo table when applying this migration.
 
             // Replaced with 
             migrationBuilder.DropColumn(
@@ -87,14 +88,52 @@ namespace Database.Migrations
                 nullable: false,
                 defaultValue: 0);
 
-            // TODO: Replace dummy CASE logic below with real logic
+
+            #region Model Reference
+            // GeneticStatus / UploadStatus:
+            //     Unknown = 0,
+            //     Success = 10,
+            //     Failure = 20,
+
+            // DemoFileWorkerStatus 
+            //     New = 0,
+            //     InQueue = 1,
+            //     Finished = 2,
+
+            //     BlobStorageDownloadFailed = 31,
+            //     UnzipFailed = 32,
+            //     DuplicateCheckFailed = 33,
+            //     AnalyzerFailed = 34, 
+            //     CacheUploadFailed = 35,
+            #endregion
+
+
+            // Convert DemoFileWorkerStatus to DemoAnalysisBlock
+            migrationBuilder.Sql(
+            @"
+                UPDATE Demo
+                SET DemoAnalysisBlock = CASE
+                    WHEN DemoFileWorkerStatus = 0 THEN 0
+                    WHEN DemoFileWorkerStatus = 1 THEN 0
+                    WHEN DemoFileWorkerStatus = 2 THEN 0
+                    WHEN DemoFileWorkerStatus = 31 THEN 2010
+                    WHEN DemoFileWorkerStatus = 32 THEN 2020
+                    WHEN DemoFileWorkerStatus = 33 THEN 2030
+                    WHEN DemoFileWorkerStatus = 34 THEN 2050
+                    WHEN DemoFileWorkerStatus = 35 THEN 2070
+                    ELSE 2000
+                    END
+            ");
+
+            // Convert UploadStatus to AnalysisStatus
+            // If it has succeeded and DemoFileWorkerStatus is `Finished` = Success
+            // Else consider it a Failure.
             migrationBuilder.Sql(
             @"
                 UPDATE Demo
                 SET AnalysisStatus = CASE
-                    WHEN UploadStatus = 10 AND DemoFileWorkerStatus = 5 THEN 1
-                    WHEN UploadStatus = 20 THEN 2
-                    ELSE 0
+                    WHEN UploadStatus = 10 AND DemoFileWorkerStatus == 2 THEN 10
+                    ELSE 20
                     END
             ");
 
