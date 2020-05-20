@@ -79,7 +79,7 @@ namespace Database.DatabaseClasses
         public byte FramesPerSecond { get; set; }
 
         /// <summary>
-        /// General status of the demo Analysis.
+        /// Outcome of the demo analysis process.
         /// </summary>
         /// <value></value>
         public GenericStatus AnalysisStatus { get; set; } = GenericStatus.Unknown;
