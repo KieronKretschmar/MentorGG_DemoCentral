@@ -83,10 +83,9 @@ namespace Database.Migrations
                 defaultValue: (byte)0);
 
             migrationBuilder.AddColumn<int>(
-                name: "DemoAnalysisBlock",
+                name: "AnalysisBlockReason",
                 table: "Demo",
-                nullable: false,
-                defaultValue: 0);
+                nullable: true);
 
 
             #region Model Reference
@@ -113,9 +112,9 @@ namespace Database.Migrations
             @"
                 UPDATE Demo
                 SET DemoAnalysisBlock = CASE
-                    WHEN DemoFileWorkerStatus = 0 THEN 0
-                    WHEN DemoFileWorkerStatus = 1 THEN 0
-                    WHEN DemoFileWorkerStatus = 2 THEN 0
+                    WHEN DemoFileWorkerStatus = 0 THEN NULL
+                    WHEN DemoFileWorkerStatus = 1 THEN NULL
+                    WHEN DemoFileWorkerStatus = 2 THEN NULL
                     WHEN DemoFileWorkerStatus = 31 THEN 2010
                     WHEN DemoFileWorkerStatus = 32 THEN 2020
                     WHEN DemoFileWorkerStatus = 33 THEN 2030

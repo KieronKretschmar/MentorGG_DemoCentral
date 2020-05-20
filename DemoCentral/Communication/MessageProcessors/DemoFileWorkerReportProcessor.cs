@@ -120,7 +120,7 @@ namespace DemoCentral.Communication.MessageProcessors
             // If what is currently stored in DemoAnalysisBlock does not match the current failure
             // Reset the retry counter
             // If not, increment the counter.
-            if (dbDemo.DemoAnalysisBlock != block)
+            if (dbDemo.AnalysisBlockReason != block)
             {
                 _inQueueTableInterface.ResetRetry(inQueueDemo);
             }

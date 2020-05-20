@@ -85,10 +85,10 @@ namespace Database.DatabaseClasses
         public GenericStatus AnalysisStatus { get; set; } = GenericStatus.Unknown;
 
         /// <summary>
-        /// If DemoFileWorkerStatus is `Failure`, Why the demo has stopped being analysed.
+        /// Reason why the analysis process stopped for this demo.
         /// </summary>
         /// <value></value>
-        public DemoAnalysisBlock DemoAnalysisBlock { get; set; } = DemoAnalysisBlock.Unknown;
+        public DemoAnalysisBlock? AnalysisBlockReason { get; set; } = null;
 
         /// <summary>
         /// When the Demo was first seen.
@@ -136,7 +136,7 @@ namespace Database.DatabaseClasses
         {
             MD5Hash = "";
             AnalysisStatus = GenericStatus.Unknown;
-            DemoAnalysisBlock = DemoAnalysisBlock.Unknown;
+            AnalysisBlockReason = null;
         }
     }
 }

@@ -29,7 +29,7 @@ namespace Database.Migrations
                     b.Property<string>("BlobUrl")
                         .HasColumnType("longtext CHARACTER SET utf8mb4");
 
-                    b.Property<int>("DemoAnalysisBlock")
+                    b.Property<int>("AnalysisBlockReason")
                         .HasColumnType("int");
 
                     b.Property<string>("DownloadUrl")

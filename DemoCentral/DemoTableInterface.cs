@@ -301,7 +301,7 @@ namespace DemoCentral
             else
             {
                 demo.AnalysisStatus = GenericStatus.Failure;
-                demo.DemoAnalysisBlock = failure;
+                demo.AnalysisBlockReason = failure;
             }
             _context.SaveChanges();
         }
