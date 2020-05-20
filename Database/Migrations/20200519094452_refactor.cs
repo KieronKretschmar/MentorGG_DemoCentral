@@ -10,6 +10,8 @@ namespace Database.Migrations
         {
 
             #region Current Queue Information
+            // No custom migration code added for this section under the premise that we will truncate the InQueueDemo table when applying this migration.
+
             // These are replaced by 
             migrationBuilder.DropColumn(
                 name: "DDQUEUE",
@@ -33,6 +35,8 @@ namespace Database.Migrations
             #endregion
 
             #region Replacement
+            // No custom migration code added for this section under the premise that we will truncate the InQueueDemo table when applying this migration.
+
             // Replaced with 
             migrationBuilder.DropColumn(
                 name: "Retries",
@@ -46,7 +50,7 @@ namespace Database.Migrations
                 defaultValue: 0);
             #endregion
 
-            #region Droppped
+            #region Dropped because not in use
 
             migrationBuilder.DropColumn(
                 name: "MatchDate",
@@ -71,14 +75,6 @@ namespace Database.Migrations
             #endregion
 
             #region Analysis Status
-            migrationBuilder.DropColumn(
-                name: "UploadStatus",
-                table: "Demo");
-
-            migrationBuilder.DropColumn(
-                name: "DemoFileWorkerStatus",
-                table: "Demo");
-
             migrationBuilder.AddColumn<byte>(
                 name: "AnalysisStatus",
                 table: "Demo",
@@ -90,6 +86,25 @@ namespace Database.Migrations
                 table: "Demo",
                 nullable: false,
                 defaultValue: 0);
+
+            // TODO: Replace dummy CASE logic below with real logic
+            migrationBuilder.Sql(
+            @"
+                UPDATE Demo
+                SET AnalysisStatus = CASE
+                    WHEN UploadStatus = 10 AND DemoFileWorkerStatus = 5 THEN 1
+                    WHEN UploadStatus = 20 THEN 2
+                    ELSE 0
+                    END
+            ");
+
+            migrationBuilder.DropColumn(
+                name: "UploadStatus",
+                table: "Demo");
+
+            migrationBuilder.DropColumn(
+                name: "DemoFileWorkerStatus",
+                table: "Demo");
 
             # endregion
 
