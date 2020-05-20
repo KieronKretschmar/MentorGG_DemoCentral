@@ -79,10 +79,10 @@ namespace Database.DatabaseClasses
         public byte FramesPerSecond { get; set; }
 
         /// <summary>
-        /// Outcome of the demo analysis process.
+        /// Outcome of the Demo analysis process.
         /// </summary>
         /// <value></value>
-        public GenericStatus AnalysisStatus { get; set; } = GenericStatus.Unknown;
+        public bool AnalysisSucceeded { get; set; } = false;
 
         /// <summary>
         /// Reason why the analysis process stopped for this demo.
@@ -135,7 +135,7 @@ namespace Database.DatabaseClasses
         public void ToPreAnalysisState()
         {
             MD5Hash = "";
-            AnalysisStatus = GenericStatus.Unknown;
+            AnalysisSucceeded = false;
             AnalysisBlockReason = null;
         }
     }

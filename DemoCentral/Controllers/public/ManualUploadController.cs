@@ -37,7 +37,7 @@ namespace DemoCentral.Controllers
             _logger.LogInformation($"Received request for number of manual uploaded matches of player [ {steamId} ]");
 
             var numberSuccessfulPlayerMatches = _demoTableInterface.GetMatchesByUploader(
-                steamId).Where(x => x.UploadType == UploadType.ManualUserUpload && x.AnalysisStatus == GenericStatus.Success).Count();
+                steamId).Where(x => x.UploadType == UploadType.ManualUserUpload && x.AnalysisSucceeded).Count();
 
             var matchesInQueue = _inQueueTableInterface.GetPlayerMatchesInQueue(steamId).Select(x => x.Demo.MatchId);
 

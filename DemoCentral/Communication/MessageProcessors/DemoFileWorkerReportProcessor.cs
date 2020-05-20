@@ -111,10 +111,10 @@ namespace DemoCentral.Communication.MessageProcessors
             InQueueDemo inQueueDemo = _inQueueTableInterface.GetDemoById(matchId);
             Demo dbDemo = _demoTableInterface.GetDemoById(matchId);
 
-            if(dbDemo.AnalysisStatus != GenericStatus.Failure)
+            if(dbDemo.AnalysisSucceeded)
             {
                 throw new ArgumentException(
-                    $"Demo [ {matchId} ] does not have status: `Failure` Incorrect usage.");
+                    $"Demo [ {matchId} ] has succeeded Analysis, Therefore ActOnFailure is the Incorrect usage.");
             }
 
             // If what is currently stored in DemoAnalysisBlock does not match the current failure

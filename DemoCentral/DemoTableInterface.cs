@@ -36,7 +36,7 @@ namespace DemoCentral
 
         void SetFileStatus(Demo demo, FileStatus status);
 
-        void SetAnalyzeState(Demo demo, bool success, DemoAnalysisBlock failure = DemoAnalysisBlock.Unknown);
+        void SetAnalyzeState(Demo demo, bool success, DemoAnalysisBlock? block = null);
 
         void SetFrames(Demo demo, int framesPerSecond);
 
@@ -150,7 +150,7 @@ namespace DemoCentral
         {
             var recentMatchesId = _context.Demo
                 .Where(x => x.UploaderId == playerId)
-                .Where(x => FileStatusCollections.Failed.Contains(x.FileStatus) || x.AnalysisStatus == GenericStatus.Failure)
+                .Where(x => FileStatusCollections.Failed.Contains(x.FileStatus) || x.AnalysisSucceeded == false)
                 .Take(recentMatches + offset)
                 .ToList();
             recentMatchesId.RemoveRange(0, offset);
@@ -185,7 +185,7 @@ namespace DemoCentral
                 if (requestedQuality <= demo.Quality)
                     return false;
 
-                if (demo.AnalysisStatus == GenericStatus.Failure)
+                if (demo.AnalysisSucceeded == false)
                     return false;
 
                 _logger.LogInformation($"Selected Demo [ {demo.MatchId} ] for re-analysis due to higher quality. Current quality [ {demo.Quality} ], requested quality [ {requestedQuality} ].");
@@ -260,7 +260,7 @@ namespace DemoCentral
             var demosToReset = _context.Demo
                 .Where(x => x.UploadDate >= minUploadDate)
                 .Where(x=>x.FileStatus == FileStatus.InBlobStorage)
-                .Where(x=>x.AnalysisStatus != GenericStatus.Success)
+                .Where(x=>x.AnalysisSucceeded == false)
                 .ToList();
 
             return demosToReset;
@@ -291,17 +291,17 @@ namespace DemoCentral
         /// </summary>
         /// <param name="demo"></param>
         /// <param name="success"></param>
-        /// <param name="failure"></param>
-        public void SetAnalyzeState(Demo demo, bool success, DemoAnalysisBlock failure = DemoAnalysisBlock.Unknown)
+        /// <param name="block"></param>
+        public void SetAnalyzeState(Demo demo, bool success, DemoAnalysisBlock? block = null)
         {
             if (success)
             {
-                demo.AnalysisStatus = GenericStatus.Success;
+                demo.AnalysisSucceeded = true;
             }
             else
             {
-                demo.AnalysisStatus = GenericStatus.Failure;
-                demo.AnalysisBlockReason = failure;
+                demo.AnalysisSucceeded = false;
+                demo.AnalysisBlockReason = block;
             }
             _context.SaveChanges();
         }
