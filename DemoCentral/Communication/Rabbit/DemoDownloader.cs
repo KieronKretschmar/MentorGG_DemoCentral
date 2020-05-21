@@ -76,6 +76,10 @@ namespace DemoCentral.Communication.Rabbit
                 var model = _demoCentralDBInterface.CreateAnalyzeInstructions(dbDemo);
 
                 _inQueueDBInterface.UpdateProcessStatus(inQueueDemo, ProcessedBy.DemoFileWorker, true);
+
+                // Debug issue https://gitlab.com/mentorgg/csgo/democentral/-/issues/34
+                _logger.LogError($"Debug Issue #34: Sending message with MatchId [ {dbDemo.MatchId} ] and Quality [ {dbDemo.Quality} ] ObtainReport [ {consumeModel.ToString()} ] to DFW with message [ {model.ToJson()} ].");
+                
                 _demoFileWorker.PublishMessage(model);
             }
             else

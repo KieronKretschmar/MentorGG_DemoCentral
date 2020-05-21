@@ -232,6 +232,13 @@ namespace DemoCentral
                 demo.FramesPerSecond = FramesPerQuality.Frames[requestedQuality];
                 _context.SaveChanges();
 
+                // Debug issue https://gitlab.com/mentorgg/csgo/democentral/-/issues/34
+                var demoFreshFromDb = _context.Demo.SingleOrDefault(x => x.MatchId == demo.MatchId);
+                if(demoFreshFromDb.Quality != requestedQuality)
+                {
+                    _logger.LogError($"Debug Issue #34: Quality does not match. Quality from database [ {demoFreshFromDb.Quality} ], expected [ {requestedQuality} ].");
+                }
+
                 return true;
             }
 
