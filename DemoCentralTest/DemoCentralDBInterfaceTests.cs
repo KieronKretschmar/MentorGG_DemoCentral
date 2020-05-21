@@ -11,6 +11,7 @@ using RabbitCommunicationLib.Enums;
 using DataBase.Enumerals;
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
+using DemoCentral.Enumerals;
 
 namespace DemoCentralTests
 {
@@ -82,6 +83,47 @@ namespace DemoCentralTests
                 Assert.AreEqual(model.UploaderId, demo.UploaderId);
                 Assert.AreEqual(model.DownloadUrl, demo.DownloadUrl);
                 Assert.AreEqual(model.Source, demo.Source);
+            }
+        }
+
+        [TestMethod]
+        public void TryCreateNewDemoEntryFromGathererUpdatesAnalyzerQuality()
+        {
+            long matchId;
+
+            DemoInsertInstruction model = new DemoInsertInstruction
+            {
+                MatchDate = default(DateTime),
+                DownloadUrl = "1234",
+                Source = Source.Unknown,
+                UploaderId = 1234,
+                UploadType = UploadType.Unknown,
+            };
+
+            // TryCreate with low quality
+            using (var context = new DemoCentralContext(_test_config))
+            {
+                var test = new DemoCentralDBInterface(context, _mockILogger);
+
+                test.TryCreateNewDemoEntryFromGatherer(model, AnalyzerQuality.Low, out matchId);
+            }
+
+            // TryCreate with high quality
+            using (var context = new DemoCentralContext(_test_config))
+            {
+                var test = new DemoCentralDBInterface(context, _mockILogger);
+
+                test.TryCreateNewDemoEntryFromGatherer(model, AnalyzerQuality.High, out matchId);
+            }
+
+            // Assert that quality in database has been updated to AnalyzerQuality.High
+            using (var context = new DemoCentralContext(_test_config))
+            {
+                Demo demo = GetDemoByMatchId(matchId, context);
+                Assert.IsNotNull(demo);
+
+                Assert.AreEqual(AnalyzerQuality.High, demo.Quality);
+                Assert.AreEqual(FramesPerQuality.Frames[AnalyzerQuality.High], demo.FramesPerSecond);
             }
         }
 
