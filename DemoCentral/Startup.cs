@@ -288,7 +288,13 @@ namespace DemoCentral
                 endpoints.MapControllers();
             });
 
-            services.GetRequiredService<DemoCentralContext>().Database.Migrate();
+            #region Run Migrations
+            // migrate if this is not an inmemory database
+            if (services.GetRequiredService<DemoCentralContext>().Database.ProviderName != "Microsoft.EntityFrameworkCore.InMemory")
+            {
+                services.GetRequiredService<DemoCentralContext>().Database.Migrate();
+            }
+            #endregion
         }
 
         /// <summary>
