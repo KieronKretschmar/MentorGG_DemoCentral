@@ -46,9 +46,9 @@ namespace Database.DatabaseClasses
 
                 // One to zero/one relation
                 // Every InQueueDemo has a Demo, but not every Demo has an InQueueDemo
-                entity.HasOne(d => d.Demo)
+                entity.HasOne(d => (Demo)d.Demo)
                     .WithOne(p => p.InQueueDemo)
-                    .HasForeignKey<InQueueDemo>(d => new { d.MatchId})
+                    .HasForeignKey<InQueueDemo>(d => d.MatchId)
                     .IsRequired();
             });
         }

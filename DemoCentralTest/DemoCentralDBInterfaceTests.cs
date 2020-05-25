@@ -381,23 +381,6 @@ namespace DemoCentralTests
         }
 
         [TestMethod]
-        public void SetUploadStatusSetsCorrectStatus()
-        {
-            Demo demo = CopyDemo(_standardDemo);
-
-            using (var context = new DemoCentralContext(_test_config))
-            {
-                DemoTableInterface test = new DemoTableInterface(context, _mockILogger);
-                ;
-                AddDemoToDB(demo, context);
-
-                test.SetUploadStatus(demo, true);
-            }
-
-            Assert.IsTrue(demo.MatchWriterStatus == GenericStatus.Success);
-        }
-
-        [TestMethod]
         public void GetRecentMatchIdsReturnsListOfValidMatchIds()
         {
             List<long> matches;

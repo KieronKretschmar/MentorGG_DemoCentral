@@ -10,7 +10,7 @@ namespace Database.DatabaseClasses
         /// <summary>
         /// Navigational Propery.
         /// </summary>
-        public Demo Demo;
+        public Demo Demo { get; set; }
 
         /// <summary>
         /// MatchId.
@@ -39,10 +39,12 @@ namespace Database.DatabaseClasses
     {
         UnQueued = 0,
 
-        DemoDownloader = 1,
+        DemoDownloader = 10,
 
-        DemoFileWorker = 2,
+        DemoFileWorker = 20,
 
-        SitutationOperator = 3,
+        MatchWriter = 30,
+
+        SitutationOperator = 40,
     }
 }
