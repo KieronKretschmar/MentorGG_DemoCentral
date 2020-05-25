@@ -3,14 +3,16 @@ using System;
 using Database.DatabaseClasses;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Database.Migrations
 {
     [DbContext(typeof(DemoCentralContext))]
-    partial class DemoCentralContextModelSnapshot : ModelSnapshot
+    [Migration("20200519094452_refactor")]
+    partial class refactor
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -23,14 +25,14 @@ namespace Database.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    b.Property<int?>("AnalysisBlockReason")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("AnalysisSucceeded")
-                        .HasColumnType("tinyint(1)");
+                    b.Property<byte>("AnalysisStatus")
+                        .HasColumnType("tinyint unsigned");
 
                     b.Property<string>("BlobUrl")
                         .HasColumnType("longtext CHARACTER SET utf8mb4");
+
+                    b.Property<int>("DemoAnalysisBlock")
+                        .HasColumnType("int");
 
                     b.Property<string>("DownloadUrl")
                         .HasColumnType("longtext CHARACTER SET utf8mb4");

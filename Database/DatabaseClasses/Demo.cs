@@ -79,16 +79,16 @@ namespace Database.DatabaseClasses
         public byte FramesPerSecond { get; set; }
 
         /// <summary>
-        /// General status of the demo Analysis.
+        /// Outcome of the Demo analysis process.
         /// </summary>
         /// <value></value>
-        public GenericStatus AnalysisStatus { get; set; } = GenericStatus.Unknown;
+        public bool AnalysisSucceeded { get; set; } = false;
 
         /// <summary>
-        /// If DemoFileWorkerStatus is `Failure`, Why the demo has stopped being analysed.
+        /// Reason why the analysis process stopped for this demo.
         /// </summary>
         /// <value></value>
-        public DemoAnalysisBlock DemoAnalysisBlock { get; set; } = DemoAnalysisBlock.Unknown;
+        public DemoAnalysisBlock? AnalysisBlockReason { get; set; } = null;
 
         /// <summary>
         /// When the Demo was first seen.
@@ -135,8 +135,8 @@ namespace Database.DatabaseClasses
         public void ToPreAnalysisState()
         {
             MD5Hash = "";
-            AnalysisStatus = GenericStatus.Unknown;
-            DemoAnalysisBlock = DemoAnalysisBlock.Unknown;
+            AnalysisSucceeded = false;
+            AnalysisBlockReason = null;
         }
     }
 }
