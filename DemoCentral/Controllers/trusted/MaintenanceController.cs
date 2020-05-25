@@ -62,8 +62,7 @@ namespace DemoCentral.Controllers.trusted
                 {
 
                 }
-                var inQueueDemo = _inQueueTableInterface.Add(demo.MatchId, demo.MatchDate, demo.Source, demo.UploaderId);
-                _inQueueTableInterface.UpdateCurrentQueue(inQueueDemo, Queue.DemoFileWorker);
+                var inQueueDemo = _inQueueTableInterface.Add(demo.MatchId, Queue.DemoFileWorker);
 
                 // Publish message
                 var message = _demoTableInterface.CreateAnalyzeInstructions(demo);

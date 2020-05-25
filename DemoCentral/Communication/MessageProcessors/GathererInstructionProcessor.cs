@@ -57,13 +57,10 @@ namespace DemoCentral.Communication.MessageProcessors
                     DownloadUrl = model.DownloadUrl
                 };
 
-                _inQueueTableInterface.Add(matchId, model.MatchDate, model.Source, model.UploaderId);
+                _inQueueTableInterface.Add(matchId, Queue.DemoDownloader);
 
                 var demo = _demoTableInterface.GetDemoById(matchId);
                 _demoTableInterface.SetFileStatus(demo, FileStatus.Downloading);
-                
-                var queuedDemo = _inQueueTableInterface.GetDemoById(matchId);
-                _inQueueTableInterface.UpdateCurrentQueue(queuedDemo, Queue.DemoDownloader);
                 
                 _demoDownloaderProducer.PublishMessage(forwardModel);
 

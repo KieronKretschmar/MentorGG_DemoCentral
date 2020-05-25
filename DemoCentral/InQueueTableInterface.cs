@@ -14,9 +14,9 @@ namespace DemoCentral
     public interface IInQueueTableInterface
     {
         /// <summary>
-        /// Add a new demo to the queue, and set all queue status to false
+        /// Add a new demo to a queue.
         /// </summary>
-        InQueueDemo Add(long matchId, DateTime matchDate, Source source, long uploaderId);
+        InQueueDemo Add(long matchId, Queue currentQueue);
         InQueueDemo GetDemoById(long matchId);
         /// <summary>
         /// Get a list of all<see cref="InQueueDemo"/> for a certain player
@@ -48,13 +48,12 @@ namespace DemoCentral
             _context = context;
         }
 
-        public InQueueDemo Add(long matchId, DateTime matchDate, Source source, long uploaderId)
+        public InQueueDemo Add(long matchId, Queue currentQueue)
         {
             var newDemo = new InQueueDemo
             {
                 MatchId = matchId,
-                InsertDate = DateTime.UtcNow,
-                CurrentQueue =  Queue.UnQueued,
+                CurrentQueue =  currentQueue,
             };
 
             _context.InQueueDemo.Add(newDemo);

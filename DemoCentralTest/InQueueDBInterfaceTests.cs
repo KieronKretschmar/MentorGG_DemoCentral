@@ -40,7 +40,7 @@ namespace DemoCentralTests
             using (var context = new DemoCentralContext(_test_config))
             {
                 InQueueTableInterface testObject = new InQueueTableInterface(context);
-                testObject.Add(matchId, matchDate, source, uploaderId);
+                testObject.Add(matchId, Queue.DemoDownloader);
             }
 
             using (var context = new DemoCentralContext(_test_config))
@@ -64,9 +64,9 @@ namespace DemoCentralTests
             using (var context = new DemoCentralContext(_test_config))
             {
                 var test = new InQueueTableInterface(context);
-                test.Add(1, default(DateTime), Source.Unknown, playerId);
-                test.Add(2, default(DateTime), Source.Unknown, playerId);
-                test.Add(3, default(DateTime), Source.Unknown, playerId);
+                test.Add(1, Queue.DemoDownloader);
+                test.Add(2, Queue.DemoDownloader);
+                test.Add(3, Queue.DemoDownloader);
 
                 matches = test.GetPlayerMatchesInQueue(playerId);
             }
@@ -100,9 +100,9 @@ namespace DemoCentralTests
                 int queueLength = test.GetTotalQueueLength();
                 Assert.AreEqual(0, queueLength);
 
-                test.Add(1, default(DateTime), Source.Unknown, playerId);
-                test.Add(2, default(DateTime), Source.Unknown, playerId);
-                test.Add(3, default(DateTime), Source.Unknown, playerId);
+                test.Add(1, Queue.DemoDownloader);
+                test.Add(2, Queue.DemoDownloader);
+                test.Add(3, Queue.DemoDownloader);
 
                 queueLength = test.GetTotalQueueLength();
                 Assert.AreEqual(3, queueLength);
@@ -116,7 +116,7 @@ namespace DemoCentralTests
             using (var context = new DemoCentralContext(_test_config))
             {
                 var test = new InQueueTableInterface(context);
-                test.Add(matchId, default(DateTime), Source.Unknown, 1234);
+                test.Add(matchId, Queue.DemoDownloader);
                 test.UpdateCurrentQueue(test.GetDemoById(matchId), Queue.UnQueued);
             }
 
@@ -148,10 +148,10 @@ namespace DemoCentralTests
             {
                 var test = new InQueueTableInterface(context);
 
-                test.Add(1, default(DateTime), Source.Unknown, playerId1);
-                test.Add(2, default(DateTime), Source.Unknown, playerId1);
-                test.Add(3, default(DateTime), Source.Unknown, playerId2);
-                test.Add(4, default(DateTime), Source.Unknown, playerId2);
+                test.Add(1, Queue.DemoDownloader);
+                test.Add(2, Queue.DemoDownloader);
+                test.Add(3, Queue.DemoDownloader);
+                test.Add(4, Queue.DemoDownloader);
 
                 for (int i = 1; i < 5; i++)
                     Assert.AreEqual(i - 1, test.GetQueuePosition(test.GetDemoById(i)));
@@ -165,7 +165,7 @@ namespace DemoCentralTests
             using (var context = new DemoCentralContext(_test_config))
             {
                 var test = new InQueueTableInterface(context);
-                test.Add(matchId, default(DateTime), Source.Unknown, 1234);
+                test.Add(matchId, Queue.DemoDownloader);
 
                 for (int retry = 0; retry < 3; retry++)
                 {

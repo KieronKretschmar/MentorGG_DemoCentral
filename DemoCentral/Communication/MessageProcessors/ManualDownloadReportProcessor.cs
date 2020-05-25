@@ -65,7 +65,7 @@ namespace DemoCentral.Communication.MessageProcessors
             var requestedAnalyzerQuality = await _userIdentityRetriever.GetAnalyzerQualityAsync(model.UploaderId);
             var matchId = _demoTableInterface.CreateNewDemoEntryFromManualUpload(model, requestedAnalyzerQuality);
 
-            _inQueueTableInterface.Add(matchId, model.MatchDate, model.Source, model.UploaderId);
+            _inQueueTableInterface.Add(matchId, Queue.DemoFileWorker);
 
             var demo = _demoTableInterface.GetDemoById(matchId);
             var analyzeInstructions = _demoTableInterface.CreateAnalyzeInstructions(demo);
@@ -74,7 +74,6 @@ namespace DemoCentral.Communication.MessageProcessors
             _logger.LogInformation($"Sent demo [ {matchId} ] to DemoAnalyzeInstruction queue");
 
             var queuedDemo = _inQueueTableInterface.GetDemoById(matchId);
-            _inQueueTableInterface.UpdateCurrentQueue(queuedDemo, Queue.DemoFileWorker);
         }
     }
 }
