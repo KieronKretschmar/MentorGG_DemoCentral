@@ -49,7 +49,7 @@ namespace DemoCentral.Communication.MessageProcessors
 
             if (_demoTableInterface.TryCreateNewDemoEntryFromGatherer(model, requestedQuality, out long matchId))
             {
-                _logger.LogInformation($"Demo [ {matchId} ] assigned to [ {model.DownloadUrl} ]");
+                _logger.LogInformation($"Demo with MatchId [ {matchId} ] has DownloadUrl [ {model.DownloadUrl} ]");
 
                 var forwardModel = new DemoDownloadInstruction
                 {
