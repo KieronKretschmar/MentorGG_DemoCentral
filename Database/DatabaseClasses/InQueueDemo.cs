@@ -15,13 +15,7 @@ namespace Database.DatabaseClasses
         /// <summary>
         /// MatchId.
         /// </summary>
-        /// <value></value>
         public long MatchId { get; set; }
-
-        /// <summary>
-        /// IDK
-        /// </summary>
-        public DateTime InsertDate { get; set; }
 
         /// <summary>
         /// Amount of Retries attempted to complete the last `Demo.DemoAnalyzeFailure`.

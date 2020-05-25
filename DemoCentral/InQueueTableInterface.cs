@@ -89,7 +89,7 @@ namespace DemoCentral
 
         public int GetQueuePosition(InQueueDemo demo)
         {
-            return _context.InQueueDemo.Count(x => x.InsertDate < demo.InsertDate);
+            return _context.InQueueDemo.Count(x => x.Demo.UploadDate < demo.Demo.UploadDate);
         }
 
         /// <summary>

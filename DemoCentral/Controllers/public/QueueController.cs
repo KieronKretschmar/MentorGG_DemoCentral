@@ -63,7 +63,7 @@ namespace DemoCentral.Controllers
             var model = new QueueStatusModel();
 
             // assign matchids, starting with the match inserted first
-            model.MatchIds = _inQueueTableInterface.GetPlayerMatchesInQueue(steamId).OrderBy(x=>x.InsertDate).Select(x => x.MatchId).ToList();
+            model.MatchIds = _inQueueTableInterface.GetPlayerMatchesInQueue(steamId).OrderBy(x=>x.Demo.UploadDate).Select(x => x.MatchId).ToList();
             model.FirstDemoPosition = model.MatchIds.Count > 0 ? _inQueueTableInterface.GetQueuePosition(_inQueueTableInterface.GetDemoById(model.MatchIds.First())) : -1;
             model.TotalQueueLength = _inQueueTableInterface.GetTotalQueueLength();
             return model;
