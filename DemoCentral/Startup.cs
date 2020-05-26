@@ -278,8 +278,6 @@ namespace DemoCentral
             });
             #endregion
 
-            app.UseHttpsRedirection();
-
             app.UseRouting();
 
             app.UseAuthorization();
