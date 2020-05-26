@@ -257,6 +257,7 @@ namespace DemoCentral
             services.AddTransient<DemoDownloaderReportProcessor>();
             services.AddTransient<DemoFileWorkerReportProcessor>();
             services.AddTransient<ManualDownloadReportProcessor>();
+            services.AddTransient<MatchWriterUploadReportProcessor>();
             #endregion
         }
 
