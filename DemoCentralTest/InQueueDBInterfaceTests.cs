@@ -116,24 +116,13 @@ namespace DemoCentralTests
             {
                 var test = new InQueueTableInterface(context);
                 test.Add(matchId, Queue.DemoDownloader);
-                test.UpdateCurrentQueue(test.GetDemoById(matchId), Queue.UnQueued);
+                test.Remove(test.GetDemoById(matchId));
             }
 
             using (var context = new DemoCentralContext(_test_config))
             {
                 var demo = context.InQueueDemo.Where(x => x.MatchId == matchId).SingleOrDefault();
                 Assert.IsNull(demo);
-            }
-        }
-
-        [TestMethod]
-        public void RemoveDemoFromQueueFailsWithUnknownMatchId()
-        {
-            long matchId = 1;
-            using (var context = new DemoCentralContext(_test_config))
-            {
-                var test = new InQueueTableInterface(context);
-                Assert.ThrowsException<InvalidOperationException>(() => test.UpdateCurrentQueue(test.GetDemoById(matchId), Queue.UnQueued));
             }
         }
 
