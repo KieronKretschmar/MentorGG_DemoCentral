@@ -3,9 +3,7 @@ using RabbitCommunicationLib.TransferModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Database.Enumerals;
 using Microsoft.Extensions.Logging;
-using Database.Enumerals;
 using DemoCentral.Enumerals;
 using RabbitCommunicationLib.Enums;
 
@@ -33,8 +31,6 @@ namespace DemoCentral
         void RemoveDemo(Demo demo);
 
         void SetBlobUrl(Demo demo, string blobUrl);
-
-        void SetFileStatus(Demo demo, FileStatus status);
 
         void SetAnalyzeState(Demo demo, bool success, DemoAnalysisBlock? block = null);
 
@@ -120,12 +116,6 @@ namespace DemoCentral
             return recentMatchesId;
         }
 
-        public void SetFileStatus(Demo demo, FileStatus status)
-        {
-            demo.FileStatus = status;
-            _context.SaveChanges();
-        }
-
         public void SetBlobUrl(Demo demo, string blobUrl)
         {
             demo.BlobUrl = blobUrl;
@@ -150,7 +140,7 @@ namespace DemoCentral
         {
             var recentMatchesId = _context.Demo
                 .Where(x => x.UploaderId == playerId)
-                .Where(x => FileStatusCollections.Failed.Contains(x.FileStatus) || x.AnalysisSucceeded == false)
+                .Where(x => x.AnalysisSucceeded == false)
                 .Take(recentMatches + offset)
                 .ToList();
             recentMatchesId.RemoveRange(0, offset);
@@ -259,7 +249,7 @@ namespace DemoCentral
         {
             var demosToReset = _context.Demo
                 .Where(x => x.UploadDate >= minUploadDate)
-                .Where(x=>x.FileStatus == FileStatus.InBlobStorage)
+                .Where(x=>x.BlobUrl != null)
                 .Where(x=>x.AnalysisSucceeded == false)
                 .ToList();
 

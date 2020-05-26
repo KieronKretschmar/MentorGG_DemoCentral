@@ -1,8 +1,6 @@
 using System;
 using System.Threading.Tasks;
 using Database.DatabaseClasses;
-using Database.Enumerals;
-using Database.Enumerals;
 using DemoCentral.Communication.HTTP;
 using DemoCentral.Communication.Rabbit;
 using Microsoft.Extensions.Logging;
@@ -60,7 +58,6 @@ namespace DemoCentral.Communication.MessageProcessors
                 _inQueueTableInterface.Add(matchId, Queue.DemoDownloader);
 
                 var demo = _demoTableInterface.GetDemoById(matchId);
-                _demoTableInterface.SetFileStatus(demo, FileStatus.Downloading);
                 
                 _demoDownloaderProducer.PublishMessage(forwardModel);
 

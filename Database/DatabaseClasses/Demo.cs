@@ -1,6 +1,5 @@
 ﻿using System;
 using RabbitCommunicationLib.Enums;
-using Database.Enumerals;
 using RabbitCommunicationLib.TransferModels;
 
 namespace Database.DatabaseClasses
@@ -61,12 +60,6 @@ namespace Database.DatabaseClasses
         public string MD5Hash { get; set; }
 
         /// <summary>
-        /// Current status of the Demo file.
-        /// </summary>
-        /// <value></value>
-        public FileStatus FileStatus { get; set; }
-
-        /// <summary>
         /// Quality the Demo is analyzed in.
         /// </summary>
         /// <value></value>
@@ -108,7 +101,6 @@ namespace Database.DatabaseClasses
                 DownloadUrl = model.DownloadUrl,
                 BlobUrl = "",
                 MD5Hash = "",
-                FileStatus = FileStatus.New,
                 UploadDate = DateTime.UtcNow,
             };
         }
@@ -124,7 +116,6 @@ namespace Database.DatabaseClasses
                 DownloadUrl = null,
                 BlobUrl = model.BlobUrl,
                 MD5Hash = "",
-                FileStatus = FileStatus.New,
                 UploadDate = model.UploadDate,
             };
         }

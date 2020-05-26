@@ -1,5 +1,4 @@
-﻿using Database.Enumerals;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
 using RabbitCommunicationLib.Consumer;
 using RabbitCommunicationLib.Interfaces;
@@ -7,7 +6,6 @@ using RabbitCommunicationLib.TransferModels;
 using System.Threading.Tasks;
 using RabbitCommunicationLib.Enums;
 using RabbitMQ.Client.Events;
-using Database.Enumerals;
 using DemoCentral.Communication.HTTP;
 using System;
 using Microsoft.Extensions.DependencyInjection;

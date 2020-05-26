@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Pomelo.EntityFrameworkCore.MySql;
 using RabbitCommunicationLib.Enums;
-using Database.Enumerals;
 
 namespace Database.DatabaseClasses
 {

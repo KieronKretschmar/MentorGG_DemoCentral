@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using RabbitMQ.Client.Events;
 using Microsoft.Extensions.Logging;
 using RabbitCommunicationLib.Enums;
-using Database.Enumerals;
 using DemoCentral.Communication.HTTP;
 using Microsoft.Extensions.DependencyInjection;
 using DemoCentral.Communication.MessageProcessors;

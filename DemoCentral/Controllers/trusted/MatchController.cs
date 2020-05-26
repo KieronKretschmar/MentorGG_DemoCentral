@@ -39,7 +39,7 @@ namespace DemoCentral.Controllers.trusted
             try
             {
                 var demo = _demoTableInterface.GetDemoById(matchId);
-                if (demo.FileStatus != Database.Enumerals.FileStatus.InBlobStorage)
+                if (demo.BlobUrl == null)
                     throw new ArgumentException($"Demo [ {matchId} ] is not in blob storage, Removal request cancelled");
             }
             catch (Exception e) when ( e is ArgumentException)

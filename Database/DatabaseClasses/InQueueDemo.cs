@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
-using Database.Enumerals;
-
-namespace Database.DatabaseClasses
+﻿namespace Database.DatabaseClasses
 {
     public partial class InQueueDemo
     {

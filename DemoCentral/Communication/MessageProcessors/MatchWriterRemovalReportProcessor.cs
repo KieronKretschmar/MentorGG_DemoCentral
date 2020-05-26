@@ -1,7 +1,5 @@
 using System;
 using System.Threading.Tasks;
-using Database.Enumerals;
-using Database.Enumerals;
 using DemoCentral.Communication.HTTP;
 using DemoCentral.Communication.Rabbit;
 using Microsoft.Extensions.Logging;
@@ -54,7 +52,6 @@ namespace DemoCentral.Communication.MessageProcessors
 
             if (model.Success)
             {
-                _demoTableInterface.SetFileStatus(demo, Database.Enumerals.FileStatus.Removed);
                 await _blobStorage.DeleteBlobAsync(demo.BlobUrl);
                 _demoTableInterface.SetBlobUrl(demo, null);
             }

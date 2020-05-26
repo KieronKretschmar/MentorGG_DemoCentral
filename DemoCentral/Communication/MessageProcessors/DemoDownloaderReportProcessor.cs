@@ -1,8 +1,6 @@
 using System;
 using System.Threading.Tasks;
 using Database.DatabaseClasses;
-using Database.Enumerals;
-using Database.Enumerals;
 using DemoCentral.Communication.HTTP;
 using DemoCentral.Communication.Rabbit;
 using Microsoft.Extensions.Logging;
@@ -67,9 +65,6 @@ namespace DemoCentral.Communication.MessageProcessors
             if (consumeModel.Success)
             {
                 _demoTableInterface.SetBlobUrl(dbDemo, consumeModel.BlobUrl);
-
-                _demoTableInterface.SetFileStatus(dbDemo, FileStatus.InBlobStorage);
-
                 var model = _demoTableInterface.CreateAnalyzeInstructions(dbDemo);
 
                 _inQueueTableInterface.UpdateCurrentQueue(inQueueDemo, Queue.DemoFileWorker);
@@ -82,17 +77,13 @@ namespace DemoCentral.Communication.MessageProcessors
                 if (attempts > MAX_RETRIES)
                 {
                     _inQueueTableInterface.Remove(inQueueDemo);
-                    _demoTableInterface.SetFileStatus(dbDemo, FileStatus.DownloadFailed);
                     _demoTableInterface.SetAnalyzeState(dbDemo, false, DemoAnalysisBlock.UnknownDemoDownloader);
                     _logger.LogError($"Demo [ {matchId} ] failed download more than {MAX_RETRIES} times, no further analyzing");
                 }
                 else
                 {
-                    _demoTableInterface.SetFileStatus(dbDemo, FileStatus.DownloadRetrying);
-
                     var resendModel = _demoTableInterface.CreateDownloadInstructions(dbDemo);
 
-                    _demoTableInterface.SetFileStatus(dbDemo, FileStatus.DownloadRetrying);
                     _logger.LogInformation($"Sent demo [ {matchId} ] to DemoDownloadInstruction queue");
 
                     _demoDownloaderProducer.PublishMessage(resendModel);

@@ -1,8 +1,6 @@
 using System;
 using System.Threading.Tasks;
 using Database.DatabaseClasses;
-using Database.Enumerals;
-using Database.Enumerals;
 using DemoCentral.Communication.HTTP;
 using DemoCentral.Communication.Rabbit;
 using Microsoft.Extensions.Logging;
