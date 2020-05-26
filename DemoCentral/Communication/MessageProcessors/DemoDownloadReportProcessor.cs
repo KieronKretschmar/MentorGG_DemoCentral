@@ -13,9 +13,9 @@ namespace DemoCentral.Communication.MessageProcessors
     /// <summary>
     /// Handles reports regarding downloads of demo files received from DemoDownloader.
     /// </summary>
-    public class DemoDownloaderReportProcessor
+    public class DemoDownloadReportProcessor
     {
-        private readonly ILogger<DemoDownloaderReportProcessor> _logger;
+        private readonly ILogger<DemoDownloadReportProcessor> _logger;
         private readonly IDemoTableInterface _demoTableInterface;
         private readonly IProducer<DemoDownloadInstruction> _demoDownloaderProducer;
         private readonly IProducer<DemoAnalyzeInstruction> _demoFileWorkerProducer;
@@ -23,8 +23,8 @@ namespace DemoCentral.Communication.MessageProcessors
 
         private const int MAX_RETRIES = 2;
 
-        public DemoDownloaderReportProcessor(
-            ILogger<DemoDownloaderReportProcessor> logger,
+        public DemoDownloadReportProcessor(
+            ILogger<DemoDownloadReportProcessor> logger,
             IDemoTableInterface demoTableInterface,
             IProducer<DemoDownloadInstruction> demoDownloaderProducer,
             IProducer<DemoAnalyzeInstruction> demoFileWorkerProducer,

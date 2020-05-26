@@ -15,16 +15,16 @@ namespace DemoCentral.Communication.RabbitConsumers
 {
     /// <summary>
     /// Consumer for the DemoDownloader report queue.
-    /// Messages are being processed by <see cref="DemoDownloaderReportProcessor"/>.
+    /// Messages are being processed by <see cref="DemoDownloadReportProcessor"/>.
     /// </summary>
-    public class DemoDownloaderReportConsumer : Consumer<DemoDownloadReport>
+    public class DemoDownloadReportConsumer : Consumer<DemoDownloadReport>
     {
         private readonly IServiceProvider _serviceProvider;
-        private ILogger<DemoDownloaderReportConsumer> _logger;
+        private ILogger<DemoDownloadReportConsumer> _logger;
 
-        public DemoDownloaderReportConsumer(
+        public DemoDownloadReportConsumer(
             IServiceProvider serviceProvider,
-            ILogger<DemoDownloaderReportConsumer> logger,
+            ILogger<DemoDownloadReportConsumer> logger,
             IQueueConnection queueConnection
             ) : base(queueConnection)
         {
@@ -43,7 +43,7 @@ namespace DemoCentral.Communication.RabbitConsumers
             {
                 using (var scope = _serviceProvider.CreateScope())
                 {
-                    var processor = scope.ServiceProvider.GetRequiredService<DemoDownloaderReportProcessor>();
+                    var processor = scope.ServiceProvider.GetRequiredService<DemoDownloadReportProcessor>();
                     await processor.WorkAsync(model);
                     return ConsumedMessageHandling.Done;
                 }

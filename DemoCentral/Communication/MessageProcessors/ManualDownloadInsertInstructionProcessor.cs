@@ -19,13 +19,13 @@ namespace DemoCentral.Communication.MessageProcessors
         private readonly IUserIdentityRetriever _userIdentityRetriever;
         private readonly IProducer<DemoDownloadInstruction> _demoDownloaderProducer;
         private readonly IProducer<DemoAnalyzeInstruction> _demoFileWorkerProducer;
-        private readonly ILogger<DemoDownloaderReportProcessor> _logger;
+        private readonly ILogger<DemoDownloadReportProcessor> _logger;
         private IInQueueTableInterface _inQueueTableInterface;
 
         private const int MAX_RETRIES = 2;
 
         public ManualDownloadInsertInstructionProcessor(
-            ILogger<DemoDownloaderReportProcessor> logger,
+            ILogger<DemoDownloadReportProcessor> logger,
             IDemoTableInterface demoTableInterface,
             IUserIdentityRetriever userIdentityRetriever,
             IProducer<DemoAnalyzeInstruction> demoFileWorkerProducer,
