@@ -66,12 +66,6 @@ namespace Database.DatabaseClasses
         public AnalyzerQuality Quality { get; set; }
 
         /// <summary>
-        /// Frames Per Second the Demo is analyzed in.
-        /// </summary>
-        /// <value></value>
-        public byte FramesPerSecond { get; set; }
-
-        /// <summary>
         /// Outcome of the Demo analysis process.
         /// </summary>
         /// <value></value>

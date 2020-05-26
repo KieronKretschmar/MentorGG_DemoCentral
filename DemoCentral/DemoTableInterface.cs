@@ -34,8 +34,6 @@ namespace DemoCentral
 
         void SetAnalyzeState(Demo demo, bool success, DemoAnalysisBlock? block = null);
 
-        void SetFrames(Demo demo, int framesPerSecond);
-
         void SetHash(Demo demo, string hash);
         
         /// <summary>
@@ -103,8 +101,8 @@ namespace DemoCentral
                 Source = demo.Source,
                 MatchDate = demo.MatchDate,
                 BlobUrl = demo.BlobUrl,
-                FramesPerSecond = demo.FramesPerSecond,
-                Quality = demo.Quality,
+                FramesPerSecond = FramesPerQuality.Frames[demo.Quality],
+                Quality = demo.Quality
             };
         }
 
@@ -181,7 +179,6 @@ namespace DemoCentral
                 _logger.LogInformation($"Selected Demo [ {demo.MatchId} ] for re-analysis due to higher quality. Current quality [ {demo.Quality} ], requested quality [ {requestedQuality} ].");
 
                 demo.Quality = requestedQuality;
-                demo.FramesPerSecond = FramesPerQuality.Frames[requestedQuality];
                 _context.SaveChanges();
 
                 return true;
@@ -189,7 +186,6 @@ namespace DemoCentral
 
             demo = Demo.FromGatherTransferModel(model);
             demo.Quality = requestedQuality;
-            demo.FramesPerSecond = FramesPerQuality.Frames[requestedQuality];
 
             _context.Demo.Add(demo);
 
@@ -204,7 +200,6 @@ namespace DemoCentral
         {
             var demo = Demo.FromManualUploadTransferModel(model);
             demo.Quality = requestedQuality;
-            demo.FramesPerSecond = FramesPerQuality.Frames[requestedQuality];
 
             _context.Demo.Add(demo);
 
@@ -216,12 +211,6 @@ namespace DemoCentral
         public Demo GetDemoById(long matchId)
         {
             return _context.Demo.Single(x => x.MatchId == matchId);
-        }
-
-        public void SetFrames(Demo demo, int framesPerSecond)
-        {
-            demo.FramesPerSecond = (byte) framesPerSecond;
-            _context.SaveChanges();
         }
 
         public List<Demo> GetMatchesByUploader(long steamId)

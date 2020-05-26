@@ -91,7 +91,6 @@ namespace DemoCentral.Communication.MessageProcessors
             Demo dbDemo = _demoTableInterface.GetDemoById(response.MatchId);
             InQueueDemo queueDemo = _inQueueTableInterface.GetDemoById(response.MatchId);
 
-            _demoTableInterface.SetFrames(dbDemo, response.FramesPerSecond);
             _inQueueTableInterface.UpdateCurrentQueue(queueDemo, Queue.MatchWriter);
             PublishRedisInstruction(response);
 
