@@ -8,7 +8,7 @@ namespace Database.DatabaseClasses
     public partial class InQueueDemo
     {
         /// <summary>
-        /// Navigational Propery.
+        /// Navigational Property.
         /// </summary>
         public Demo Demo { get; set; }
 
