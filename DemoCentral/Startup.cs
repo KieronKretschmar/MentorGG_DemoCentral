@@ -222,6 +222,14 @@ namespace DemoCentral
                 return new MatchDatabaseInsertionReportConsumer(services, services.GetRequiredService<ILogger<MatchDatabaseInsertionReportConsumer>>(), matchwriterUploadReportQueue);
             });
 
+            // Extraction Reports from SituationOperator
+            var AMQP_SITUATION_OPERATOR_REPLY = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_SITUATION_OPERATOR_REPLY");
+            var situationOperatorReplyQueue = new QueueConnection(AMQP_URI, AMQP_SITUATION_OPERATOR_REPLY);
+            services.AddHostedService<SituationExtractionReportConsumer>(services =>
+            {
+                return new SituationExtractionReportConsumer(services, services.GetRequiredService<ILogger<SituationExtractionReportConsumer>>(), situationOperatorReplyQueue);
+            });
+
             // Removal Reports from MatchWriter
             var AMQP_MATCHWRITER_DEMO_REMOVAL_REPLY = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_MATCHWRITER_DEMO_REMOVAL_REPLY");
             var matchwriterRemovalReportQueue = new QueueConnection(AMQP_URI, AMQP_MATCHWRITER_DEMO_REMOVAL_REPLY);
