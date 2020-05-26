@@ -7,7 +7,6 @@ using Moq;
 using Microsoft.EntityFrameworkCore;
 using RabbitCommunicationLib.Enums;
 using System.Linq;
-using Database.Enumerals;
 using System.Collections.Generic;
 
 namespace DemoCentralTests

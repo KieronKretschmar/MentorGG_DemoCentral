@@ -1,4 +1,3 @@
-using Database.Enumerals;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using RabbitCommunicationLib.TransferModels;
 using DemoCentral;
@@ -8,7 +7,6 @@ using Database.DatabaseClasses;
 using System.Linq;
 using System;
 using RabbitCommunicationLib.Enums;
-using Database.Enumerals;
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 
@@ -31,7 +29,6 @@ namespace DemoCentralTests
             _standardDemo = new Demo
             {
                 DownloadUrl = "xyz",
-                FileStatus = (byte) FileStatus.New,
                 UploadDate = DateTime.UtcNow,
                 UploadType = UploadType.Unknown,
                 MatchDate = default(DateTime),
@@ -322,24 +319,6 @@ namespace DemoCentralTests
             }
         }
 
-
-        [TestMethod]
-        public void SetFileStatusInBlobStorageSetsCorrectStatus()
-        {
-            Demo demo = CopyDemo(_standardDemo);
-
-            using (var context = new DemoCentralContext(_test_config))
-            {
-                DemoTableInterface test = new DemoTableInterface(context, _mockILogger);
-                ;
-                AddDemoToDB(demo, context);
-
-                test.SetFileStatus(demo, FileStatus.InBlobStorage);
-            }
-
-            Assert.IsTrue(demo.FileStatus == FileStatus.InBlobStorage);
-        }
-
         [TestMethod]
         public void AddFilePathSetsPath()
         {
@@ -558,7 +537,6 @@ namespace DemoCentralTests
             {
                 MatchId = demo1.MatchId,
                 DownloadUrl = demo1.DownloadUrl,
-                FileStatus = demo1.FileStatus,
                 UploadDate = demo1.UploadDate,
                 UploadType = demo1.UploadType,
                 MatchDate = demo1.MatchDate,
