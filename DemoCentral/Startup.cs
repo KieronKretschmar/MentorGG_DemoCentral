@@ -178,11 +178,11 @@ namespace DemoCentral
             // New demos from Gatherers
             var AMQP_GATHERER = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_GATHERER");
             var gathererQueue = new QueueConnection(AMQP_URI, AMQP_GATHERER);
-            services.AddHostedService<GathererInstructionConsumer>(services =>
+            services.AddHostedService<DemoInsertInstructionConsumer>(services =>
             {
-                return new GathererInstructionConsumer(
+                return new DemoInsertInstructionConsumer(
                     services,
-                    services.GetRequiredService<ILogger<GathererInstructionConsumer>>(),
+                    services.GetRequiredService<ILogger<DemoInsertInstructionConsumer>>(),
                     gathererQueue);
             });
 
@@ -253,7 +253,7 @@ namespace DemoCentral
             #endregion
 
             #region Rabbit - MessageProcessors
-            services.AddTransient<GathererInstructionProcessor>();
+            services.AddTransient<DemoInsertInstructionProcessor>();
             services.AddTransient<DemoDownloaderReportProcessor>();
             services.AddTransient<DemoFileWorkerReportProcessor>();
             services.AddTransient<ManualDownloadInsertInstructionProcessor>();

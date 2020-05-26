@@ -15,16 +15,16 @@ namespace DemoCentral.Communication.RabbitConsumers
 {
     /// <summary>
     /// Consumer for the Gatherer instruction queue.
-    /// Messages are being processed by <see cref="GathererInstructionProcessor"/>.
+    /// Messages are being processed by <see cref="DemoInsertInstructionProcessor"/>.
     /// </summary>
-    public class GathererInstructionConsumer : Consumer<DemoInsertInstruction>
+    public class DemoInsertInstructionConsumer : Consumer<DemoInsertInstruction>
     {
         private readonly IServiceProvider _serviceProvider;
-        private readonly ILogger<GathererInstructionConsumer> _logger;
+        private readonly ILogger<DemoInsertInstructionConsumer> _logger;
 
-        public GathererInstructionConsumer(
+        public DemoInsertInstructionConsumer(
             IServiceProvider serviceProvider,
-            ILogger<GathererInstructionConsumer> logger,
+            ILogger<DemoInsertInstructionConsumer> logger,
             IQueueConnection queueConnection
             ) : base(queueConnection)
         {
@@ -43,7 +43,7 @@ namespace DemoCentral.Communication.RabbitConsumers
             {
                 using (var scope = _serviceProvider.CreateScope())
                 {
-                    var processor = scope.ServiceProvider.GetRequiredService<GathererInstructionProcessor>();
+                    var processor = scope.ServiceProvider.GetRequiredService<DemoInsertInstructionProcessor>();
                     await processor.WorkAsync(model);
                     return ConsumedMessageHandling.Done;
                 }

@@ -13,16 +13,16 @@ namespace DemoCentral.Communication.MessageProcessors
     /// <summary>
     /// Handles instructions for insertion of new matches received from the Gatherers.
     /// </summary>
-    public class GathererInstructionProcessor
+    public class DemoInsertInstructionProcessor
     {
-        private readonly ILogger<GathererInstructionProcessor> _logger;
+        private readonly ILogger<DemoInsertInstructionProcessor> _logger;
         private readonly IDemoTableInterface _demoTableInterface;
         private readonly IProducer<DemoDownloadInstruction> _demoDownloaderProducer;
         private readonly IUserIdentityRetriever _userIdentityRetriever;
         private IInQueueTableInterface _inQueueTableInterface;
 
-        public GathererInstructionProcessor(
-            ILogger<GathererInstructionProcessor> logger,
+        public DemoInsertInstructionProcessor(
+            ILogger<DemoInsertInstructionProcessor> logger,
             IDemoTableInterface demoTableInterface,
             IProducer<DemoDownloadInstruction> demoDownloaderProducer,
             IUserIdentityRetriever userInfoGetter,
