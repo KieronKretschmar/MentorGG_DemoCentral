@@ -17,7 +17,7 @@ namespace DemoCentral.Communication.RabbitConsumers
     /// Consumer for the MatchWriter upload report queue.
     /// Messages are being processed by <see cref="MatchDatabaseInsertionReportProcessor"/>.
     /// </summary>
-    public class MatchDatabaseInsertionReportConsumer : Consumer<TaskCompletedReport>
+    public class MatchDatabaseInsertionReportConsumer : Consumer<MatchDatabaseInsertionReport>
     {
 
         private readonly IServiceProvider _serviceProvider;
@@ -36,7 +36,7 @@ namespace DemoCentral.Communication.RabbitConsumers
         /// <summary>
         /// Handle Upload report.
         /// </summary>
-        public async override Task<ConsumedMessageHandling> HandleMessageAsync(BasicDeliverEventArgs ea, TaskCompletedReport model)
+        public async override Task<ConsumedMessageHandling> HandleMessageAsync(BasicDeliverEventArgs ea, MatchDatabaseInsertionReport model)
         {
             _logger.LogInformation($"Received {model.GetType()} for match [ {model.MatchId} ]. Message: [ {model.ToJson()} ]");
 

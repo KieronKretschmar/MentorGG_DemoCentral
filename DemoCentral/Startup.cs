@@ -262,6 +262,7 @@ namespace DemoCentral
             services.AddTransient<DemoAnalyzeReportProcessor>();
             services.AddTransient<ManualDownloadInsertInstructionProcessor>();
             services.AddTransient<MatchDatabaseInsertionReportProcessor>();
+            services.AddTransient<SituationExtractionReportProcessor>();
             #endregion
         }
 

@@ -18,15 +18,18 @@ namespace DemoCentral.Communication.MessageProcessors
         private readonly ILogger<MatchDatabaseInsertionReportProcessor> _logger;
         private readonly IDemoTableInterface _demoTableInterface;
         private readonly IInQueueTableInterface _inQueueTableInterface;
+        private readonly IProducer<SituationExtractionInstruction> _situationOperatorProducer;
 
         public MatchDatabaseInsertionReportProcessor(
             ILogger<MatchDatabaseInsertionReportProcessor> logger,
             IDemoTableInterface demoTableInterface,
-            IInQueueTableInterface inQueueTableInterface)
+            IInQueueTableInterface inQueueTableInterface,
+            IProducer<SituationExtractionInstruction> situationOperatorProducer)
         {
             _logger = logger;
             _demoTableInterface = demoTableInterface;
             _inQueueTableInterface = inQueueTableInterface;
+            _situationOperatorProducer = situationOperatorProducer;
         }
 
 
@@ -34,7 +37,7 @@ namespace DemoCentral.Communication.MessageProcessors
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
-        public async Task WorkAsync(TaskCompletedReport model)
+        public async Task WorkAsync(MatchDatabaseInsertionReport model)
         {
             try
             {
@@ -45,7 +48,7 @@ namespace DemoCentral.Communication.MessageProcessors
                 _logger.LogError(e, $"Failed to update demo [ {model.MatchId} ] in database");
             }
         }
-        private void UpdateDBFromResponse(TaskCompletedReport model)
+        private void UpdateDBFromResponse(MatchDatabaseInsertionReport model)
         {
             long matchId = model.MatchId;
             var dbDemo = _demoTableInterface.GetDemoById(matchId);
@@ -53,23 +56,31 @@ namespace DemoCentral.Communication.MessageProcessors
             
             if (model.Success)
             {
-                _demoTableInterface.SetAnalyzeState(
-                    dbDemo,
-                    true);
+                _inQueueTableInterface.UpdateCurrentQueue(queuedDemo, Queue.SitutationOperator);
 
                 _logger.LogInformation($"Demo [ {matchId} ]. MatchWriter stored the MatchData successfully.");
+
+                var instructions = new SituationExtractionInstruction 
+                {
+                    MatchId = model.MatchId,
+                    // TODO: Find way to access ExpiryDate and RedisKey. Insert in database?
+                    //ExpiryDate = null,
+                    //RedisKey = null,
+                };
+                _situationOperatorProducer.PublishMessage(instructions);
+                _logger.LogInformation($"Sent demo [ {model.MatchId} ] to SituationOperator queue");
             }
             else
             {
+                var blockReason = model.Block ?? DemoAnalysisBlock.UnknownMatchWriter;
                 _demoTableInterface.SetAnalyzeState(
                     dbDemo,
                     false,
-                    DemoAnalysisBlock.UnknownMatchWriter);
+                    blockReason);
+                _demoTableInterface.RemoveDemo(dbDemo);
 
                 _logger.LogError($"Demo [ {matchId} ]. MatchWriter failed to store the MatchData!");
             }
-
-            _inQueueTableInterface.Remove(queuedDemo);
         }
     }
 }
