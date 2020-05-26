@@ -13,7 +13,7 @@ namespace DemoCentral.Communication.MessageProcessors
     /// <summary>
     /// Handles reports regarding the receipt of manual uploads received from DemoDownloader.
     /// </summary>
-    public class ManualDownloadReportProcessor
+    public class ManualDownloadInsertInstructionProcessor
     {
         private readonly IDemoTableInterface _demoTableInterface;
         private readonly IUserIdentityRetriever _userIdentityRetriever;
@@ -24,7 +24,7 @@ namespace DemoCentral.Communication.MessageProcessors
 
         private const int MAX_RETRIES = 2;
 
-        public ManualDownloadReportProcessor(
+        public ManualDownloadInsertInstructionProcessor(
             ILogger<DemoDownloaderReportProcessor> logger,
             IDemoTableInterface demoTableInterface,
             IUserIdentityRetriever userIdentityRetriever,

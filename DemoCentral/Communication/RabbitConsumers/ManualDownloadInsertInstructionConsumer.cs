@@ -17,16 +17,16 @@ namespace DemoCentral.Communication.RabbitConsumers
 {
     /// <summary>
     /// Consumer for the ManualDownload report queue.
-    /// Messages are being processed by <see cref="ManualDownloadReportProcessor"/>.
+    /// Messages are being processed by <see cref="ManualDownloadInsertInstructionProcessor"/>.
     /// </summary>
-    public class ManualDownloadConsumer : Consumer<ManualDownloadReport>
+    public class ManualDownloadInsertInstructionConsumer : Consumer<ManualDownloadReport>
     {
         private readonly IServiceProvider _serviceProvider;
-        private readonly ILogger<ManualDownloadConsumer> _logger;
+        private readonly ILogger<ManualDownloadInsertInstructionConsumer> _logger;
 
-        public ManualDownloadConsumer(
+        public ManualDownloadInsertInstructionConsumer(
             IServiceProvider serviceProvider,
-            ILogger<ManualDownloadConsumer> logger,
+            ILogger<ManualDownloadInsertInstructionConsumer> logger,
             IQueueConnection queueConnection
             ) : base(queueConnection)
         {
@@ -42,7 +42,7 @@ namespace DemoCentral.Communication.RabbitConsumers
             {
                 using (var scope = _serviceProvider.CreateScope())
                 {
-                    var processor = scope.ServiceProvider.GetRequiredService<ManualDownloadReportProcessor>();
+                    var processor = scope.ServiceProvider.GetRequiredService<ManualDownloadInsertInstructionProcessor>();
                     await processor.WorkAsync(model);
                     return ConsumedMessageHandling.Done;
                 }

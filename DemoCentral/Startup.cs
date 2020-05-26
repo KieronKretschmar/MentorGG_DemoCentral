@@ -189,11 +189,11 @@ namespace DemoCentral
             // New downloads from ManualDemoDownloader
             var AMQP_MANUALDEMODOWNLOAD = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_MANUALDEMODOWNLOAD");
             var manualDemoDownloadQueue = new QueueConnection(AMQP_URI, AMQP_MANUALDEMODOWNLOAD);
-            services.AddHostedService<ManualDownloadConsumer>(services =>
+            services.AddHostedService<ManualDownloadInsertInstructionConsumer>(services =>
             {
-                return new ManualDownloadConsumer(
+                return new ManualDownloadInsertInstructionConsumer(
                     services,
-                    services.GetRequiredService<ILogger<ManualDownloadConsumer>>(),
+                    services.GetRequiredService<ILogger<ManualDownloadInsertInstructionConsumer>>(),
                     manualDemoDownloadQueue
                 );
             });
@@ -256,7 +256,7 @@ namespace DemoCentral
             services.AddTransient<GathererInstructionProcessor>();
             services.AddTransient<DemoDownloaderReportProcessor>();
             services.AddTransient<DemoFileWorkerReportProcessor>();
-            services.AddTransient<ManualDownloadReportProcessor>();
+            services.AddTransient<ManualDownloadInsertInstructionProcessor>();
             services.AddTransient<MatchWriterUploadReportProcessor>();
             #endregion
         }
