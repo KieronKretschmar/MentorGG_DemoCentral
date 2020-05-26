@@ -59,8 +59,6 @@ namespace DemoCentral.Communication.MessageProcessors
                     dbDemo,
                     true);
 
-                _inQueueTableInterface.Remove(queuedDemo);
-
                 _logger.LogInformation($"Demo [ {matchId} ]. MatchWriter stored the MatchData successfully.");
             }
             else
@@ -72,6 +70,8 @@ namespace DemoCentral.Communication.MessageProcessors
 
                 _logger.LogError($"Demo [ {matchId} ]. MatchWriter failed to store the MatchData!");
             }
+
+            _inQueueTableInterface.Remove(queuedDemo);
         }
     }
 }
