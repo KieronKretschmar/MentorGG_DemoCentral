@@ -247,6 +247,10 @@ namespace DemoCentral
             var AMQP_FANOUT_EXCHANGE_NAME = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_FANOUT_EXCHANGE_NAME");
             services.AddFanoutProducer<MatchDatabaseInsertionInstruction>(AMQP_URI, AMQP_FANOUT_EXCHANGE_NAME);
 
+            // To SituationOperator
+            var AMQP_SITUATION_OPERATOR = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_SITUATION_OPERATOR");
+            services.AddProducer<SituationExtractionReport>(AMQP_URI, AMQP_SITUATION_OPERATOR);
+
             // Removal-Instructions to MatchWriter
             var AMQP_MATCHWRITER_DEMO_REMOVAL = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_MATCHWRITER_DEMO_REMOVAL");
             services.AddProducer<DemoRemovalInstruction>(AMQP_URI, AMQP_MATCHWRITER_DEMO_REMOVAL);
