@@ -28,12 +28,13 @@ namespace DemoCentral
         void ResetRetry(InQueueDemo demo);
 
         /// <summary>
-        /// Update the current queue, in Queue is set to Queue.UnQueued
-        /// The Demo is removed from the InQueue table
-        /// </summary>
-        /// <param name="demo"></param>
-        /// <param name="queue"></param>
+        /// Update the current queue.
         void UpdateCurrentQueue(InQueueDemo demo, Queue queue);
+
+        /// <summary>
+        /// Remove the item from the InQueueDemo table.
+        /// </summary>
+        void Remove(InQueueDemo demo);
     }
 
     /// <summary>
@@ -65,14 +66,7 @@ namespace DemoCentral
 
         public void UpdateCurrentQueue(InQueueDemo demo, Queue queue)
         {
-            if (demo.CurrentQueue == Queue.UnQueued)
-            {
-                _context.InQueueDemo.Remove(demo);
-            }
-            else
-            {
-                demo.CurrentQueue = queue;
-            }
+            demo.CurrentQueue = queue;
             _context.SaveChanges();
         }
 
@@ -111,6 +105,12 @@ namespace DemoCentral
         public InQueueDemo GetDemoById(long matchId)
         {
             return _context.InQueueDemo.Single(x => x.MatchId == matchId);
+        }
+
+        public void Remove(InQueueDemo demo)
+        {
+            _context.InQueueDemo.Remove(demo);
+            _context.SaveChanges();
         }
     }
 }

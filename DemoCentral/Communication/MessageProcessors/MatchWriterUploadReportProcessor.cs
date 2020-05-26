@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Database.DatabaseClasses;
 using Database.Enumerals;
 using Database.Enumerals;
 using DemoCentral.Communication.HTTP;
@@ -18,13 +19,16 @@ namespace DemoCentral.Communication.MessageProcessors
     {
         private readonly ILogger<MatchWriterUploadReportProcessor> _logger;
         private readonly IDemoTableInterface _demoTableInterface;
+        private readonly IInQueueTableInterface _inQueueTableInterface;
 
         public MatchWriterUploadReportProcessor(
             ILogger<MatchWriterUploadReportProcessor> logger,
-            IDemoTableInterface demoTableInterface)
+            IDemoTableInterface demoTableInterface,
+            IInQueueTableInterface inQueueTableInterface)
         {
             _logger = logger;
             _demoTableInterface = demoTableInterface;
+            _inQueueTableInterface = inQueueTableInterface;
         }
 
 
@@ -47,12 +51,15 @@ namespace DemoCentral.Communication.MessageProcessors
         {
             long matchId = model.MatchId;
             var dbDemo = _demoTableInterface.GetDemoById(matchId);
+            var queuedDemo = _inQueueTableInterface.GetDemoById(matchId);
             
             if (model.Success)
             {
                 _demoTableInterface.SetAnalyzeState(
                     dbDemo,
                     true);
+
+                _inQueueTableInterface.Remove(queuedDemo);
 
                 _logger.LogInformation($"Demo [ {matchId} ]. MatchWriter stored the MatchData successfully.");
             }

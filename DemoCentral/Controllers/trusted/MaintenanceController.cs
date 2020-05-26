@@ -55,8 +55,7 @@ namespace DemoCentral.Controllers.trusted
                 // Try to remove demo from queue if it's in it
                 try
                 {
-                    var queuedDemo = _inQueueTableInterface.GetDemoById(demo.MatchId);
-                    _inQueueTableInterface.UpdateCurrentQueue(queuedDemo, Queue.UnQueued);
+                    _inQueueTableInterface.Remove(demo.InQueueDemo);
                 }
                 catch
                 {

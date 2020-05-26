@@ -89,14 +89,11 @@ namespace DemoCentral.Communication.MessageProcessors
         /// <param name="response"></param>
         private void ActOnAnalyzeSuccess(DemoAnalyzeReport response)
         {
-            var matchId = response.MatchId;
-            InQueueDemo inQueueDemo = _inQueueTableInterface.GetDemoById(matchId);
-            Demo dbDemo = _demoTableInterface.GetDemoById(matchId);
+            Demo dbDemo = _demoTableInterface.GetDemoById(response.MatchId);
+            InQueueDemo queueDemo = _inQueueTableInterface.GetDemoById(response.MatchId);
 
-            _demoTableInterface.SetAnalyzeState(dbDemo, success: true);
             _demoTableInterface.SetFrames(dbDemo, response.FramesPerSecond);
-
-            _inQueueTableInterface.UpdateCurrentQueue(inQueueDemo, Queue.MatchWriter);
+            _inQueueTableInterface.UpdateCurrentQueue(queueDemo, Queue.MatchWriter);
             PublishRedisInstruction(response);
 
         }
@@ -137,16 +134,16 @@ namespace DemoCentral.Communication.MessageProcessors
             if (inQueueDemo.RetryAttemptsOnCurrentFailure > MAX_RETRIES)
             {
                 _blobStorage.DeleteBlobAsync(dbDemo.BlobUrl);
-                _inQueueTableInterface.UpdateCurrentQueue(inQueueDemo, Queue.UnQueued);
+                _inQueueTableInterface.Remove(inQueueDemo);
                 _demoTableInterface.RemoveDemo(dbDemo);
-                _logger.LogInformation($"Demo [ {matchId} ]. Exceeded the maximum retry limit of [ {MAX_RETRIES} ]");
+                _logger.LogInformation($"Demo [ {matchId} ]. Exceeded the maximum retry limit of [ {MAX_RETRIES} ].  Removed");
                 return;
             }
             // If the demo is a duplicate.
             if (block == DemoAnalysisBlock.Duplicate)
             {
                 _blobStorage.DeleteBlobAsync(dbDemo.BlobUrl);
-                _inQueueTableInterface.UpdateCurrentQueue(inQueueDemo, Queue.UnQueued);
+                _inQueueTableInterface.Remove(inQueueDemo);
                 _demoTableInterface.RemoveDemo(dbDemo);
                 _logger.LogInformation($"Demo [ {matchId} ]. Duplicate, determinted by the MD5Hash");
                 return;

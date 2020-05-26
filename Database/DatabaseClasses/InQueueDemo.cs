@@ -31,8 +31,6 @@ namespace Database.DatabaseClasses
 
     public enum Queue : byte
     {
-        UnQueued = 0,
-
         DemoDownloader = 10,
 
         DemoFileWorker = 20,
