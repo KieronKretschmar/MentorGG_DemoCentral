@@ -43,7 +43,7 @@ namespace DemoCentral.Communication.MessageProcessors
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
-        public async Task WorkAsync(ManualDownloadReport model)
+        public async Task WorkAsync(ManualDownloadInsertInstruction model)
         {
             try
             {
@@ -54,11 +54,11 @@ namespace DemoCentral.Communication.MessageProcessors
             }
             catch (Exception e)
             {
-                _logger.LogError(e, $"Could not handle message [ {model.ToJson()} ] from ManualDownloadReport.");
+                _logger.LogError(e, $"Could not handle message [ {model.ToJson()} ] from ManualDownloadInsertInstruction.");
             }
         }
 
-        private async Task InsertNewDemo(ManualDownloadReport model)
+        private async Task InsertNewDemo(ManualDownloadInsertInstruction model)
         {
             var requestedAnalyzerQuality = await _userIdentityRetriever.GetAnalyzerQualityAsync(model.UploaderId);
             var matchId = _demoTableInterface.CreateNewDemoEntryFromManualUpload(model, requestedAnalyzerQuality);

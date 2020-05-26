@@ -19,7 +19,7 @@ namespace DemoCentral.Communication.RabbitConsumers
     /// Consumer for the ManualDownload report queue.
     /// Messages are being processed by <see cref="ManualDownloadInsertInstructionProcessor"/>.
     /// </summary>
-    public class ManualDownloadInsertInstructionConsumer : Consumer<ManualDownloadReport>
+    public class ManualDownloadInsertInstructionConsumer : Consumer<ManualDownloadInsertInstruction>
     {
         private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<ManualDownloadInsertInstructionConsumer> _logger;
@@ -34,7 +34,7 @@ namespace DemoCentral.Communication.RabbitConsumers
             _logger = logger;
         }
 
-        public async override Task<ConsumedMessageHandling> HandleMessageAsync(BasicDeliverEventArgs ea, ManualDownloadReport model)
+        public async override Task<ConsumedMessageHandling> HandleMessageAsync(BasicDeliverEventArgs ea, ManualDownloadInsertInstruction model)
         {
             _logger.LogInformation($"Received {model.GetType()}. Message: [ {model.ToJson()} ]");
 
@@ -49,7 +49,7 @@ namespace DemoCentral.Communication.RabbitConsumers
             }
             catch (Exception e)
             {
-                _logger.LogCritical(e, $"Failed to handle message from ManualDownloadReport queue. [ {model} ]");
+                _logger.LogCritical(e, $"Failed to handle message from ManualDownloadInsertInstruction queue. [ {model} ]");
                 return ConsumedMessageHandling.Resend;
             }
         }

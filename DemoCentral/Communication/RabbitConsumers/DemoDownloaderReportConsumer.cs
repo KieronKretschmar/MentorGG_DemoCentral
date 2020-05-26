@@ -17,7 +17,7 @@ namespace DemoCentral.Communication.RabbitConsumers
     /// Consumer for the DemoDownloader report queue.
     /// Messages are being processed by <see cref="DemoDownloaderReportProcessor"/>.
     /// </summary>
-    public class DemoDownloaderReportConsumer : Consumer<DemoObtainReport>
+    public class DemoDownloaderReportConsumer : Consumer<DemoDownloadReport>
     {
         private readonly IServiceProvider _serviceProvider;
         private ILogger<DemoDownloaderReportConsumer> _logger;
@@ -35,7 +35,7 @@ namespace DemoCentral.Communication.RabbitConsumers
         /// <summary>
         /// Handle Download report.
         /// </summary>
-        public async override Task<ConsumedMessageHandling> HandleMessageAsync(BasicDeliverEventArgs ea, DemoObtainReport model)
+        public async override Task<ConsumedMessageHandling> HandleMessageAsync(BasicDeliverEventArgs ea, DemoDownloadReport model)
         {
             _logger.LogInformation($"Received {model.GetType()} for match [ {model.MatchId} ]. Message: [ {model.ToJson()} ]");
 

@@ -17,7 +17,7 @@ namespace DemoCentral.Communication.MessageProcessors
         private readonly ILogger<DemoFileWorkerReportProcessor> _logger;
         private readonly IDemoTableInterface _demoTableInterface;
         private readonly IProducer<DemoAnalyzeInstruction> _demoFileWorkerProducer;
-        private readonly IProducer<RedisLocalizationInstruction> _fanoutProducer;
+        private readonly IProducer<MatchDatabaseInsertionInstruction> _fanoutProducer;
         private IInQueueTableInterface _inQueueTableInterface;
         private readonly IBlobStorage _blobStorage;
 
@@ -26,7 +26,7 @@ namespace DemoCentral.Communication.MessageProcessors
             ILogger<DemoFileWorkerReportProcessor> logger,
             IDemoTableInterface demoTableInterface,
             IProducer<DemoAnalyzeInstruction> demoFileWorkerProducer,
-            IProducer<RedisLocalizationInstruction> fanoutProducer,
+            IProducer<MatchDatabaseInsertionInstruction> fanoutProducer,
             IInQueueTableInterface inQueueTableInterface,
             IBlobStorage blobStorage)
         {
@@ -54,7 +54,7 @@ namespace DemoCentral.Communication.MessageProcessors
                 }
                 else
                 {
-                    ActOnAnalyzeFailure(model.MatchId, model.Block);
+                    ActOnAnalyzeFailure(model.MatchId, (DemoAnalysisBlock) model.Block);
                 }
             }
             catch (Exception e)
@@ -72,7 +72,7 @@ namespace DemoCentral.Communication.MessageProcessors
             {
                 throw new ArgumentException("RedisKey must be defined!");
             }
-            var forwardModel = new RedisLocalizationInstruction
+            var forwardModel = new MatchDatabaseInsertionInstruction
             {
                 MatchId = model.MatchId,
                 RedisKey = model.RedisKey,

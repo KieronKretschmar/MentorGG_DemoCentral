@@ -49,7 +49,7 @@ namespace DemoCentral
         /// Creates a new entry in the demo table. Returns the matchId of the newly created match.
         /// </summary>
         /// <returns>MatchId of the newly created match</returns>
-        long CreateNewDemoEntryFromManualUpload(ManualDownloadReport model, AnalyzerQuality requestedQuality);
+        long CreateNewDemoEntryFromManualUpload(ManualDownloadInsertInstruction model, AnalyzerQuality requestedQuality);
         List<Demo> GetRecentFailedMatches(long playerId, int recentMatches, int offset = 0);
         DemoDownloadInstruction CreateDownloadInstructions(Demo dbDemo);
         List<Demo> GetUnfinishedDemos(DateTime minUploadDate);
@@ -200,7 +200,7 @@ namespace DemoCentral
             return true;
         }
 
-        public long CreateNewDemoEntryFromManualUpload(ManualDownloadReport model, AnalyzerQuality requestedQuality)
+        public long CreateNewDemoEntryFromManualUpload(ManualDownloadInsertInstruction model, AnalyzerQuality requestedQuality)
         {
             var demo = Demo.FromManualUploadTransferModel(model);
             demo.Quality = requestedQuality;

@@ -44,7 +44,7 @@ namespace DemoCentral.Communication.MessageProcessors
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
-        public async Task WorkAsync(DemoObtainReport model)
+        public async Task WorkAsync(DemoDownloadReport model)
         {
             try
             {
@@ -52,11 +52,11 @@ namespace DemoCentral.Communication.MessageProcessors
             }
             catch (Exception e)
             {
-                _logger.LogError(e, $"Could not update demo [ {model.MatchId} ] from DemoObtainReport.");
+                _logger.LogError(e, $"Could not update demo [ {model.MatchId} ] from DemoDownloadReport.");
             }
         }
 
-        private void UpdateDemoStatusFromObtainReport(DemoObtainReport consumeModel)
+        private void UpdateDemoStatusFromObtainReport(DemoDownloadReport consumeModel)
         {
             long matchId = consumeModel.MatchId;
             var inQueueDemo = _inQueueTableInterface.GetDemoById(matchId);
