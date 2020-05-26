@@ -1,8 +1,10 @@
 ﻿using DemoCentral.Communication.HTTP;
+using DemoCentral.Enumerals;
 using DemoCentral.Models;
 using Microsoft.Extensions.Logging;
 using RabbitCommunicationLib.Enums;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace DemoCentral.Communication.HTTP
@@ -20,6 +22,12 @@ namespace DemoCentral.Communication.HTTP
         {
             _logger.LogWarning($"UserInfoGatherer is mocked, returning Medium Quality. Request made for SteamId [ {steamId} ]");
             return Task.FromResult(AnalyzerQuality.Medium);
+        }
+
+        public Task<SubscriptionType> GetHighestUserSubscription(List<long> playerIds)
+        {
+            _logger.LogWarning($"UserInfoGatherer is mocked, returning free subscription. Request made for SteamIds [ {string.Join(", ",playerIds)} ]");
+            return Task.FromResult(SubscriptionType.Free);
         }
 
         public Task<UserIdentity> GetUserIdentityAsync(long player)

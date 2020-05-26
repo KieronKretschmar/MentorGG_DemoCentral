@@ -6,12 +6,16 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using DemoCentral.Models;
 using DemoCentral.Enumerals;
+using System.Collections.Generic;
+using System;
+
 namespace DemoCentral.Communication.HTTP
 {
     public interface IUserIdentityRetriever
     {
         public Task<AnalyzerQuality> GetAnalyzerQualityAsync(long steamId);
         public Task<UserIdentity> GetUserIdentityAsync(long player);
+        public Task<SubscriptionType> GetHighestUserSubscription(List<long> playerIds);
     }
 
     /// <summary>
@@ -69,6 +73,22 @@ namespace DemoCentral.Communication.HTTP
             var userIdentity = JsonConvert.DeserializeObject<UserIdentity>(reponseContent);
 
             return userIdentity;
+        }
+
+        public async Task<SubscriptionType> GetHighestUserSubscription(List<long> playerIds)
+        {
+            var maxSubscription = SubscriptionType.Free;
+            _logger.LogInformation($"Requesting highest subscription from players [ {string.Join(",", playerIds)} ]");
+
+            foreach (var player in playerIds)
+            {
+                var identity = await GetUserIdentityAsync(player);
+                maxSubscription = identity.SubscriptionType > maxSubscription ? identity.SubscriptionType : maxSubscription;
+            }
+
+            _logger.LogInformation($"Highest subscription from players [ {string.Join(",", playerIds)} ] is [ {Enum.GetName(typeof(SubscriptionType), maxSubscription)} ]");
+
+            return maxSubscription;
         }
     }
 

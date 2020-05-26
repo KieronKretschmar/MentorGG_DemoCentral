@@ -1,6 +1,7 @@
 ﻿using DataBase.DatabaseClasses;
 using DemoCentral.Enumerals;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -46,7 +47,10 @@ namespace DemoCentral.Communication.HTTP
                 return new List<long>();
             }
 
-            _logger.LogInformation($"Participating players in match [ {matchId} ] are [ {string.Join(",",players)} ]");
+            var res = JsonConvert.DeserializeObject<PlayerInMatchModel>(await response.Content.ReadAsStringAsync());
+            players = res.Players;
+
+            _logger.LogInformation($"Participating players in match [ {matchId} ] are [ {string.Join(",", players)} ]");
             return players;
         }
 
@@ -54,15 +58,9 @@ namespace DemoCentral.Communication.HTTP
         {
             var players = await GetParticipatingPlayersAsync(matchId);
 
-            _logger.LogInformation($"Requesting highest subscription in match [ {matchId} ]");
-            var maxUserSubscription = SubscriptionType.Free;
-            foreach (var player in players)
-            {
-                var userIdentity = await _userIdentityRetriever.GetUserIdentityAsync(player).ConfigureAwait(false);
-                var userSubscription = userIdentity.SubscriptionType;
-                if (userSubscription > maxUserSubscription)
-                    maxUserSubscription = userSubscription;
-            }
+            _logger.LogInformation($"Requesting highest subscription for match [ {matchId} ]");
+
+            var maxUserSubscription = await _userIdentityRetriever.GetHighestUserSubscription(players);
 
             _logger.LogInformation($"Highest subscription for match [ {matchId} ] is [ {Enum.GetName(typeof(SubscriptionType), maxUserSubscription)} ]");
             return maxUserSubscription;
@@ -84,5 +82,13 @@ namespace DemoCentral.Communication.HTTP
             var demo = _dBInterface.GetDemoById(matchId);
             return await CalculateDemoRemovalDateAsync(demo);
         }
+
+
+
+        public class PlayerInMatchModel
+        {
+            public List<long> Players { get; set; }
+        }
+
     }
 }
