@@ -209,9 +209,9 @@ namespace DemoCentral
             // Analyze Reports from DemoFileWorker
             var AMQP_DEMOFILEWORKER_REPLY = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_DEMOFILEWORKER_REPLY");
             var demoFileWorkerReportQueue = new QueueConnection(AMQP_URI, AMQP_DEMOFILEWORKER_REPLY);
-            services.AddHostedService<DemoFileWorkerReportConsumer>(services =>
+            services.AddHostedService<DemoAnalyzeReportReportConsumer>(services =>
             {
-                return new DemoFileWorkerReportConsumer(services, services.GetRequiredService<ILogger<DemoFileWorkerReportConsumer>>(), demoFileWorkerReportQueue);
+                return new DemoAnalyzeReportReportConsumer(services, services.GetRequiredService<ILogger<DemoAnalyzeReportReportConsumer>>(), demoFileWorkerReportQueue);
             });
 
             // Upload Reports from MatchWriter
@@ -255,7 +255,7 @@ namespace DemoCentral
             #region Rabbit - MessageProcessors
             services.AddTransient<DemoInsertInstructionProcessor>();
             services.AddTransient<DemoDownloaderReportProcessor>();
-            services.AddTransient<DemoFileWorkerReportProcessor>();
+            services.AddTransient<DemoAnalyzeReportProcessor>();
             services.AddTransient<ManualDownloadInsertInstructionProcessor>();
             services.AddTransient<MatchWriterUploadReportProcessor>();
             #endregion

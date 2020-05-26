@@ -12,9 +12,9 @@ namespace DemoCentral.Communication.MessageProcessors
     /// <summary>
     /// Handles reports regarding analysis received from DemoFileWorker.
     /// </summary>
-    public class DemoFileWorkerReportProcessor
+    public class DemoAnalyzeReportProcessor
     {
-        private readonly ILogger<DemoFileWorkerReportProcessor> _logger;
+        private readonly ILogger<DemoAnalyzeReportProcessor> _logger;
         private readonly IDemoTableInterface _demoTableInterface;
         private readonly IProducer<DemoAnalyzeInstruction> _demoFileWorkerProducer;
         private readonly IProducer<MatchDatabaseInsertionInstruction> _fanoutProducer;
@@ -22,8 +22,8 @@ namespace DemoCentral.Communication.MessageProcessors
         private readonly IBlobStorage _blobStorage;
 
         private const int MAX_RETRIES = 2;
-        public DemoFileWorkerReportProcessor(
-            ILogger<DemoFileWorkerReportProcessor> logger,
+        public DemoAnalyzeReportProcessor(
+            ILogger<DemoAnalyzeReportProcessor> logger,
             IDemoTableInterface demoTableInterface,
             IProducer<DemoAnalyzeInstruction> demoFileWorkerProducer,
             IProducer<MatchDatabaseInsertionInstruction> fanoutProducer,
