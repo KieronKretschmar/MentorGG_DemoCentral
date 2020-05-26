@@ -13,14 +13,14 @@ namespace DemoCentral.Communication.MessageProcessors
     /// <summary>
     /// Handles reports regarding uploads received from MatchWriter.
     /// </summary>
-    public class MatchWriterUploadReportProcessor
+    public class MatchDatabaseInsertionReportProcessor
     {
-        private readonly ILogger<MatchWriterUploadReportProcessor> _logger;
+        private readonly ILogger<MatchDatabaseInsertionReportProcessor> _logger;
         private readonly IDemoTableInterface _demoTableInterface;
         private readonly IInQueueTableInterface _inQueueTableInterface;
 
-        public MatchWriterUploadReportProcessor(
-            ILogger<MatchWriterUploadReportProcessor> logger,
+        public MatchDatabaseInsertionReportProcessor(
+            ILogger<MatchDatabaseInsertionReportProcessor> logger,
             IDemoTableInterface demoTableInterface,
             IInQueueTableInterface inQueueTableInterface)
         {

@@ -15,17 +15,17 @@ namespace DemoCentral.Communication.RabbitConsumers
 {
     /// <summary>
     /// Consumer for the MatchWriter upload report queue.
-    /// Messages are being processed by <see cref="MatchWriterUploadReportProcessor"/>.
+    /// Messages are being processed by <see cref="MatchDatabaseInsertionReportProcessor"/>.
     /// </summary>
-    public class MatchWriterUploadReportConsumer : Consumer<TaskCompletedReport>
+    public class MatchDatabaseInsertionReportConsumer : Consumer<TaskCompletedReport>
     {
 
         private readonly IServiceProvider _serviceProvider;
-        private ILogger<MatchWriterUploadReportConsumer> _logger;
+        private ILogger<MatchDatabaseInsertionReportConsumer> _logger;
 
-        public MatchWriterUploadReportConsumer(
+        public MatchDatabaseInsertionReportConsumer(
             IServiceProvider serviceProvider,
-            ILogger<MatchWriterUploadReportConsumer> logger,
+            ILogger<MatchDatabaseInsertionReportConsumer> logger,
             IQueueConnection queueConnection
             ) : base(queueConnection)
         {
@@ -44,7 +44,7 @@ namespace DemoCentral.Communication.RabbitConsumers
             {
                 using (var scope = _serviceProvider.CreateScope())
                 {
-                    var processor = scope.ServiceProvider.GetRequiredService<MatchWriterUploadReportProcessor>();
+                    var processor = scope.ServiceProvider.GetRequiredService<MatchDatabaseInsertionReportProcessor>();
                     await processor.WorkAsync(model);
                     return ConsumedMessageHandling.Done;
                 }

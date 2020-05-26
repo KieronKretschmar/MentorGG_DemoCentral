@@ -217,9 +217,9 @@ namespace DemoCentral
             // Upload Reports from MatchWriter
             var AMQP_MATCHWRITER_UPLOAD_REPORT = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_MATCHWRITER_UPLOAD_REPORT");
             var matchwriterUploadReportQueue = new QueueConnection(AMQP_URI, AMQP_MATCHWRITER_UPLOAD_REPORT);
-            services.AddHostedService<MatchWriterUploadReportConsumer>(services =>
+            services.AddHostedService<MatchDatabaseInsertionReportConsumer>(services =>
             {
-                return new MatchWriterUploadReportConsumer(services, services.GetRequiredService<ILogger<MatchWriterUploadReportConsumer>>(), matchwriterUploadReportQueue);
+                return new MatchDatabaseInsertionReportConsumer(services, services.GetRequiredService<ILogger<MatchDatabaseInsertionReportConsumer>>(), matchwriterUploadReportQueue);
             });
 
             // Removal Reports from MatchWriter
@@ -257,7 +257,7 @@ namespace DemoCentral
             services.AddTransient<DemoDownloadReportProcessor>();
             services.AddTransient<DemoAnalyzeReportProcessor>();
             services.AddTransient<ManualDownloadInsertInstructionProcessor>();
-            services.AddTransient<MatchWriterUploadReportProcessor>();
+            services.AddTransient<MatchDatabaseInsertionReportProcessor>();
             #endregion
         }
 
