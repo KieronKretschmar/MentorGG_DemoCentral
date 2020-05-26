@@ -99,7 +99,7 @@ namespace Database.DatabaseClasses
             };
         }
 
-        public static Demo FromManualUploadTransferModel(ManualDownloadInsertInstruction model)
+        public static Demo FromManualUploadTransferModel(ManualDownloadReport model)
         {
             return new Demo
             {
