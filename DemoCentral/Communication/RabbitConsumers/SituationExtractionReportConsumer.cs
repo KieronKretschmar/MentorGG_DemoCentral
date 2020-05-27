@@ -34,7 +34,7 @@ namespace DemoCentral.Communication.RabbitConsumers
         }
 
         /// <summary>
-        /// Handle Upload report.
+        /// Handle SituationOperator's extraction report.
         /// </summary>
         public async override Task<ConsumedMessageHandling> HandleMessageAsync(BasicDeliverEventArgs ea, SituationExtractionReport model)
         {
@@ -51,7 +51,7 @@ namespace DemoCentral.Communication.RabbitConsumers
             }
             catch (Exception e)
             {
-                _logger.LogCritical(e, $"Failed to handle message from MatchWriter Upload Report queue. [ {model} ]");
+                _logger.LogCritical(e, $"Failed to handle message from SituationOperator Extraction Report queue. [ {model} ]");
                 return ConsumedMessageHandling.Resend;
             }
         }
