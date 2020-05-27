@@ -53,7 +53,12 @@ namespace DemoCentral.Communication.MessageProcessors
             long matchId = model.MatchId;
             var dbDemo = _demoTableInterface.GetDemoById(matchId);
             var queuedDemo = _inQueueTableInterface.GetDemoById(matchId);
-            
+
+            _demoTableInterface.SetAnalyzeState(
+                dbDemo,
+                false,
+                model.Block);
+
             if (model.Success)
             {
                 _inQueueTableInterface.UpdateCurrentQueue(queuedDemo, Queue.SitutationOperator);
@@ -92,10 +97,6 @@ namespace DemoCentral.Communication.MessageProcessors
                         _logger.LogWarning($"Demo [ {matchId} ]. MatchWriter failed with unhandled DemoAnalysisBlock [ { model.Block} ]!");
 
                         // Stop analysis
-                        _demoTableInterface.SetAnalyzeState(
-                            dbDemo,
-                            false,
-                            model.Block);
                         _demoTableInterface.RemoveDemo(dbDemo);
                         break;
                 }
