@@ -72,14 +72,33 @@ namespace DemoCentral.Communication.MessageProcessors
             }
             else
             {
-                var blockReason = DemoAnalysisBlock.MatchWriter_Unknown;
-                _demoTableInterface.SetAnalyzeState(
-                    dbDemo,
-                    false,
-                    blockReason);
-                _demoTableInterface.RemoveDemo(dbDemo);
+                _logger.LogError($"Demo [ {matchId} ]. MatchWriter failed with DemoAnalysisBlock [ { model.Block} ].");
 
-                _logger.LogError($"Demo [ {matchId} ]. MatchWriter failed to store the MatchData!");
+                switch (model.Block)
+                {
+                    case DemoAnalysisBlock.MatchWriter_MatchDataSetUnavailable:
+                        // TODO: Retry analysis starting at DFW or even DemoDownloader
+                    case DemoAnalysisBlock.MatchWriter_RedisConnectionFailed:
+                    case DemoAnalysisBlock.MatchWriter_Timeout:
+                        // TODO: Retry this step (MatchDatabaseInsertion) up to 3 times, then stop analysis.
+
+                    case DemoAnalysisBlock.MatchWriter_DatabaseUpload:
+                        // TODO: Retry this step (MatchDatabaseInsertion) up to 1 times, then stop analysis.
+
+                    case DemoAnalysisBlock.MatchWriter_Unknown:
+                        // TODO: Retry this step (MatchDatabaseInsertion) up to 1 times, then stop analysis.
+
+                    default:
+                        _logger.LogWarning($"Demo [ {matchId} ]. MatchWriter failed with unhandled DemoAnalysisBlock [ { model.Block} ]!");
+
+                        // Stop analysis
+                        _demoTableInterface.SetAnalyzeState(
+                            dbDemo,
+                            false,
+                            model.Block);
+                        _demoTableInterface.RemoveDemo(dbDemo);
+                        break;
+                }
             }
         }
     }
