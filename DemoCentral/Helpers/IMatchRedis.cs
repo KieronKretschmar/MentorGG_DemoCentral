@@ -9,7 +9,7 @@ namespace DemoCentral.Helpers
 {
     public interface IMatchRedis
     {
-        Task DeleteMatch(long matchId);
+        Task DeleteMatchAsync(long matchId);
     }
 
     /// <summary>
@@ -28,7 +28,7 @@ namespace DemoCentral.Helpers
             cache = connectionMultiplexer.GetDatabase();
         }
 
-        public async Task DeleteMatch(long matchId)
+        public async Task DeleteMatchAsync(long matchId)
         {
             var key = matchId.ToString();
             _logger.LogDebug($"Attempting to delete key [ {key} ]");
@@ -47,7 +47,7 @@ namespace DemoCentral.Helpers
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        public Task DeleteMatch(long matchId)
+        public Task DeleteMatchAsync(long matchId)
         {
             return Task.CompletedTask;
         }

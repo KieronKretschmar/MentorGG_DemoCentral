@@ -67,7 +67,7 @@ namespace DemoCentral.Communication.MessageProcessors
                     true,
                     null);
 
-                await _matchRedis.DeleteMatch(matchId);
+                await _matchRedis.DeleteMatchAsync(matchId);
 
                 _logger.LogInformation($"Demo [ {matchId} ]. Analysis finished successfully.");
             }
