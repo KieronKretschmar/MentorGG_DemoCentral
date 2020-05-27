@@ -232,8 +232,8 @@ namespace DemoCentral
             });
 
             // Upload Reports from MatchWriter
-            var AMQP_MATCHWRITER_UPLOAD_REPORT = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_MATCHWRITER_UPLOAD_REPORT");
-            var matchwriterUploadReportQueue = new QueueConnection(AMQP_URI, AMQP_MATCHWRITER_UPLOAD_REPORT);
+            var AMQP_MATCHWRITER_INSERTION_REPLY = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_MATCHWRITER_INSERTION_REPLY");
+            var matchwriterUploadReportQueue = new QueueConnection(AMQP_URI, AMQP_MATCHWRITER_INSERTION_REPLY);
             services.AddHostedService<MatchDatabaseInsertionReportConsumer>(services =>
             {
                 return new MatchDatabaseInsertionReportConsumer(services, services.GetRequiredService<ILogger<MatchDatabaseInsertionReportConsumer>>(), matchwriterUploadReportQueue);
