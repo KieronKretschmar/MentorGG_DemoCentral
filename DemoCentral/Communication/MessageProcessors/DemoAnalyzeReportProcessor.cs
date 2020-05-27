@@ -17,7 +17,7 @@ namespace DemoCentral.Communication.MessageProcessors
         private readonly ILogger<DemoAnalyzeReportProcessor> _logger;
         private readonly IDemoTableInterface _demoTableInterface;
         private readonly IProducer<DemoAnalyzeInstruction> _demoFileWorkerProducer;
-        private readonly IProducer<MatchDatabaseInsertionInstruction> _fanoutProducer;
+        private readonly IProducer<MatchDatabaseInsertionInstruction> _databaseInsertionProducer;
         private IInQueueTableInterface _inQueueTableInterface;
         private readonly IBlobStorage _blobStorage;
 
@@ -26,13 +26,13 @@ namespace DemoCentral.Communication.MessageProcessors
             ILogger<DemoAnalyzeReportProcessor> logger,
             IDemoTableInterface demoTableInterface,
             IProducer<DemoAnalyzeInstruction> demoFileWorkerProducer,
-            IProducer<MatchDatabaseInsertionInstruction> fanoutProducer,
+            IProducer<MatchDatabaseInsertionInstruction> databaseInsertionProducer,
             IInQueueTableInterface inQueueTableInterface,
             IBlobStorage blobStorage)
         {
             _logger = logger;
             _demoTableInterface = demoTableInterface;
-            _fanoutProducer = fanoutProducer;
+            _databaseInsertionProducer = databaseInsertionProducer;
             _demoFileWorkerProducer = demoFileWorkerProducer;
             _inQueueTableInterface = inQueueTableInterface;
             _blobStorage = blobStorage;
@@ -78,7 +78,7 @@ namespace DemoCentral.Communication.MessageProcessors
                 RedisKey = model.RedisKey,
                 ExpiryDate = model.ExpiryDate,
             };
-            _fanoutProducer.PublishMessage(forwardModel);
+            _databaseInsertionProducer.PublishMessage(forwardModel);
             _logger.LogInformation($"Demo [ {model.MatchId} ]. RedisInstruction sent.");
         }
 

@@ -252,8 +252,8 @@ namespace DemoCentral
             services.AddProducer<DemoAnalyzeInstruction>(AMQP_URI, AMQP_DEMOFILEWORKER);
 
             // To MatchData-Exchange
-            var AMQP_FANOUT_EXCHANGE_NAME = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_FANOUT_EXCHANGE_NAME");
-            services.AddFanoutProducer<MatchDatabaseInsertionInstruction>(AMQP_URI, AMQP_FANOUT_EXCHANGE_NAME);
+            var AMQP_MATCHWRITER_INSERTION = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_MATCHWRITER_INSERTION");
+            services.AddProducer<MatchDatabaseInsertionInstruction>(AMQP_URI, AMQP_MATCHWRITER_INSERTION);
 
             // To SituationOperator
             var AMQP_SITUATION_OPERATOR = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_SITUATION_OPERATOR");
