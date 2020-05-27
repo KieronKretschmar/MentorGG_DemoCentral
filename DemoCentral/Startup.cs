@@ -23,6 +23,7 @@ using DemoCentral.Communication.Rabbit;
 using System.Net.Http;
 using DemoCentral.Communication.MessageProcessors;
 using DemoCentral.Communication.RabbitConsumers;
+using StackExchange.Redis;
 
 namespace DemoCentral
 {
@@ -152,6 +153,22 @@ namespace DemoCentral
             {
                 return new BlobStorage(BLOBSTORAGE_CONNECTION_STRING, services.GetRequiredService<ILogger<BlobStorage>>());
             });
+            #endregion
+
+            #region Redis
+            var REDIS_CONFIGURATION_STRING = Configuration.GetValue<string>("REDIS_CONFIGURATION_STRING");
+            if (REDIS_CONFIGURATION_STRING == "mock")
+            {
+                // Add MockRedis, a local InMemory redis cache good for testing
+                services.AddTransient<IMatchRedis, MockRedis>();
+            }
+            else
+            {
+                // Add ConnectionMultiplexer as singleton as it is made to be reused
+                // see https://stackexchange.github.io/StackExchange.Redis/Basics.html
+                services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(REDIS_CONFIGURATION_STRING));
+                services.AddTransient<IMatchRedis, MatchRedis>();
+            }
             #endregion
 
             #region Http related services
