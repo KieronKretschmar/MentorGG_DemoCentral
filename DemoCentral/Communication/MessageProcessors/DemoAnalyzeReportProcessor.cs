@@ -125,7 +125,7 @@ namespace DemoCentral.Communication.MessageProcessors
             }
 
             // Store the Analyze state with the current failure
-            _demoTableInterface.SetAnalyzeState(dbDemo, success: false, block);
+            _demoTableInterface.SetAnalyzeState(dbDemo, analysisFinishedSuccessfully: false, block);
 
             // If the amount of retries exceeds the maximum allowed - stop retrying this demo.
             // OR if the demo is a duplicate.
