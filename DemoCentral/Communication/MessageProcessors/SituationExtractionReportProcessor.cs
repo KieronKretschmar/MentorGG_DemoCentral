@@ -64,8 +64,7 @@ namespace DemoCentral.Communication.MessageProcessors
             {
                 _demoTableInterface.SetAnalyzeState(
                     demo,
-                    true,
-                    null);
+                    true);
 
                 await _matchRedis.DeleteMatchAsync(matchId);
 
