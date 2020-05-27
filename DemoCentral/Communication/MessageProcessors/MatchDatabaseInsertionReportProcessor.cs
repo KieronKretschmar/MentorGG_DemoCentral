@@ -72,7 +72,7 @@ namespace DemoCentral.Communication.MessageProcessors
             }
             else
             {
-                var blockReason = model.Block ?? DemoAnalysisBlock.UnknownMatchWriter;
+                var blockReason = DemoAnalysisBlock.MatchWriter_Unknown;
                 _demoTableInterface.SetAnalyzeState(
                     dbDemo,
                     false,

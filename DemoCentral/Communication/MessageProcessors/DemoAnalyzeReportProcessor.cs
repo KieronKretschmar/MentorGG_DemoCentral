@@ -138,7 +138,7 @@ namespace DemoCentral.Communication.MessageProcessors
                 return;
             }
             // If the demo is a duplicate.
-            if (block == DemoAnalysisBlock.Duplicate)
+            if (block == DemoAnalysisBlock.DemoFileWorker_Duplicate)
             {
                 _blobStorage.DeleteBlobAsync(dbDemo.BlobUrl);
                 _inQueueTableInterface.Remove(inQueueDemo);
@@ -148,38 +148,38 @@ namespace DemoCentral.Communication.MessageProcessors
             }
 
             switch (block){
-                case DemoAnalysisBlock.BlobDownload:
+                case DemoAnalysisBlock.DemoFileWorker_BlobDownload:
                     // BlobDownload failed.
                     // This may be a temporary issue - Try again.
                     _logger.LogWarning($"Demo [ {matchId} ]. Failed to download blob.");
                     break;
 
-                case DemoAnalysisBlock.Unzip:
+                case DemoAnalysisBlock.DemoFileWorker_Unzip:
                     // Unzip failed, this could indicate that we do not support the file type, or the demo is
                     // corrupt - Delete the blob and mark this as failed.
                     _logger.LogWarning($"Demo [ {matchId} ]. Could not be unzipped");
                     break;
 
-                case DemoAnalysisBlock.HttpHashCheck:
+                case DemoAnalysisBlock.DemoFileWorker_HttpHashCheck:
                     // Contacting DemoCentral to confirm if the Demo was a Duplicate failed.
                     // This may be a temporary issue - Try again.
                     _logger.LogWarning($"Demo [ {matchId} ]. Failed to complete the Hash check for duplicate checking.");
                     break;
 
-                case DemoAnalysisBlock.Duplicate:
+                case DemoAnalysisBlock.DemoFileWorker_Duplicate:
                     // Demo has been indentified as a Duplicate.
                     throw new InvalidOperationException("Duplicate handling should have already happened!");
-                case DemoAnalysisBlock.Analyze:
+                case DemoAnalysisBlock.DemoFileWorker_Analyze:
                     // DemoFileWorker failed on the Analyze step.
                     _logger.LogWarning($"Demo [ {matchId} ]. Analyze Failure");
                     break;
 
-                case DemoAnalysisBlock.Enrich:
+                case DemoAnalysisBlock.DemoFileWorker_Enrich:
                     // DemoFileWorker failed on the Enrich step.
                     _logger.LogWarning($"Demo [ {matchId} ]. Enrich Failure");
                     break;
 
-                case DemoAnalysisBlock.RedisStorage:
+                case DemoAnalysisBlock.DemoFileWorker_RedisStorage:
                     // DemoFileWorker failed to store the MatchDataSet in Redis,
                     // This may be a temporary issue - Try again.
                     _logger.LogWarning($"Demo [ {matchId} ]. RedisStorage Failure");
