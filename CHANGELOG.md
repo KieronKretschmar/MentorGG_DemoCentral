@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [2.0.0] - 2020-04-?
 ### Added 
 - Add downloadurl endpoint v1/public/match/{matchId}/download-url
+- env vars:
+	- REDIS_CONFIGURATION_STRING
+	- AMQP_MATCHWRITER_INSERTION_REPLY
 
 ### Changed
 - Rename env vars
