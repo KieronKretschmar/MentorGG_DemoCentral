@@ -6,10 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [2.0.0] - 2020-04-?
+### Added 
+- Add downloadurl endpoint v1/public/match/{matchId}/download-url
+
+### Changed
 - Rename env vars
 	- AMQP_MATCHDBI -> AMQP_MATCHWRITER_UPLOAD_REPORT
 	- AMQP_SITUATIONSOPERATOR -> AMQP_SITUATIONSOPERATOR_REPORT
-- Add downloadurl endpoint v1/public/match/{matchId}/download-url
+	- AMQP_FANOUT_EXCHANGE_NAME -> AMQP_MATCHWRITER_INSERTION
+- Producer for MatchData insertion is now a common producer instead of fanout producer
 
 ## [1.1.1] - 2020-04-22
 ### Added
