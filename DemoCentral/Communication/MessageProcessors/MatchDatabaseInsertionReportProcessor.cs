@@ -62,6 +62,7 @@ namespace DemoCentral.Communication.MessageProcessors
             if (model.Success)
             {
                 _inQueueTableInterface.UpdateCurrentQueue(queuedDemo, Queue.SitutationOperator);
+                _inQueueTableInterface.ResetRetry(queuedDemo);
 
                 _logger.LogInformation($"Demo [ {matchId} ]. MatchWriter stored the MatchData successfully.");
 
