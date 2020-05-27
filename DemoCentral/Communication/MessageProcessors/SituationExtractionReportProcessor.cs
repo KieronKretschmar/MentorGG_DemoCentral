@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using DemoCentral.Communication.HTTP;
 using DemoCentral.Communication.Rabbit;
+using DemoCentral.Helpers;
 using Microsoft.Extensions.Logging;
 using RabbitCommunicationLib.Enums;
 using RabbitCommunicationLib.Interfaces;
@@ -18,18 +19,21 @@ namespace DemoCentral.Communication.MessageProcessors
         private readonly IBlobStorage _blobStorage;
         private readonly IDemoTableInterface _demoTableInterface;
         private readonly IInQueueTableInterface _inQueueTableInterface;
+        private readonly IMatchRedis _matchRedis;
 
         public SituationExtractionReportProcessor(
             ILogger<SituationExtractionReportProcessor> logger,
             IBlobStorage blobStorage,
             IDemoTableInterface demoTableInterface,
-            IInQueueTableInterface inQueueTableInterface
+            IInQueueTableInterface inQueueTableInterface,
+            IMatchRedis matchRedis
             )
         {
             _logger = logger;
             _blobStorage = blobStorage;
             _demoTableInterface = demoTableInterface;
             _inQueueTableInterface = inQueueTableInterface;
+            _matchRedis = matchRedis;
         }
 
 
@@ -63,7 +67,7 @@ namespace DemoCentral.Communication.MessageProcessors
                     true,
                     null);
 
-                // TODO: Remove fom redis
+                await _matchRedis.DeleteMatch(matchId);
 
                 _logger.LogInformation($"Demo [ {matchId} ]. Analysis finished successfully.");
             }
