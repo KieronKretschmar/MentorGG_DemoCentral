@@ -31,7 +31,7 @@ namespace DemoCentralTests
         public void CreateHashReturnsHTTPConflictIfDuplicated()
         {
             var mockIDemoDBInterface = new Mock<IDemoTableInterface>();
-            long matchId = 1;
+            long? matchId = 1;
             string hash = "test_hash";
             AnalyzerQuality quality = AnalyzerQuality.High;
 
@@ -43,7 +43,7 @@ namespace DemoCentralTests
             using (var context = new DemoCentralContext(_test_config))
             {
                 var test = new HashController(mockIDemoDBInterface.Object, mockILogger);
-                response = test.CreateHash(matchId, quality, hash);
+                response = test.CreateHash((long)matchId, quality, hash);
             }
             Assert.IsInstanceOfType(response, typeof(ConflictObjectResult));
         }
@@ -53,7 +53,7 @@ namespace DemoCentralTests
         public void CreateHashReturnsHTTPOkIfNotDuplicated()
         {
             var mockIDemoDBInterface = new Mock<IDemoTableInterface>();
-            long matchId = 1;
+            long? matchId = 1;
             AnalyzerQuality quality = AnalyzerQuality.Low;
             mockIDemoDBInterface.Setup(x => x.IsAnalysisRequired("", out matchId, quality)).Returns(true);
             ActionResult response;
@@ -61,7 +61,7 @@ namespace DemoCentralTests
             using (var context = new DemoCentralContext(_test_config))
             {
                 var test = new HashController(mockIDemoDBInterface.Object, mockILogger);
-                response = test.CreateHash(matchId, quality,"");
+                response = test.CreateHash((long)matchId, quality,"");
             }
             Assert.IsInstanceOfType(response, typeof(OkResult));
         }
