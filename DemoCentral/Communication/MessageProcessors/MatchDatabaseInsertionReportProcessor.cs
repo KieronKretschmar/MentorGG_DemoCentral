@@ -18,15 +18,18 @@ namespace DemoCentral.Communication.MessageProcessors
         private readonly ILogger<MatchDatabaseInsertionReportProcessor> _logger;
         private readonly IDemoTableInterface _demoTableInterface;
         private readonly IInQueueTableInterface _inQueueTableInterface;
+        private readonly IProducer<SituationExtractionInstruction> _situationOperatorProducer;
 
         public MatchDatabaseInsertionReportProcessor(
             ILogger<MatchDatabaseInsertionReportProcessor> logger,
             IDemoTableInterface demoTableInterface,
-            IInQueueTableInterface inQueueTableInterface)
+            IInQueueTableInterface inQueueTableInterface,
+            IProducer<SituationExtractionInstruction> situationOperatorProducer)
         {
             _logger = logger;
             _demoTableInterface = demoTableInterface;
             _inQueueTableInterface = inQueueTableInterface;
+            _situationOperatorProducer = situationOperatorProducer;
         }
 
 
@@ -34,7 +37,7 @@ namespace DemoCentral.Communication.MessageProcessors
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
-        public async Task WorkAsync(TaskCompletedReport model)
+        public async Task WorkAsync(MatchDatabaseInsertionReport model)
         {
             try
             {
@@ -45,31 +48,60 @@ namespace DemoCentral.Communication.MessageProcessors
                 _logger.LogError(e, $"Failed to update demo [ {model.MatchId} ] in database");
             }
         }
-        private void UpdateDBFromResponse(TaskCompletedReport model)
+        private void UpdateDBFromResponse(MatchDatabaseInsertionReport model)
         {
             long matchId = model.MatchId;
             var dbDemo = _demoTableInterface.GetDemoById(matchId);
             var queuedDemo = _inQueueTableInterface.GetDemoById(matchId);
-            
+
+            _demoTableInterface.SetAnalyzeState(
+                dbDemo,
+                false,
+                model.Block);
+
             if (model.Success)
             {
-                _demoTableInterface.SetAnalyzeState(
-                    dbDemo,
-                    true);
+                _inQueueTableInterface.UpdateCurrentQueue(queuedDemo, Queue.SitutationOperator);
+                _inQueueTableInterface.ResetRetry(queuedDemo);
 
                 _logger.LogInformation($"Demo [ {matchId} ]. MatchWriter stored the MatchData successfully.");
+
+                var instructions = new SituationExtractionInstruction 
+                {
+                    MatchId = model.MatchId,
+                    // TODO: Find way to access ExpiryDate and RedisKey. Insert in database?
+                    //ExpiryDate = null,
+                    //RedisKey = null,
+                };
+                _situationOperatorProducer.PublishMessage(instructions);
+                _logger.LogInformation($"Sent demo [ {model.MatchId} ] to SituationOperator queue");
             }
             else
             {
-                _demoTableInterface.SetAnalyzeState(
-                    dbDemo,
-                    false,
-                    DemoAnalysisBlock.UnknownMatchWriter);
+                _logger.LogError($"Demo [ {matchId} ]. MatchWriter failed with DemoAnalysisBlock [ { model.Block} ].");
 
-                _logger.LogError($"Demo [ {matchId} ]. MatchWriter failed to store the MatchData!");
+                switch (model.Block)
+                {
+                    case DemoAnalysisBlock.MatchWriter_MatchDataSetUnavailable:
+                        // TODO: Retry analysis starting at DFW or even DemoDownloader
+                    case DemoAnalysisBlock.MatchWriter_RedisConnectionFailed:
+                    case DemoAnalysisBlock.MatchWriter_Timeout:
+                        // TODO: Retry this step (MatchDatabaseInsertion) up to 3 times, then stop analysis.
+
+                    case DemoAnalysisBlock.MatchWriter_DatabaseUpload:
+                        // TODO: Retry this step (MatchDatabaseInsertion) up to 1 times, then stop analysis.
+
+                    case DemoAnalysisBlock.MatchWriter_Unknown:
+                        // TODO: Retry this step (MatchDatabaseInsertion) up to 1 times, then stop analysis.
+
+                    default:
+                        _logger.LogWarning($"Demo [ {matchId} ]. MatchWriter failed with unhandled DemoAnalysisBlock [ { model.Block} ]!");
+
+                        // Stop analysis
+                        _demoTableInterface.RemoveDemo(dbDemo);
+                        break;
+                }
             }
-
-            _inQueueTableInterface.Remove(queuedDemo);
         }
     }
 }

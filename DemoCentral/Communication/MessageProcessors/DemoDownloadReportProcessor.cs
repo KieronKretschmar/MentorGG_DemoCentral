@@ -77,7 +77,7 @@ namespace DemoCentral.Communication.MessageProcessors
                 if (attempts > MAX_RETRIES)
                 {
                     _inQueueTableInterface.Remove(inQueueDemo);
-                    _demoTableInterface.SetAnalyzeState(dbDemo, false, DemoAnalysisBlock.UnknownDemoDownloader);
+                    _demoTableInterface.SetAnalyzeState(dbDemo, false, DemoAnalysisBlock.DemoDownloader_Unknown);
                     _logger.LogError($"Demo [ {matchId} ] failed download more than {MAX_RETRIES} times, no further analyzing");
                 }
                 else

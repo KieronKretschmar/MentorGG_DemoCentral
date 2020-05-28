@@ -17,7 +17,7 @@ namespace DemoCentral.Communication.MessageProcessors
         private readonly ILogger<DemoAnalyzeReportProcessor> _logger;
         private readonly IDemoTableInterface _demoTableInterface;
         private readonly IProducer<DemoAnalyzeInstruction> _demoFileWorkerProducer;
-        private readonly IProducer<MatchDatabaseInsertionInstruction> _fanoutProducer;
+        private readonly IProducer<MatchDatabaseInsertionInstruction> _databaseInsertionProducer;
         private IInQueueTableInterface _inQueueTableInterface;
         private readonly IBlobStorage _blobStorage;
 
@@ -26,13 +26,13 @@ namespace DemoCentral.Communication.MessageProcessors
             ILogger<DemoAnalyzeReportProcessor> logger,
             IDemoTableInterface demoTableInterface,
             IProducer<DemoAnalyzeInstruction> demoFileWorkerProducer,
-            IProducer<MatchDatabaseInsertionInstruction> fanoutProducer,
+            IProducer<MatchDatabaseInsertionInstruction> databaseInsertionProducer,
             IInQueueTableInterface inQueueTableInterface,
             IBlobStorage blobStorage)
         {
             _logger = logger;
             _demoTableInterface = demoTableInterface;
-            _fanoutProducer = fanoutProducer;
+            _databaseInsertionProducer = databaseInsertionProducer;
             _demoFileWorkerProducer = demoFileWorkerProducer;
             _inQueueTableInterface = inQueueTableInterface;
             _blobStorage = blobStorage;
@@ -78,7 +78,7 @@ namespace DemoCentral.Communication.MessageProcessors
                 RedisKey = model.RedisKey,
                 ExpiryDate = model.ExpiryDate,
             };
-            _fanoutProducer.PublishMessage(forwardModel);
+            _databaseInsertionProducer.PublishMessage(forwardModel);
             _logger.LogInformation($"Demo [ {model.MatchId} ]. RedisInstruction sent.");
         }
 
@@ -125,7 +125,7 @@ namespace DemoCentral.Communication.MessageProcessors
             }
 
             // Store the Analyze state with the current failure
-            _demoTableInterface.SetAnalyzeState(dbDemo, success: false, block);
+            _demoTableInterface.SetAnalyzeState(dbDemo, analysisFinishedSuccessfully: false, block);
 
             // If the amount of retries exceeds the maximum allowed - stop retrying this demo.
             // OR if the demo is a duplicate.
@@ -138,7 +138,7 @@ namespace DemoCentral.Communication.MessageProcessors
                 return;
             }
             // If the demo is a duplicate.
-            if (block == DemoAnalysisBlock.Duplicate)
+            if (block == DemoAnalysisBlock.DemoFileWorker_Duplicate)
             {
                 _blobStorage.DeleteBlobAsync(dbDemo.BlobUrl);
                 _inQueueTableInterface.Remove(inQueueDemo);
@@ -148,38 +148,38 @@ namespace DemoCentral.Communication.MessageProcessors
             }
 
             switch (block){
-                case DemoAnalysisBlock.BlobDownload:
+                case DemoAnalysisBlock.DemoFileWorker_BlobDownload:
                     // BlobDownload failed.
                     // This may be a temporary issue - Try again.
                     _logger.LogWarning($"Demo [ {matchId} ]. Failed to download blob.");
                     break;
 
-                case DemoAnalysisBlock.Unzip:
+                case DemoAnalysisBlock.DemoFileWorker_Unzip:
                     // Unzip failed, this could indicate that we do not support the file type, or the demo is
                     // corrupt - Delete the blob and mark this as failed.
                     _logger.LogWarning($"Demo [ {matchId} ]. Could not be unzipped");
                     break;
 
-                case DemoAnalysisBlock.HttpHashCheck:
+                case DemoAnalysisBlock.DemoFileWorker_HttpHashCheck:
                     // Contacting DemoCentral to confirm if the Demo was a Duplicate failed.
                     // This may be a temporary issue - Try again.
                     _logger.LogWarning($"Demo [ {matchId} ]. Failed to complete the Hash check for duplicate checking.");
                     break;
 
-                case DemoAnalysisBlock.Duplicate:
+                case DemoAnalysisBlock.DemoFileWorker_Duplicate:
                     // Demo has been indentified as a Duplicate.
                     throw new InvalidOperationException("Duplicate handling should have already happened!");
-                case DemoAnalysisBlock.Analyze:
+                case DemoAnalysisBlock.DemoFileWorker_Analyze:
                     // DemoFileWorker failed on the Analyze step.
                     _logger.LogWarning($"Demo [ {matchId} ]. Analyze Failure");
                     break;
 
-                case DemoAnalysisBlock.Enrich:
+                case DemoAnalysisBlock.DemoFileWorker_Enrich:
                     // DemoFileWorker failed on the Enrich step.
                     _logger.LogWarning($"Demo [ {matchId} ]. Enrich Failure");
                     break;
 
-                case DemoAnalysisBlock.RedisStorage:
+                case DemoAnalysisBlock.DemoFileWorker_RedisStorage:
                     // DemoFileWorker failed to store the MatchDataSet in Redis,
                     // This may be a temporary issue - Try again.
                     _logger.LogWarning($"Demo [ {matchId} ]. RedisStorage Failure");

@@ -14,18 +14,18 @@ using System.Threading.Tasks;
 namespace DemoCentral.Communication.RabbitConsumers
 {
     /// <summary>
-    /// Consumer for the MatchWriter upload report queue.
-    /// Messages are being processed by <see cref="MatchDatabaseInsertionReportProcessor"/>.
+    /// Consumer for the SituationExtractionReport queue.
+    /// Messages are being processed by <see cref="SituationExtractionReportProcessor"/>.
     /// </summary>
-    public class MatchDatabaseInsertionReportConsumer : Consumer<MatchDatabaseInsertionReport>
+    public class SituationExtractionReportConsumer : Consumer<SituationExtractionReport>
     {
 
         private readonly IServiceProvider _serviceProvider;
-        private ILogger<MatchDatabaseInsertionReportConsumer> _logger;
+        private ILogger<SituationExtractionReportConsumer> _logger;
 
-        public MatchDatabaseInsertionReportConsumer(
+        public SituationExtractionReportConsumer(
             IServiceProvider serviceProvider,
-            ILogger<MatchDatabaseInsertionReportConsumer> logger,
+            ILogger<SituationExtractionReportConsumer> logger,
             IQueueConnection queueConnection
             ) : base(queueConnection)
         {
@@ -34,9 +34,9 @@ namespace DemoCentral.Communication.RabbitConsumers
         }
 
         /// <summary>
-        /// Handle Upload report.
+        /// Handle SituationOperator's extraction report.
         /// </summary>
-        public async override Task<ConsumedMessageHandling> HandleMessageAsync(BasicDeliverEventArgs ea, MatchDatabaseInsertionReport model)
+        public async override Task<ConsumedMessageHandling> HandleMessageAsync(BasicDeliverEventArgs ea, SituationExtractionReport model)
         {
             _logger.LogInformation($"Received {model.GetType()} for match [ {model.MatchId} ]. Message: [ {model.ToJson()} ]");
 
@@ -44,14 +44,14 @@ namespace DemoCentral.Communication.RabbitConsumers
             {
                 using (var scope = _serviceProvider.CreateScope())
                 {
-                    var processor = scope.ServiceProvider.GetRequiredService<MatchDatabaseInsertionReportProcessor>();
+                    var processor = scope.ServiceProvider.GetRequiredService<SituationExtractionReportProcessor>();
                     await processor.WorkAsync(model);
                     return ConsumedMessageHandling.Done;
                 }
             }
             catch (Exception e)
             {
-                _logger.LogCritical(e, $"Failed to handle message from MatchWriter Upload Report queue. [ {model} ]");
+                _logger.LogCritical(e, $"Failed to handle message from SituationOperator Extraction Report queue. [ {model} ]");
                 return ConsumedMessageHandling.Resend;
             }
         }

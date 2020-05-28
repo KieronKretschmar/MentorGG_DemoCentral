@@ -23,6 +23,7 @@ using DemoCentral.Communication.Rabbit;
 using System.Net.Http;
 using DemoCentral.Communication.MessageProcessors;
 using DemoCentral.Communication.RabbitConsumers;
+using StackExchange.Redis;
 
 namespace DemoCentral
 {
@@ -154,6 +155,22 @@ namespace DemoCentral
             });
             #endregion
 
+            #region Redis
+            var REDIS_CONFIGURATION_STRING = Configuration.GetValue<string>("REDIS_CONFIGURATION_STRING");
+            if (REDIS_CONFIGURATION_STRING == "mock")
+            {
+                // Add MockRedis, a local InMemory redis cache good for testing
+                services.AddTransient<IMatchRedis, MockRedis>();
+            }
+            else
+            {
+                // Add ConnectionMultiplexer as singleton as it is made to be reused
+                // see https://stackexchange.github.io/StackExchange.Redis/Basics.html
+                services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(REDIS_CONFIGURATION_STRING));
+                services.AddTransient<IMatchRedis, MatchRedis>();
+            }
+            #endregion
+
             #region Http related services
             var MENTORINTERFACE_BASE_ADDRESS = GetRequiredEnvironmentVariable<string>(Configuration, "MENTORINTERFACE_BASE_ADDRESS");
             services.AddHttpClient("mentor-interface", c =>
@@ -215,11 +232,19 @@ namespace DemoCentral
             });
 
             // Upload Reports from MatchWriter
-            var AMQP_MATCHWRITER_UPLOAD_REPORT = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_MATCHWRITER_UPLOAD_REPORT");
-            var matchwriterUploadReportQueue = new QueueConnection(AMQP_URI, AMQP_MATCHWRITER_UPLOAD_REPORT);
+            var AMQP_MATCHWRITER_INSERTION_REPLY = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_MATCHWRITER_INSERTION_REPLY");
+            var matchwriterUploadReportQueue = new QueueConnection(AMQP_URI, AMQP_MATCHWRITER_INSERTION_REPLY);
             services.AddHostedService<MatchDatabaseInsertionReportConsumer>(services =>
             {
                 return new MatchDatabaseInsertionReportConsumer(services, services.GetRequiredService<ILogger<MatchDatabaseInsertionReportConsumer>>(), matchwriterUploadReportQueue);
+            });
+
+            // Extraction Reports from SituationOperator
+            var AMQP_SITUATION_OPERATOR_REPLY = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_SITUATION_OPERATOR_REPLY");
+            var situationOperatorReplyQueue = new QueueConnection(AMQP_URI, AMQP_SITUATION_OPERATOR_REPLY);
+            services.AddHostedService<SituationExtractionReportConsumer>(services =>
+            {
+                return new SituationExtractionReportConsumer(services, services.GetRequiredService<ILogger<SituationExtractionReportConsumer>>(), situationOperatorReplyQueue);
             });
 
             // Removal Reports from MatchWriter
@@ -244,8 +269,12 @@ namespace DemoCentral
             services.AddProducer<DemoAnalyzeInstruction>(AMQP_URI, AMQP_DEMOFILEWORKER);
 
             // To MatchData-Exchange
-            var AMQP_FANOUT_EXCHANGE_NAME = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_FANOUT_EXCHANGE_NAME");
-            services.AddFanoutProducer<MatchDatabaseInsertionInstruction>(AMQP_URI, AMQP_FANOUT_EXCHANGE_NAME);
+            var AMQP_MATCHWRITER_INSERTION = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_MATCHWRITER_INSERTION");
+            services.AddProducer<MatchDatabaseInsertionInstruction>(AMQP_URI, AMQP_MATCHWRITER_INSERTION);
+
+            // To SituationOperator
+            var AMQP_SITUATION_OPERATOR = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_SITUATION_OPERATOR");
+            services.AddProducer<SituationExtractionReport>(AMQP_URI, AMQP_SITUATION_OPERATOR);
 
             // Removal-Instructions to MatchWriter
             var AMQP_MATCHWRITER_DEMO_REMOVAL = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_MATCHWRITER_DEMO_REMOVAL");
@@ -258,6 +287,7 @@ namespace DemoCentral
             services.AddTransient<DemoAnalyzeReportProcessor>();
             services.AddTransient<ManualDownloadInsertInstructionProcessor>();
             services.AddTransient<MatchDatabaseInsertionReportProcessor>();
+            services.AddTransient<SituationExtractionReportProcessor>();
             #endregion
         }
 

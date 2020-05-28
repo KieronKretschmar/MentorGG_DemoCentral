@@ -32,7 +32,15 @@ namespace DemoCentral
 
         void SetBlobUrl(Demo demo, string blobUrl);
 
-        void SetAnalyzeState(Demo demo, bool success, DemoAnalysisBlock? block = null);
+
+        /// <summary>
+        /// Sets the Analyze state
+        /// If success if true the block is ignored.
+        /// </summary>
+        /// <param name="demo"></param>
+        /// <param name="analysisFinishedSuccessfully"></param>
+        /// <param name="block"></param>
+        void SetAnalyzeState(Demo demo, bool analysisFinishedSuccessfully, DemoAnalysisBlock? block = null);
 
         void SetHash(Demo demo, string hash);
         
@@ -264,16 +272,10 @@ namespace DemoCentral
             return true;
         }
 
-        /// <summary>
-        /// Set's the Analze state
-        /// If success if true `failure` is ignored.
-        /// </summary>
-        /// <param name="demo"></param>
-        /// <param name="success"></param>
-        /// <param name="block"></param>
-        public void SetAnalyzeState(Demo demo, bool success, DemoAnalysisBlock? block = null)
+        /// <inheritdoc/>
+        public void SetAnalyzeState(Demo demo, bool analysisFinishedSuccessfully, DemoAnalysisBlock? block = null)
         {
-            if (success)
+            if (analysisFinishedSuccessfully)
             {
                 demo.AnalysisSucceeded = true;
             }
