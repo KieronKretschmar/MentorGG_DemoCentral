@@ -55,7 +55,7 @@ namespace DemoCentral
         /// <returns>MatchId of the newly created match</returns>
         long CreateNewDemoEntryFromManualUpload(ManualDownloadInsertInstruction model, AnalyzerQuality requestedQuality);
         List<Demo> GetRecentFailedMatches(long playerId, int recentMatches, int offset = 0);
-        List<Demo> GetUnfinishedDemos(DateTime minUploadDate);
+        List<Demo> GetFailedDemos(DateTime minUploadDate);
     }
 
     /// <summary>
@@ -210,19 +210,16 @@ namespace DemoCentral
         }
 
         /// <summary>
-        /// Returns IDs of demos for which the file is in BlobStorage where AnalysisStatus is not Success.
+        /// Returns Demos for which AnalysisStatus is not Success.
         /// </summary>
         /// <param name="minUploadDate"></param>
         /// <returns></returns>
-        public List<Demo> GetUnfinishedDemos(DateTime minUploadDate)
-        {
-            var demosToReset = _context.Demo
+        public List<Demo> GetFailedDemos(DateTime minUploadDate)
+        {  
+            return _context.Demo
                 .Where(x => x.UploadDate >= minUploadDate)
-                .Where(x=>x.BlobUrl != null)
                 .Where(x=>x.AnalysisSucceeded == false)
                 .ToList();
-
-            return demosToReset;
         }
 
         /// <inheritdoc/>
