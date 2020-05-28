@@ -476,7 +476,7 @@ namespace DemoCentralTests
             Demo demo = CopyDemo(_standardDemo);
             demo.Quality = AnalyzerQuality.Low;
             bool analysisRequired;
-            long matchId;
+            long? matchId = null;
 
             string duplicate_hash = "test_hash_duplicate";
 
@@ -487,7 +487,7 @@ namespace DemoCentralTests
                 var test = new DemoTableInterface(context, _mockILogger);
                 AddDemoToDB(demo, context);
 
-                analysisRequired = test.IsReanalysisRequired(duplicate_hash, out matchId,AnalyzerQuality.Low);
+                analysisRequired = test.IsAnalysisRequired(duplicate_hash, out matchId, AnalyzerQuality.Low);
             }
 
             Assert.IsFalse(analysisRequired);
@@ -500,7 +500,7 @@ namespace DemoCentralTests
         {
             Demo demo = CopyDemo(_standardDemo);
             bool analysisRequired;
-            long matchId;
+            long? matchId = null;
 
             string first_hash = "test_hash_non_duplicate_1";
             string second_hash = "test_hash_non_duplicate_2";
@@ -513,7 +513,7 @@ namespace DemoCentralTests
                 var test = new DemoTableInterface(context, _mockILogger);
                 AddDemoToDB(demo, context);
 
-                analysisRequired = test.IsReanalysisRequired(second_hash, out matchId, AnalyzerQuality.Low);
+                analysisRequired = test.IsAnalysisRequired(second_hash, out matchId, AnalyzerQuality.Low);
             }
 
             Assert.AreNotEqual(first_hash, second_hash);

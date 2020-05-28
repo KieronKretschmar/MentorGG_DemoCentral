@@ -22,7 +22,7 @@ namespace DemoCentral
         List<Demo> GetRecentMatches(long playerId, int recentMatches, int offset = 0);
         List<long> GetRecentMatchIds(long playerId, int recentMatches, int offset = 0);
 
-        bool IsReanalysisRequired(string hash, out long matchId, AnalyzerQuality requestedQuality);
+        bool IsAnalysisRequired(string hash, out long? matchId, AnalyzerQuality requestedQuality);
 
         List<Demo> GetMatchesByUploader(long steamId);
 
@@ -138,17 +138,40 @@ namespace DemoCentral
         }
 
         /// <summary>
-        /// Checks if a hash is already in the database, and analyzed with more frames than the requested amount \n
-        /// if so the out parameter is the matchId of the original demo, else -1
+        /// Checks if a hash is already in the database, and analyzed with higher quality than the requested amount
+        /// 
         /// </summary>
-        /// <param name="matchId">id of the original match or -1 if hash is unique</param>
-        public bool IsReanalysisRequired(string hash, out long matchId, AnalyzerQuality requestedQuality)
+        /// <param name="matchId">id of the original match</param>
+        public bool IsAnalysisRequired(string hash, out long? matchId, AnalyzerQuality requestedQuality)
         {
+            matchId = null;
+
+            //Check the Demo table if an entry contains the MD5Hash `hash`.
             var demo = _context.Demo.Where(x => x.MD5Hash.Equals(hash)).SingleOrDefault();
 
-            matchId = demo == null ? -1 : demo.MatchId;
-
-            return demo == null || requestedQuality > demo.Quality;
+            // If a match was found.
+            if (demo != null)
+            {
+                // Set the output parameter to it's MatchId.
+                matchId = demo.MatchId;
+                // If the Analysis has succeeded and the requested quality it HIGHER than the currently analysed
+                // Quality, return true to indciate that this Demo does need re-analysed
+                if (requestedQuality > demo.Quality && demo.AnalysisSucceeded)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            // If no matching Demo was found
+            // Indicating this Demo has not been seen before
+            // Allow Analysis
+            else
+            {   
+                return true;
+            }
         }
 
 
