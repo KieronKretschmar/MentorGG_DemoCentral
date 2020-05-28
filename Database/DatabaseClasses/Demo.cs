@@ -113,15 +113,5 @@ namespace Database.DatabaseClasses
                 UploadDate = model.UploadDate,
             };
         }
-
-        /// <summary>
-        /// Resets analysis to the stage where it was before DemoFileWorker
-        /// </summary>
-        public void ToPreAnalysisState()
-        {
-            MD5Hash = "";
-            AnalysisSucceeded = false;
-            AnalysisBlockReason = null;
-        }
     }
 }

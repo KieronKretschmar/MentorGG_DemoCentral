@@ -56,7 +56,6 @@ namespace DemoCentral
         long CreateNewDemoEntryFromManualUpload(ManualDownloadInsertInstruction model, AnalyzerQuality requestedQuality);
         List<Demo> GetRecentFailedMatches(long playerId, int recentMatches, int offset = 0);
         List<Demo> GetUnfinishedDemos(DateTime minUploadDate);
-        bool ResetAnalysis(long matchId);
     }
 
     /// <summary>
@@ -224,25 +223,6 @@ namespace DemoCentral
                 .ToList();
 
             return demosToReset;
-        }
-
-        /// <summary>
-        /// Turns the match to it's state before it was sent to DemoFileWorker
-        /// </summary>
-        /// <param name="matchId"></param>
-        /// <returns></returns>
-        public bool ResetAnalysis(long matchId)
-        {
-            var demo = _context.Demo.SingleOrDefault(x => x.MatchId == matchId);
-            if(demo == null)
-            {
-                _logger.LogError($"Tried to reset demo [ {matchId} ] but it was not in database.");
-                return false;
-            }
-
-            demo.ToPreAnalysisState();
-            _context.SaveChanges();
-            return true;
         }
 
         /// <inheritdoc/>
