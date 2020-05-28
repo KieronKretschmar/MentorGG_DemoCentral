@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Database.DatabaseClasses;
 using DemoCentral.Communication.Rabbit;
+using DemoCentral.Helpers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;

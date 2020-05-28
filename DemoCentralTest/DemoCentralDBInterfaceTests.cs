@@ -9,6 +9,7 @@ using System;
 using RabbitCommunicationLib.Enums;
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
+using DemoCentral.Helpers;
 
 namespace DemoCentralTests
 {
@@ -203,7 +204,7 @@ namespace DemoCentralTests
                 AddDemoToDB(demo, context);
 
                 matchId = demo.MatchId;
-                assertModel = test.CreateAnalyzeInstructions(demo);
+                assertModel = demo.ToAnalyzeInstruction();
             }
 
             Assert.AreEqual(demo.BlobUrl, assertModel.BlobUrl);

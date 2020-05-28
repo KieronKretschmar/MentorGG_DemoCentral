@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Database.DatabaseClasses;
 using DemoCentral.Communication.HTTP;
 using DemoCentral.Communication.Rabbit;
+using DemoCentral.Helpers;
 using Microsoft.Extensions.Logging;
 using RabbitCommunicationLib.Enums;
 using RabbitCommunicationLib.Interfaces;
@@ -60,15 +61,13 @@ namespace DemoCentral.Communication.MessageProcessors
         {
             long matchId = consumeModel.MatchId;
             var inQueueDemo = _inQueueTableInterface.GetDemoById(matchId);
-            var dbDemo = _demoTableInterface.GetDemoById(matchId);
+            var demo = _demoTableInterface.GetDemoById(matchId);
 
             if (consumeModel.Success)
             {
-                _demoTableInterface.SetBlobUrl(dbDemo, consumeModel.BlobUrl);
-                var model = _demoTableInterface.CreateAnalyzeInstructions(dbDemo);
-
+                _demoTableInterface.SetBlobUrl(demo, consumeModel.BlobUrl);
+                _demoFileWorkerProducer.PublishMessage(demo.ToAnalyzeInstruction());
                 _inQueueTableInterface.UpdateCurrentQueue(inQueueDemo, Queue.DemoFileWorker);
-                _demoFileWorkerProducer.PublishMessage(model);
             }
             else
             {
@@ -77,16 +76,15 @@ namespace DemoCentral.Communication.MessageProcessors
                 if (attempts > MAX_RETRIES)
                 {
                     _inQueueTableInterface.Remove(inQueueDemo);
-                    _demoTableInterface.SetAnalyzeState(dbDemo, false, DemoAnalysisBlock.DemoDownloader_Unknown);
+                    _demoTableInterface.SetAnalyzeState(demo, false, DemoAnalysisBlock.DemoDownloader_Unknown);
                     _logger.LogError($"Demo [ {matchId} ] failed download more than {MAX_RETRIES} times, no further analyzing");
                 }
                 else
                 {
-                    var resendModel = _demoTableInterface.CreateDownloadInstructions(dbDemo);
 
                     _logger.LogInformation($"Sent demo [ {matchId} ] to DemoDownloadInstruction queue");
 
-                    _demoDownloaderProducer.PublishMessage(resendModel);
+                    _demoDownloaderProducer.PublishMessage(demo.ToDownloadInstruction());
 
                     _logger.LogWarning($"Demo [ {matchId} ] failed download, retrying");
                 }

@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Database.DatabaseClasses;
 using DemoCentral.Communication.HTTP;
 using DemoCentral.Communication.Rabbit;
+using DemoCentral.Helpers;
 using Microsoft.Extensions.Logging;
 using RabbitCommunicationLib.Enums;
 using RabbitCommunicationLib.Interfaces;
@@ -66,9 +67,7 @@ namespace DemoCentral.Communication.MessageProcessors
             _inQueueTableInterface.Add(matchId, Queue.DemoFileWorker);
 
             var demo = _demoTableInterface.GetDemoById(matchId);
-            var analyzeInstructions = _demoTableInterface.CreateAnalyzeInstructions(demo);
-
-            _demoFileWorkerProducer.PublishMessage(analyzeInstructions);
+            _demoFileWorkerProducer.PublishMessage(demo.ToAnalyzeInstruction());
             _logger.LogInformation($"Sent demo [ {matchId} ] to DemoAnalyzeInstruction queue");
 
             var queuedDemo = _inQueueTableInterface.GetDemoById(matchId);

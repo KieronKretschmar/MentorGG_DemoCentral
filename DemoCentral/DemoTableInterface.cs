@@ -24,8 +24,6 @@ namespace DemoCentral
 
         bool IsReanalysisRequired(string hash, out long matchId, AnalyzerQuality requestedQuality);
 
-        DemoAnalyzeInstruction CreateAnalyzeInstructions(Demo demo);
-
         List<Demo> GetMatchesByUploader(long steamId);
 
         void RemoveDemo(Demo demo);
@@ -57,7 +55,6 @@ namespace DemoCentral
         /// <returns>MatchId of the newly created match</returns>
         long CreateNewDemoEntryFromManualUpload(ManualDownloadInsertInstruction model, AnalyzerQuality requestedQuality);
         List<Demo> GetRecentFailedMatches(long playerId, int recentMatches, int offset = 0);
-        DemoDownloadInstruction CreateDownloadInstructions(Demo dbDemo);
         List<Demo> GetUnfinishedDemos(DateTime minUploadDate);
         bool ResetAnalysis(long matchId);
     }
@@ -99,19 +96,6 @@ namespace DemoCentral
         {
             demo.MD5Hash = hash;
             _context.SaveChanges();
-        }
-
-        public DemoAnalyzeInstruction CreateAnalyzeInstructions(Demo demo)
-        {
-            return new DemoAnalyzeInstruction
-            {
-                MatchId = demo.MatchId,
-                Source = demo.Source,
-                MatchDate = demo.MatchDate,
-                BlobUrl = demo.BlobUrl,
-                FramesPerSecond = FramesPerQuality.Frames[demo.Quality],
-                Quality = demo.Quality
-            };
         }
 
         public List<long> GetRecentMatchIds(long playerId, int recentMatches, int offset = 0)
@@ -224,17 +208,6 @@ namespace DemoCentral
         public List<Demo> GetMatchesByUploader(long steamId)
         {
             return _context.Demo.Where(x => x.UploaderId == steamId).ToList();
-        }
-
-        public DemoDownloadInstruction CreateDownloadInstructions(Demo dbDemo)
-        {
-            var res = new DemoDownloadInstruction
-            {
-                DownloadUrl = dbDemo.DownloadUrl,
-                MatchId = dbDemo.MatchId,
-            };
-            
-            return res;
         }
 
         /// <summary>
