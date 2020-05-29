@@ -156,7 +156,7 @@ namespace DemoCentral
             #endregion
 
             #region Redis
-            var REDIS_CONFIGURATION_STRING = Configuration.GetValue<string>("REDIS_CONFIGURATION_STRING");
+            var REDIS_CONFIGURATION_STRING = GetRequiredEnvironmentVariable<string>(Configuration, "REDIS_CONFIGURATION_STRING");
             if (REDIS_CONFIGURATION_STRING == "mock")
             {
                 // Add MockRedis, a local InMemory redis cache good for testing
