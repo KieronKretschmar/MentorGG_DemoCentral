@@ -154,8 +154,9 @@ namespace DemoCentral
             {
                 // Set the output parameter to it's MatchId.
                 matchId = demo.MatchId;
-                // If the Analysis has succeeded and the requested quality it HIGHER than the currently analysed
-                // Quality, return true to indciate that this Demo does need re-analysed
+                
+                // If the requested quality it HIGHER than the currently analysed
+                // Quality, return true to indciate that this Demo does need analysed 
                 if (requestedQuality > demo.Quality && demo.AnalysisSucceeded)
                 {
                     return true;
@@ -166,7 +167,7 @@ namespace DemoCentral
                 }
             }
             // If no matching Demo was found
-            // Indicating this Demo has not been seen before
+            // Indicating this Demo's MD5 Hash has not been seen before
             // Allow Analysis
             else
             {   
@@ -177,37 +178,45 @@ namespace DemoCentral
 
         public bool TryCreateNewDemoEntryFromGatherer(DemoInsertInstruction model, AnalyzerQuality requestedQuality, out long matchId)
         {
-            //checkdownloadurl
+            // Check if an exisiting Demo has the same DownloadUrl.
             var demo = _context.Demo.SingleOrDefault(x => x.DownloadUrl.Equals(model.DownloadUrl));
+
+            // If a Demo was found with the same DownloadUrl.
             if (demo != null)
             {
                 matchId = demo.MatchId;
-                //Check whether a new entry has to be created as the new entry
-                //would have a higher analyzer quality than the old one
-                if (requestedQuality <= demo.Quality)
+
+                // If the Demo that was found has a higher quality and has successfully been analysed
+                // Do not allow analysis
+                if (requestedQuality <= demo.Quality && demo.AnalysisSucceeded)
                     return false;
 
-                if (demo.AnalysisSucceeded == false)
+                // If the Demo that was found has not succeeded and not in a queue
+                // Do not allow analysis
+                if (!demo.AnalysisSucceeded && demo.InQueueDemo == null)
                     return false;
 
                 _logger.LogInformation($"Selected Demo [ {demo.MatchId} ] for re-analysis due to higher quality. Current quality [ {demo.Quality} ], requested quality [ {requestedQuality} ].");
 
                 demo.Quality = requestedQuality;
+                
                 _context.SaveChanges();
 
                 return true;
             }
+            else
+            {
+                demo = Demo.FromGatherTransferModel(model);
+                demo.Quality = requestedQuality;
+                
+                _context.Demo.Add(demo);
+                _context.SaveChanges();
 
-            demo = Demo.FromGatherTransferModel(model);
-            demo.Quality = requestedQuality;
+                matchId = demo.MatchId;
 
-            _context.Demo.Add(demo);
+                return true;
+            }
 
-            _context.SaveChanges();
-
-            matchId = demo.MatchId;
-
-            return true;
         }
 
         public long CreateNewDemoEntryFromManualUpload(ManualDownloadInsertInstruction model, AnalyzerQuality requestedQuality)
