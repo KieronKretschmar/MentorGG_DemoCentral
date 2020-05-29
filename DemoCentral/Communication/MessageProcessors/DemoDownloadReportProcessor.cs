@@ -60,22 +60,23 @@ namespace DemoCentral.Communication.MessageProcessors
         private void UpdateDemoStatusFromObtainReport(DemoDownloadReport consumeModel)
         {
             long matchId = consumeModel.MatchId;
-            var inQueueDemo = _inQueueTableInterface.GetDemoById(matchId);
+            var queuedDemo = _inQueueTableInterface.GetDemoById(matchId);
             var demo = _demoTableInterface.GetDemoById(matchId);
 
             if (consumeModel.Success)
             {
+                _inQueueTableInterface.ResetRetry(queuedDemo);
                 _demoTableInterface.SetBlobUrl(demo, consumeModel.BlobUrl);
                 _demoFileWorkerProducer.PublishMessage(demo.ToAnalyzeInstruction());
-                _inQueueTableInterface.UpdateCurrentQueue(inQueueDemo, Queue.DemoFileWorker);
+                _inQueueTableInterface.UpdateCurrentQueue(queuedDemo, Queue.DemoFileWorker);
             }
             else
             {
-                int attempts = _inQueueTableInterface.IncrementRetry(inQueueDemo);
+                int attempts = _inQueueTableInterface.IncrementRetry(queuedDemo);
 
                 if (attempts > MAX_RETRIES)
                 {
-                    _inQueueTableInterface.Remove(inQueueDemo);
+                    _inQueueTableInterface.Remove(queuedDemo);
                     _demoTableInterface.SetAnalyzeState(demo, false, DemoAnalysisBlock.DemoDownloader_Unknown);
                     _logger.LogError($"Demo [ {matchId} ] failed download more than {MAX_RETRIES} times, no further analyzing");
                 }

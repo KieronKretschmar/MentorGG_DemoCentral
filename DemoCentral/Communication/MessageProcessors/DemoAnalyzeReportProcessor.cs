@@ -83,6 +83,7 @@ namespace DemoCentral.Communication.MessageProcessors
         private void ActOnAnalyzeSuccess(DemoAnalyzeReport response)
         {
             InQueueDemo queueDemo = _inQueueTableInterface.GetDemoById(response.MatchId);
+            _inQueueTableInterface.ResetRetry(queueDemo);
 
             PublishRedisInstruction(response);
             _inQueueTableInterface.UpdateCurrentQueue(queueDemo, Queue.MatchWriter);

@@ -61,7 +61,6 @@ namespace DemoCentral.Communication.MessageProcessors
 
             if (model.Success)
             {
-                _inQueueTableInterface.UpdateCurrentQueue(queuedDemo, Queue.SitutationOperator);
                 _inQueueTableInterface.ResetRetry(queuedDemo);
 
                 _logger.LogInformation($"Demo [ {matchId} ]. MatchWriter stored the MatchData successfully.");
@@ -69,11 +68,9 @@ namespace DemoCentral.Communication.MessageProcessors
                 var instructions = new SituationExtractionInstruction 
                 {
                     MatchId = model.MatchId,
-                    // TODO: Find way to access ExpiryDate and RedisKey. Insert in database?
-                    //ExpiryDate = null,
-                    //RedisKey = null,
                 };
                 _situationOperatorProducer.PublishMessage(instructions);
+                _inQueueTableInterface.UpdateCurrentQueue(queuedDemo, Queue.SitutationOperator);
                 _logger.LogInformation($"Sent demo [ {model.MatchId} ] to SituationOperator queue");
             }
             else

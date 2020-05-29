@@ -62,6 +62,8 @@ namespace DemoCentral.Communication.MessageProcessors
 
             if (model.Success)
             {
+                _inQueueTableInterface.ResetRetry(queuedDemo);
+                
                 _demoTableInterface.SetAnalyzeState(
                     demo,
                     true);
