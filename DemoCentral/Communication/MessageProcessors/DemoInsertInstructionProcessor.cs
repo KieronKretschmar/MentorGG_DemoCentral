@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Database.DatabaseClasses;
 using DemoCentral.Communication.HTTP;
 using DemoCentral.Communication.Rabbit;
+using DemoCentral.Helpers;
 using Microsoft.Extensions.Logging;
 using RabbitCommunicationLib.Enums;
 using RabbitCommunicationLib.Interfaces;
@@ -49,17 +50,11 @@ namespace DemoCentral.Communication.MessageProcessors
             {
                 _logger.LogInformation($"Demo with MatchId [ {matchId} ] has DownloadUrl [ {model.DownloadUrl} ]");
 
-                var forwardModel = new DemoDownloadInstruction
-                {
-                    MatchId = matchId,
-                    DownloadUrl = model.DownloadUrl
-                };
-
-                _inQueueTableInterface.Add(matchId, Queue.DemoDownloader);
-
                 var demo = _demoTableInterface.GetDemoById(matchId);
                 
-                _demoDownloaderProducer.PublishMessage(forwardModel);
+                _demoDownloaderProducer.PublishMessage(demo.ToDownloadInstruction());
+                
+                _inQueueTableInterface.Add(matchId, Queue.DemoDownloader);
 
                 _logger.LogInformation($"Published demo [ {matchId} ] to DemoDownloadInstruction queue");
 

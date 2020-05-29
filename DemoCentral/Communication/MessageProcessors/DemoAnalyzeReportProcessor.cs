@@ -88,11 +88,10 @@ namespace DemoCentral.Communication.MessageProcessors
         /// <param name="response"></param>
         private void ActOnAnalyzeSuccess(DemoAnalyzeReport response)
         {
-            Demo dbDemo = _demoTableInterface.GetDemoById(response.MatchId);
             InQueueDemo queueDemo = _inQueueTableInterface.GetDemoById(response.MatchId);
 
-            _inQueueTableInterface.UpdateCurrentQueue(queueDemo, Queue.MatchWriter);
             PublishRedisInstruction(response);
+            _inQueueTableInterface.UpdateCurrentQueue(queueDemo, Queue.MatchWriter);
 
         }
 
