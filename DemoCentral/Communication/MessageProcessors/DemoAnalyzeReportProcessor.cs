@@ -73,7 +73,7 @@ namespace DemoCentral.Communication.MessageProcessors
                 MatchId = model.MatchId,
             };
             _databaseInsertionProducer.PublishMessage(forwardModel);
-            _logger.LogInformation($"Demo [ {model.MatchId} ]. RedisInstruction sent.");
+            _logger.LogInformation($"Demo [ {model.MatchId} ]. RedisInstruction sent To MatchWriter");
         }
 
         /// <summary>
