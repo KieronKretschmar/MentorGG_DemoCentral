@@ -95,7 +95,8 @@ namespace DemoCentral.Communication.MessageProcessors
                         _logger.LogWarning($"Demo [ {matchId} ]. MatchWriter failed with unhandled DemoAnalysisBlock [ { model.Block} ]!");
 
                         // Stop analysis
-                        _demoTableInterface.RemoveDemo(dbDemo);
+                        _inQueueTableInterface.Remove(queuedDemo);
+                        _demoTableInterface.SetAnalyzeState(dbDemo, false, model.Block);
                         break;
                 }
             }
