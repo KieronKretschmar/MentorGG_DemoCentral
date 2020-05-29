@@ -68,15 +68,9 @@ namespace DemoCentral.Communication.MessageProcessors
         /// </summary>
         /// <param name="model"></param>
         private void PublishRedisInstruction(DemoAnalyzeReport model){
-            if (String.IsNullOrEmpty(model.RedisKey))
-            {
-                throw new ArgumentException("RedisKey must be defined!");
-            }
             var forwardModel = new MatchDatabaseInsertionInstruction
             {
                 MatchId = model.MatchId,
-                RedisKey = model.RedisKey,
-                ExpiryDate = model.ExpiryDate,
             };
             _databaseInsertionProducer.PublishMessage(forwardModel);
             _logger.LogInformation($"Demo [ {model.MatchId} ]. RedisInstruction sent.");
