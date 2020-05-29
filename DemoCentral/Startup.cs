@@ -274,7 +274,7 @@ namespace DemoCentral
 
             // To SituationOperator
             var AMQP_SITUATION_OPERATOR = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_SITUATION_OPERATOR");
-            services.AddProducer<SituationExtractionReport>(AMQP_URI, AMQP_SITUATION_OPERATOR);
+            services.AddProducer<SituationExtractionInstruction>(AMQP_URI, AMQP_SITUATION_OPERATOR);
 
             // Removal-Instructions to MatchWriter
             var AMQP_MATCHWRITER_DEMO_REMOVAL = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_MATCHWRITER_DEMO_REMOVAL");
