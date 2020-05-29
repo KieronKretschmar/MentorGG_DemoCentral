@@ -13,18 +13,25 @@ Set all the required environment variables, see `Startup.cs`
 
 **AMQP**
 - `AMQP_URI` : URI to the rabbit cluster[*]
+
+
 - `AMQP_DEMODOWNLOADER` : Rabbit queue's name for producing messages to DemoDownloader[\*]
 - `AMQP_DEMODOWNLOADER_REPLY` : Rabbit queue's name for consuming messages from DemoDownloader[\*] 
+
 - `AMQP_MATCHWRITER_DEMO_REMOVAL` : Rabbit queue's name for producing messages to MatchWriter for removal instructions[\*] 
-- `AMQP_MATCHWRITER_DEMO_REMOVAL_REPLY` : Rabbit queue's name for consuming removal report messages from MatchWriter[\*] 
+- `AMQP_MATCHWRITER_DEMO_REMOVAL_REPLY` : Rabbit queue's name for consuming removal report messages from MatchWriter[\*]
+
 - `AMQP_DEMOFILEWORKER` : Rabbit queue's name for producing messages to DemoFileWorker[\*]
 - `AMQP_DEMOFILEWORKER_REPLY` : Rabbit queue's name for consuming messages from DemoFileWorker[\*]
-- `AMQP_GATHERER` : Rabbit queue's name for consuming messages from a Gatherer[\*]
-- `AMQP_SITUATIONSOPERATOR_REPORT` : Rabbit queue's name for consuming messages from SituationsOperator[\*]
+
+- `AMQP_SITUATION_OPERATOR`: Rabbit queue's name for producing messages to SituationsOperator[\*]
+- `AMQP_SITUATION_OPERATOR_REPLY` : Rabbit queue's name for consuming messages from SituationsOperator[\*]
+
 - `AMQP_MATCHWRITER_INSERTION` : Rabbit's exchange name for producing messages to MatchWriter for insertion instructions[\*]
 - `AMQP_MATCHWRITER_INSERTION_REPLY` :  Rabbit queue's name for consuming upload report messages from MatchWriter[\*]
-- `AMQP_MANUALDEMODOWNLOAD` : Rabbit queue's name for consuming messages from ManualDemoDownloader[\*]
 
+- `AMQP_MANUALDEMODOWNLOAD` : Rabbit queue's name for consuming messages from ManualDemoDownloader[\*]
+- `AMQP_GATHERER` : Rabbit queue's name for consuming messages from a Gatherer[\*]
 
 # Flow
 General flow of demo aquisition 
