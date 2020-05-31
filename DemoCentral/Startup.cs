@@ -199,7 +199,6 @@ namespace DemoCentral
                 c.BaseAddress = new Uri(MATCHRETRIEVER_BASE_ADDRESS);
             });
 
-            var BLOBSTORAGE_CONNECTION_STRING = GetRequiredEnvironmentVariable<string>(Configuration, "BLOBSTORAGE_CONNECTION_STRING");
             services.AddTransient<IBlobStorage>(services => 
             {
                 return new BlobStorage(BLOBSTORAGE_CONNECTION_STRING, services.GetRequiredService<ILogger<BlobStorage>>());

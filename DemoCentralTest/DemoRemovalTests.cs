@@ -1,13 +1,14 @@
 ﻿using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
-using DataBase.DatabaseClasses;
-using DataBase.Enumerals;
+using Database.DatabaseClasses;
 using DemoCentral;
 using DemoCentral.Communication.HTTP;
 using DemoCentral.Communication.Rabbit;
+using DemoCentral.Communication.RabbitConsumers;
 using DemoCentral.Controllers.trusted;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -53,9 +54,9 @@ namespace DemoCentralTests
         [TestMethod]
         public void RemoverChecksIfDemoExists()
         {
-            var mockMatchWriter = new Mock<IMatchWriter>();
+            var mockMatchWriter = new Mock<IProducer<DemoRemovalInstruction>>();
             var mockILogger = new Mock<ILogger<DemoRemover>>();
-            var mockDBInterface = new Mock<IDemoCentralDBInterface>();
+            var mockDBInterface = new Mock<IDemoTableInterface>();
             var mockDemoRemover = new Mock<IDemoRemover>();
             var mockMatchInfoGetter = new Mock<IMatchInfoGetter>();
             var testId = 123456789;
@@ -73,23 +74,21 @@ namespace DemoCentralTests
         public async Task ReceivedSuccessfulMessageSetsFileStatusAndBlobStorageDeletedAsync()
         {
             var testId = 123456789;
-            var mockILogger = new Mock<ILogger<MatchWriter>>();
+            var mockILogger = new Mock<ILogger<MatchWriterRemovalReportConsumer>>();
 
-            //Can not mock rpc queue connection this way
-            var mockRpcConnection = new Mock<IRPCQueueConnections>();
-            var mockDbInterface = new Mock<IDemoCentralDBInterface>();
+            var services = new ServiceCollection();
+            var mockRabbit = new MockRabbitConnection();
+            var mockDbInterface = new Mock<IDemoTableInterface>();
             var mockBlobStorage = new Mock<IBlobStorage>();
-            var mockResponse = new TaskCompletedReport
-            {
-                MatchId = testId,
-                Success = true,
-            };
+            var mockResponse = new TaskCompletedReport(testId) { Success = true};
 
-            var test = new MatchWriter(mockRpcConnection.Object, mockDbInterface.Object, mockBlobStorage.Object, mockILogger.Object);
+            services.AddTransient(o => mockDbInterface);
+            services.AddTransient(o => mockBlobStorage);
+
+            var test = new MatchWriterRemovalReportConsumer(services.BuildServiceProvider(), mockILogger.Object,mockRabbit);
 
             var res = await test.HandleMessageAsync(new RabbitMQ.Client.Events.BasicDeliverEventArgs(), mockResponse);
             Assert.IsTrue(res == RabbitCommunicationLib.Enums.ConsumedMessageHandling.Done);
-            mockDbInterface.Verify(x => x.SetFileStatus(It.IsAny<Demo>(), FileStatus.Removed), Times.Once);
             mockBlobStorage.Verify(x => x.DeleteBlobAsync(It.IsAny<string>()), Times.Once);
         }
 
@@ -122,14 +121,13 @@ namespace DemoCentralTests
             var testDemo = new Demo
             {
                 MatchId = testId,
-                FileStatus = FileStatus.InBlobStorage,
             };
 
-            var mockDbInterface = new Mock<IDemoCentralDBInterface>();
+            var mockDbInterface = new Mock<IDemoTableInterface>();
 
             mockDbInterface.Setup(x => x.GetDemoById(testId)).Returns(testDemo);
             var mockLogger = new Mock<ILogger<DemoRemover>>();
-            var mockMatchWriter = new Mock<IMatchWriter>();
+            var mockMatchWriter = new Mock<IProducer<DemoRemovalInstruction>>();
             var mockMatchInfoGetter = new Mock<IMatchInfoGetter>();
 
 
@@ -138,7 +136,7 @@ namespace DemoCentralTests
             var res = test.RemoveDemo(testId);
 
             Assert.AreEqual(DemoRemover.DemoRemovalResult.Successful, res);
-            mockMatchWriter.Verify(x => x.PublishMessage(It.IsAny<DemoRemovalInstruction>()), Times.Once);
+            mockMatchWriter.Verify(x => x.PublishMessage(It.IsAny<DemoRemovalInstruction>(),null), Times.Once);
   
         }
 
@@ -147,9 +145,9 @@ namespace DemoCentralTests
         public async Task DemoRemoverChecksRemovalDateAsync()
         {
             var testId = 123456789;
-            var mockDbInterface = new Mock<IDemoCentralDBInterface>();
+            var mockDbInterface = new Mock<IDemoTableInterface>();
             var mockLogger = new Mock<ILogger<DemoRemover>>();
-            var mockMatchWriter = new Mock<IMatchWriter>();
+            var mockMatchWriter = new Mock<IProducer<DemoRemovalInstruction>>();
             var mockMatchInfoGetter = new Mock<IMatchInfoGetter>();
 
             mockDbInterface.Setup(x => x.GetExpiredDemosId()).Returns(new List<long> { testId });

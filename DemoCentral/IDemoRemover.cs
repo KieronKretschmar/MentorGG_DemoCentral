@@ -2,6 +2,7 @@
 using DemoCentral.Communication.Rabbit;
 using DemoCentral.Enumerals;
 using Microsoft.Extensions.Logging;
+using RabbitCommunicationLib.Interfaces;
 using RabbitCommunicationLib.TransferModels;
 using System;
 using System.Collections.Generic;
@@ -17,12 +18,12 @@ namespace DemoCentral
 
     public class DemoRemover : IDemoRemover
     {
-        private readonly IDemoCentralDBInterface _dBInterface;
+        private readonly IDemoTableInterface _dBInterface;
         private readonly ILogger<DemoRemover> _logger;
-        private readonly IMatchWriter _matchWriter;
+        private readonly IProducer<DemoRemovalInstruction> _matchWriter;
         private readonly IMatchInfoGetter _matchInfoGetter;
 
-        public DemoRemover(IDemoCentralDBInterface dBInterface, ILogger<DemoRemover> logger, IMatchWriter matchWriter, IMatchInfoGetter matchInfoGetter)
+        public DemoRemover(IDemoTableInterface dBInterface, ILogger<DemoRemover> logger, IProducer<DemoRemovalInstruction> matchWriter, IMatchInfoGetter matchInfoGetter)
         {
             _dBInterface = dBInterface;
             _logger = logger;
@@ -35,8 +36,6 @@ namespace DemoCentral
             try
             {
                 var demo = _dBInterface.GetDemoById(matchId);
-                if (demo.FileStatus != DataBase.Enumerals.FileStatus.InBlobStorage)
-                    throw new ArgumentException($"Demo [ {matchId} ] is not in blob storage, Removal request cancelled");
             }
             catch (Exception e) when (e is ArgumentException)
             {

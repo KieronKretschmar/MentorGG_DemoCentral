@@ -1,4 +1,4 @@
-﻿using DataBase.DatabaseClasses;
+﻿using Database.DatabaseClasses;
 using DemoCentral.Enumerals;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -22,10 +22,10 @@ namespace DemoCentral.Communication.HTTP
     {
         private readonly HttpClient _client;
         private readonly IUserIdentityRetriever _userIdentityRetriever;
-        private readonly IDemoCentralDBInterface _dBInterface;
+        private readonly IDemoTableInterface _dBInterface;
         private readonly ILogger<MatchInfoGetter> _logger;
 
-        public MatchInfoGetter(IHttpClientFactory clientFactory, IUserIdentityRetriever userIdentityRetriever, IDemoCentralDBInterface dBInterface, ILogger<MatchInfoGetter> logger)
+        public MatchInfoGetter(IHttpClientFactory clientFactory, IUserIdentityRetriever userIdentityRetriever, IDemoTableInterface dBInterface, ILogger<MatchInfoGetter> logger)
         {
             _client = clientFactory.CreateClient("match-retriever");
             _userIdentityRetriever = userIdentityRetriever;
@@ -82,8 +82,6 @@ namespace DemoCentral.Communication.HTTP
             var demo = _dBInterface.GetDemoById(matchId);
             return await CalculateDemoRemovalDateAsync(demo);
         }
-
-
 
         public class PlayerInMatchModel
         {

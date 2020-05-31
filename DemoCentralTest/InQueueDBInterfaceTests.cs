@@ -32,9 +32,6 @@ namespace DemoCentralTests
         public void AddCreatesANewDemoEntryWithSameMatchId()
         {
             long matchId = 1;
-            DateTime matchDate = new DateTime();
-            Source source = Source.ManualUpload;
-            long uploaderId = 1234;
 
             using (var context = new DemoCentralContext(_test_config))
             {
@@ -44,35 +41,10 @@ namespace DemoCentralTests
 
             using (var context = new DemoCentralContext(_test_config))
             {
-                //Throws exception if entry not found or more than one are present
                 InQueueDemo demo = GetDemoByMatchId(context, matchId);
 
                 Assert.AreEqual(matchId, demo.MatchId);
-                Assert.AreEqual(matchDate, demo.Demo.MatchDate);
             }
-        }
-
-
-
-        [TestMethod]
-        public void GetPlayerMatchesInQueueReturnsMatches()
-        {
-            long playerId = 1234;
-            List<InQueueDemo> matches;
-
-            using (var context = new DemoCentralContext(_test_config))
-            {
-                var test = new InQueueTableInterface(context);
-                test.Add(1, Queue.DemoDownloader);
-                test.Add(2, Queue.DemoDownloader);
-                test.Add(3, Queue.DemoDownloader);
-
-                matches = test.GetPlayerMatchesInQueue(playerId);
-            }
-
-            Assert.AreEqual(3, matches.Count);
-            foreach (var match in matches)
-                Assert.AreEqual(match.Demo.UploaderId, playerId);
         }
 
 
@@ -127,22 +99,13 @@ namespace DemoCentralTests
         }
 
         [TestMethod]
-        public void GetQueuePositionReturnsCorrectPosition()
+        public void RemoveDemoFromQueueFailsWithUnknownMatchId()
         {
-            long playerId1 = 1;
-            long playerId2 = 2;
-
+            long matchId = 1;
             using (var context = new DemoCentralContext(_test_config))
             {
                 var test = new InQueueTableInterface(context);
-
-                test.Add(1, Queue.DemoDownloader);
-                test.Add(2, Queue.DemoDownloader);
-                test.Add(3, Queue.DemoDownloader);
-                test.Add(4, Queue.DemoDownloader);
-
-                for (int i = 1; i < 5; i++)
-                    Assert.AreEqual(i - 1, test.GetQueuePosition(test.GetDemoById(i)));
+                Assert.ThrowsException<InvalidOperationException>(() => test.UpdateCurrentQueue(test.GetDemoById(matchId), Queue.UnQueued));
             }
         }
 

@@ -17,15 +17,11 @@ namespace DemoCentral.Controllers.trusted
     public class MatchController : ControllerBase
     {
         private readonly ILogger<MatchController> _logger;
-        private readonly IProducer<DemoRemovalInstruction> _matchWriterRemovalProducer;
-        private readonly IDemoTableInterface _demoTableInterface;
         private readonly IDemoRemover _demoRemover;
 
-        public MatchController(ILogger<MatchController> logger, IProducer<DemoRemovalInstruction> matchWriterRemovalProducer, IDemoTableInterface demoTableInterface, IDemoRemover demoRemover)
+        public MatchController(ILogger<MatchController> logger, IDemoRemover demoRemover)
         {
             _logger = logger;
-            _matchWriterRemovalProducer = matchWriterRemovalProducer;
-            _demoTableInterface = demoTableInterface;
             _demoRemover = demoRemover;
         }
 

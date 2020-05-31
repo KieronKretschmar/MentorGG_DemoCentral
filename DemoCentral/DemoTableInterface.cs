@@ -42,8 +42,6 @@ namespace DemoCentral
 
         void SetHash(Demo demo, string hash);
         void SetHash(long matchId, string hash);
-        void SetUploadStatus(Demo demo, bool success);
-        void SetUploadStatus(long matchId, bool success);
         List<long> GetExpiredDemosId();
 
         /// <summary>

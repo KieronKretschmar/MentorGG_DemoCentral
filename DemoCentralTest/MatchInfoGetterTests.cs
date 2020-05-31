@@ -1,4 +1,4 @@
-﻿using DataBase.DatabaseClasses;
+﻿using Database.DatabaseClasses;
 using DemoCentral;
 using DemoCentral.Communication.HTTP;
 using DemoCentral.Enumerals;
@@ -40,7 +40,7 @@ namespace DemoCentralTests
             mockUserIdentityRetriever.Setup(x => x.GetHighestUserSubscription(testIds)).Returns(Task.FromResult(SubscriptionType.Premium));
 
             var mockLogger = new Mock<ILogger<MatchInfoGetter>>();
-            var mockDbInterface = new Mock<IDemoCentralDBInterface>();
+            var mockDbInterface = new Mock<IDemoTableInterface>();
             mockDbInterface.Setup(x => x.GetDemoById(testMatchId)).Returns(new Demo { MatchId = testMatchId, MatchDate = DateTime.UtcNow });
 
             var test = new MatchInfoGetter(httpfactory, mockUserIdentityRetriever.Object, mockDbInterface.Object, mockLogger.Object);
