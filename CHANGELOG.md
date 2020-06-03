@@ -5,19 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.0.0] - 2020-04-?
+## [2.0.0] - 2020-06-03
 ### Added 
 - Add downloadurl endpoint v1/public/match/{matchId}/download-url
-- env vars:
-	- REDIS_CONFIGURATION_STRING
-	- AMQP_MATCHWRITER_INSERTION_REPLY
+- Producer for MatchData insertion is now a common producer instead of fanout producer
 
 ### Changed
-- Rename env vars
-	- AMQP_MATCHDBI -> AMQP_MATCHWRITER_UPLOAD_REPORT
-	- AMQP_SITUATIONSOPERATOR -> AMQP_SITUATIONSOPERATOR_REPORT
-	- AMQP_FANOUT_EXCHANGE_NAME -> AMQP_MATCHWRITER_INSERTION
-- Producer for MatchData insertion is now a common producer instead of fanout producer
+- Demo Retry Logic
 
 ## [1.1.1] - 2020-04-22
 ### Added
