@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Database.DatabaseClasses;
 using DemoCentral.Communication.Rabbit;
+using DemoCentral.Helpers;
 using Microsoft.Extensions.Logging;
 using RabbitCommunicationLib.Enums;
 using RabbitCommunicationLib.Interfaces;
@@ -118,9 +119,6 @@ namespace DemoCentral.Communication.MessageProcessors
                 _inQueueTableInterface.IncrementRetry(inQueueDemo);
             }
 
-            // Store the Analyze state with the current failure
-            _demoTableInterface.SetAnalyzeState(dbDemo, analysisFinishedSuccessfully: false, block);
-
             // If the amount of retries exceeds the maximum allowed - stop retrying this demo.
             // OR if the demo is a duplicate.
             if (inQueueDemo.RetryAttemptsOnCurrentFailure > MAX_RETRIES)
@@ -183,8 +181,11 @@ namespace DemoCentral.Communication.MessageProcessors
                 default:
                     _logger.LogCritical($"Demo [ {matchId} ]. Unknown Failure!");
                     break;
+            }
 
-            }   
+            // Store the Analyze state with the current failure
+            _demoTableInterface.SetAnalyzeState(dbDemo, analysisFinishedSuccessfully: false, block);
+            _demoFileWorkerProducer.PublishMessage(dbDemo.ToAnalyzeInstruction());
         }
     }
 }
