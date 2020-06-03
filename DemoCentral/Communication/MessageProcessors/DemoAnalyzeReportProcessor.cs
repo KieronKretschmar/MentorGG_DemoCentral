@@ -119,6 +119,9 @@ namespace DemoCentral.Communication.MessageProcessors
                 _inQueueTableInterface.IncrementRetry(inQueueDemo);
             }
 
+            // Store the Analyze state with the current failure
+            _demoTableInterface.SetAnalyzeState(dbDemo, analysisFinishedSuccessfully: false, block);
+
             // If the amount of retries exceeds the maximum allowed - stop retrying this demo.
             // OR if the demo is a duplicate.
             if (inQueueDemo.RetryAttemptsOnCurrentFailure > MAX_RETRIES)
@@ -181,8 +184,8 @@ namespace DemoCentral.Communication.MessageProcessors
                     break;
             }
 
-            // Store the Analyze state with the current failure
-            _demoTableInterface.SetAnalyzeState(dbDemo, analysisFinishedSuccessfully: false, block);
+
+            _logger.LogInformation($"Re-sending Match [ {dbDemo.MatchId} ] to DemoFileWorker for a retry.");
             _demoFileWorkerProducer.PublishMessage(dbDemo.ToAnalyzeInstruction());
         }
     }
