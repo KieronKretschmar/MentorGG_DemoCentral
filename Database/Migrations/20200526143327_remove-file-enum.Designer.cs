@@ -3,14 +3,16 @@ using System;
 using Database.DatabaseClasses;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Database.Migrations
 {
     [DbContext(typeof(DemoCentralContext))]
-    partial class DemoCentralContextModelSnapshot : ModelSnapshot
+    [Migration("20200526143327_remove-file-enum")]
+    partial class removefileenum
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -34,6 +36,9 @@ namespace Database.Migrations
 
                     b.Property<string>("DownloadUrl")
                         .HasColumnType("longtext CHARACTER SET utf8mb4");
+
+                    b.Property<byte>("FramesPerSecond")
+                        .HasColumnType("tinyint unsigned");
 
                     b.Property<string>("MD5Hash")
                         .HasColumnType("longtext CHARACTER SET utf8mb4");

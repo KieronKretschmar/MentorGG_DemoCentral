@@ -1,29 +1,87 @@
 ﻿using System;
 using RabbitCommunicationLib.Enums;
-using DataBase.Enumerals;
 using RabbitCommunicationLib.TransferModels;
 
-namespace DataBase.DatabaseClasses
+namespace Database.DatabaseClasses
 {
     public partial class Demo
     {
+        /// <summary>
+        /// Navigational Propery.
+        /// </summary>
+        public InQueueDemo InQueueDemo { get; set; }
+
+        /// <summary>
+        /// MatchId.
+        /// </summary>
+        /// <value></value>
         public long MatchId { get; set; }
+
+        /// <summary>
+        /// When the Match took place.
+        /// </summary>
+        /// <value></value>
         public DateTime MatchDate { get; set; }
+
+        /// <summary>
+        /// SteamId of the uploader.
+        /// </summary>
+        /// <value></value>
         public long UploaderId { get; set; }
+
+        /// <summary>
+        /// The Method used to obtain a Demo.
+        /// </summary>
         public UploadType UploadType { get; set; }
-        public UploadStatus UploadStatus{get; set; }
+
+        /// <summary>
+        /// Source of the Demo.
+        /// Where the demo came from.
+        /// </summary>
+        /// <value></value>
         public Source Source { get; set; }
+
+        /// <summary>
+        /// Download Url to download the Demo.
+        /// </summary>
+        /// <value></value>
         public string DownloadUrl { get; set; }
+
+        /// <summary>
+        /// Internal BlobUrl of the Demo file.
+        /// </summary>
+        /// <value></value>
         public string BlobUrl { get; set; }
-        public string Md5hash { get; set; }
-        public FileStatus FileStatus { get; set; }
+
+        /// <summary>
+        /// MD5 Hash of the Demo file.
+        /// </summary>
+        /// <value></value>
+        public string MD5Hash { get; set; }
+
+        /// <summary>
+        /// Quality the Demo is analyzed in.
+        /// </summary>
+        /// <value></value>
         public AnalyzerQuality Quality { get; set; }
-        public byte FramesPerSecond { get; set; }
-        public DemoFileWorkerStatus DemoFileWorkerStatus { get; set; }
-        public string DemoFileWorkerVersion { get; set; }
-        public string DatabaseVersion { get; set; }
+
+        /// <summary>
+        /// Outcome of the Demo analysis process.
+        /// </summary>
+        /// <value></value>
+        public bool AnalysisSucceeded { get; set; } = false;
+
+        /// <summary>
+        /// Reason why the analysis process stopped for this demo.
+        /// </summary>
+        /// <value></value>
+        public DemoAnalysisBlock? AnalysisBlockReason { get; set; } = null;
+
+        /// <summary>
+        /// When the Demo was first seen.
+        /// </summary>
+        /// <value></value>
         public DateTime UploadDate { get; set; }
-        public string Event {get; set; }
 
 
         public static Demo FromGatherTransferModel(DemoInsertInstruction model)
@@ -33,65 +91,27 @@ namespace DataBase.DatabaseClasses
                 MatchDate = model.MatchDate,
                 UploaderId = model.UploaderId,
                 UploadType = model.UploadType,
-                UploadStatus = UploadStatus.New,
                 Source = model.Source,
                 DownloadUrl = model.DownloadUrl,
                 BlobUrl = "",
-                Md5hash = "",
-                FileStatus = FileStatus.New,
-                DemoFileWorkerStatus = DemoFileWorkerStatus.New,
-                DemoFileWorkerVersion = "",
+                MD5Hash = "",
                 UploadDate = DateTime.UtcNow,
             };
         }
 
-        public static Demo FromManualUploadTransferModel(ManualDownloadReport model)
+        public static Demo FromManualUploadTransferModel(ManualDownloadInsertInstruction model)
         {
             return new Demo
             {
                 MatchDate = model.MatchDate,
                 UploaderId = model.UploaderId,
                 UploadType = model.UploadType,
-                UploadStatus = UploadStatus.New,
                 Source = model.Source,
                 DownloadUrl = null,
                 BlobUrl = model.BlobUrl,
-                Md5hash = "",
-                FileStatus = FileStatus.New,
-                DemoFileWorkerStatus = DemoFileWorkerStatus.New,
-                DemoFileWorkerVersion = "",
+                MD5Hash = "",
                 UploadDate = model.UploadDate,
             };
-        }
-
-        public bool HasFailedAnalysis()
-        {
-            switch (DemoFileWorkerStatus)
-            {
-                case DemoFileWorkerStatus.New:
-                case DemoFileWorkerStatus.InQueue:
-                case DemoFileWorkerStatus.Finished:
-                    return false;
-                case DemoFileWorkerStatus.BlobStorageDownloadFailed:
-                case DemoFileWorkerStatus.UnzipFailed:
-                case DemoFileWorkerStatus.DuplicateCheckFailed:
-                case DemoFileWorkerStatus.AnalyzerFailed:
-                case DemoFileWorkerStatus.CacheUploadFailed:
-                    return true;
-                default:
-                    throw new ArgumentOutOfRangeException($"Unknown DemoFileWorkerStatus [ {DemoFileWorkerStatus} ] for HasFailedAnalysis( Match [ {MatchId} ] )");
-            }
-        }
-
-        /// <summary>
-        /// Resets analysis to the stage where it was before DemoFileWorker
-        /// </summary>
-        public void ToPreAnalysisState()
-        {
-            UploadStatus = UploadStatus.New;
-            Md5hash = "";
-            DemoFileWorkerStatus = DemoFileWorkerStatus.New;
-            DemoFileWorkerVersion = "";
         }
     }
 }

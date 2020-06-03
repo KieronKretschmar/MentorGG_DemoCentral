@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using DataBase.DatabaseClasses;
+using Database.DatabaseClasses;
 using Microsoft.EntityFrameworkCore;
 using DemoCentral.Communication;
 using RabbitCommunicationLib.Queues;
@@ -16,24 +16,29 @@ using Microsoft.AspNetCore.Mvc;
 using RabbitCommunicationLib.TransferModels;
 using RabbitCommunicationLib.Interfaces;
 using RabbitCommunicationLib.Producer;
+using RabbitCommunicationLib.Extensions;
 using DemoCentral.Helpers;
 using DemoCentral.Communication.HTTP;
 using DemoCentral.Communication.Rabbit;
 using System.Net.Http;
+using DemoCentral.Communication.MessageProcessors;
+using DemoCentral.Communication.RabbitConsumers;
+using StackExchange.Redis;
 
 namespace DemoCentral
 {
     /// <summary>
     /// DemoCentral orchestrates the entire demo acquisition and analysis.
-    /// 
-    /// 
-    /// Required environment variables
-    /// [AMQP_URI,AMQP_DEMODOWNLOADER, AMQP_DEMODOWNLOADER_REPLY,
-    ///     AMQP_DEMOFILEWORKER, AMQP_DEMOFILEWORKER_REPLY, AMQP_GATHERER,
-    ///     AMQP_SITUATIONSOPERATOR, AMQP_MATCHDBI,AMQP_MANUALDEMODOWNLOAD,AMQP_FANOUT_EXCHANGE_NAME, HTTP_USER_SUBSCRIPTION]
     /// </summary>
     public class Startup
     {
+        private bool IsDevelopment => Configuration.GetValue<string>("ASPNETCORE_ENVIRONMENT") == Environments.Development;
+
+        /// <summary>
+        /// Amount of times to attempt a successful MySQL connection on startup.
+        /// </summary>
+        const int MYSQL_RETRY_LIMIT = 3;
+
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -45,11 +50,7 @@ namespace DemoCentral
         //// This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            string MYSQL_CONNECTION_STRING = GetRequiredEnvironmentVariable<string>(Configuration, "MYSQL_CONNECTION_STRING");
-
-            services.AddDbContext<DemoCentralContext>(options =>
-                options.UseMySql(MYSQL_CONNECTION_STRING), ServiceLifetime.Transient, ServiceLifetime.Transient);
-
+            #region Controllers
             services.AddControllers()
                 .AddNewtonsoftJson(x =>
                 {
@@ -58,8 +59,9 @@ namespace DemoCentral
                     // Serialize longs (steamIds) as strings
                     x.SerializerSettings.Converters.Add(new LongToStringConverter());
                 });
+            #endregion
 
-
+            #region Logging
             services.AddLogging(o =>
             {
                 o.AddConsole(o => o.TimestampFormat = "[yyyy-MM-dd HH:mm:ss zzz] ");
@@ -73,20 +75,53 @@ namespace DemoCentral
                 o.AddFilter("Microsoft.AspNetCore.Routing.EndpointMiddleware", LogLevel.Warning);
                 o.AddFilter("Microsoft.AspNetCore.Mvc.StatusCodeResult", LogLevel.Warning);
             });
+            #endregion
 
-            if (Configuration.GetValue<bool>("IS_MIGRATING"))
+            #region Mysql Database
+            string MYSQL_CONNECTION_STRING = GetOptionalEnvironmentVariable<string>(Configuration, "MYSQL_CONNECTION_STRING", null);
+            if (MYSQL_CONNECTION_STRING != null)
+            {
+                services.AddDbContext<DemoCentralContext>(o =>
+                {
+                    o.UseMySql(MYSQL_CONNECTION_STRING, sqlOptions =>
+                    {
+                        sqlOptions.EnableRetryOnFailure(MYSQL_RETRY_LIMIT);
+                    });
+
+                }, ServiceLifetime.Scoped);
+            }
+            // Use InMemoryDatabase if the connectionstring is not set in a DEV enviroment
+            else if (IsDevelopment)
+            {
+                services.AddDbContext<DemoCentralContext>(o =>
+                {
+                    o.UseInMemoryDatabase("MyTemporaryDatabase");
+
+                }, ServiceLifetime.Scoped);
+
+                Console.WriteLine("WARNING: Using InMemoryDatabase!");
+            }
+            else
+            {
+                throw new ArgumentException(
+                    "MySqlConnectionString is missing, configure the `MYSQL_CONNECTION_STRING` enviroment variable.");
+            }
+
+            if (GetOptionalEnvironmentVariable<bool>(Configuration, "IS_MIGRATING", false))
             {
                 Console.WriteLine("IS_MIGRATING is true! ARE YOU STILL MIGRATING?");
                 return;
             }
+            #endregion
 
+            #region API Versioning
             services.AddApiVersioning(o =>
             {
                 o.ReportApiVersions = true;
                 o.AssumeDefaultVersionWhenUnspecified = true;
                 o.DefaultApiVersion = new ApiVersion(1, 0);
             });
-
+            #endregion
 
             #region Swagger
             services.AddSwaggerGen(options =>
@@ -99,59 +134,48 @@ namespace DemoCentral
                 var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
                 options.IncludeXmlComments(xmlPath);
             });
-            #endregion
 
-            if (Configuration.GetValue<bool>("DOC_GEN"))
+            if (GetOptionalEnvironmentVariable<bool>(Configuration, "DOC_GEN", false))
             {
-                Console.WriteLine("DOC_GEN is true! ARE YOU JUST TRYING TO BUILD THE DOCS?");
+                Console.WriteLine("WARNING: DOC_GEN is true. Only building the swagger docs. This build is non-functional.");
                 return;
             }
+            #endregion
 
-            services.AddTransient<IInQueueDBInterface, InQueueDBInterface>();
-            services.AddTransient<IDemoCentralDBInterface, DemoCentralDBInterface>();
+            #region Database Interfaces
+            services.AddTransient<IInQueueTableInterface, InQueueTableInterface>();
+            services.AddTransient<IDemoTableInterface, DemoTableInterface>();
+            #endregion
 
+            #region Blob Storage
+            var BLOBSTORAGE_CONNECTION_STRING = GetRequiredEnvironmentVariable<string>(Configuration, "BLOBSTORAGE_CONNECTION_STRING");
+            services.AddTransient<IBlobStorage>(services =>
+            {
+                return new BlobStorage(BLOBSTORAGE_CONNECTION_STRING, services.GetRequiredService<ILogger<BlobStorage>>());
+            });
+            #endregion
 
-            //Read environment variables
-            var AMQP_URI = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_URI");
+            #region Redis
+            var REDIS_CONFIGURATION_STRING = GetRequiredEnvironmentVariable<string>(Configuration, "REDIS_CONFIGURATION_STRING");
+            if (REDIS_CONFIGURATION_STRING == "mock")
+            {
+                // Add MockRedis, a local InMemory redis cache good for testing
+                services.AddTransient<IMatchRedis, MockRedis>();
+            }
+            else
+            {
+                // Add ConnectionMultiplexer as singleton as it is made to be reused
+                // see https://stackexchange.github.io/StackExchange.Redis/Basics.html
+                services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(REDIS_CONFIGURATION_STRING));
+                services.AddTransient<IMatchRedis, MatchRedis>();
+            }
+            #endregion
 
-            var AMQP_DEMODOWNLOADER = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_DEMODOWNLOADER");
-            var AMQP_DEMODOWNLOADER_REPLY = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_DEMODOWNLOADER_REPLY");
-            var demoDownloaderRpcQueue = new RPCQueueConnections(AMQP_URI, AMQP_DEMODOWNLOADER_REPLY, AMQP_DEMODOWNLOADER);
-
-            var AMQP_MATCHWRITER_DEMO_REMOVAL = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_MATCHWRITER_DEMO_REMOVAL");
-            var AMQP_MATCHWRITER_DEMO_REMOVAL_REPLY = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_MATCHWRITER_DEMO_REMOVAL_REPLY");
-            var matchWriterRpcQueue = new RPCQueueConnections(AMQP_URI, AMQP_MATCHWRITER_DEMO_REMOVAL_REPLY, AMQP_MATCHWRITER_DEMO_REMOVAL);
-
-
-            var AMQP_DEMOFILEWORKER = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_DEMOFILEWORKER");
-            var AMQP_DEMOFILEWORKER_REPLY = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_DEMOFILEWORKER_REPLY");
-            var demoFileworkerRpcQueue = new RPCQueueConnections(AMQP_URI, AMQP_DEMOFILEWORKER_REPLY, AMQP_DEMOFILEWORKER);
-
-            var AMQP_GATHERER = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_GATHERER");
-            var gathererQueue = new QueueConnection(AMQP_URI, AMQP_GATHERER);
-
-            var AMQP_SITUATIONSOPERATOR = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_SITUATIONSOPERATOR");
-            var soQueue = new QueueConnection(AMQP_URI, AMQP_SITUATIONSOPERATOR);
-
-            var AMQP_MATCHDBI = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_MATCHDBI");
-            var matchDBIQueue = new QueueConnection(AMQP_URI, AMQP_MATCHDBI);
-
-            var AMQP_MANUALDEMODOWNLOAD = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_MANUALDEMODOWNLOAD");
-            var manualDemoDownloadQueue = new QueueConnection(AMQP_URI, AMQP_MANUALDEMODOWNLOAD);
-
-            var AMQP_FANOUT_EXCHANGE_NAME = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_FANOUT_EXCHANGE_NAME");
-            var fanoutExchangeConnection = new ExchangeConnection(AMQP_URI, AMQP_FANOUT_EXCHANGE_NAME);
-
+            #region Http related services
             var MENTORINTERFACE_BASE_ADDRESS = GetRequiredEnvironmentVariable<string>(Configuration, "MENTORINTERFACE_BASE_ADDRESS");
             services.AddHttpClient("mentor-interface", c =>
             {
                 c.BaseAddress = new Uri(MENTORINTERFACE_BASE_ADDRESS);
-            });
-
-            var BLOBSTORAGE_CONNECTION_STRING = GetRequiredEnvironmentVariable<string>(Configuration, "BLOBSTORAGE_CONNECTION_STRING");
-            services.AddTransient<IBlobStorage>(services => 
-            {
-                return new BlobStorage(BLOBSTORAGE_CONNECTION_STRING, services.GetRequiredService<ILogger<BlobStorage>>());
             });
 
             services.AddTransient<IUserIdentityRetriever>(services =>
@@ -161,75 +185,110 @@ namespace DemoCentral
 
                 return new UserIdentityRetriever(services.GetRequiredService<IHttpClientFactory>(), services.GetRequiredService<ILogger<UserIdentityRetriever>>());
             });
+            #endregion
 
+            #region Rabbit - General
+            var AMQP_URI = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_URI");
+            #endregion
 
-            //Add services, 
-            //if 3 or more are required to initialize another one, just pass the service provider
-            services.AddHostedService<MatchDBI>(services =>
+            #region Rabbit - Consumers
+            // New demos from Gatherers
+            var AMQP_GATHERER = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_GATHERER");
+            var gathererQueue = new QueueConnection(AMQP_URI, AMQP_GATHERER);
+            services.AddHostedService<DemoInsertInstructionConsumer>(services =>
             {
-                return new MatchDBI(matchDBIQueue, services.GetRequiredService<IDemoCentralDBInterface>(), services.GetRequiredService<ILogger<MatchDBI>>());
+                return new DemoInsertInstructionConsumer(
+                    services,
+                    services.GetRequiredService<ILogger<DemoInsertInstructionConsumer>>(),
+                    gathererQueue);
             });
 
-            services.AddHostedService<SituationsOperator>(services =>
+            // New downloads from ManualDemoDownloader
+            var AMQP_MANUALDEMODOWNLOAD = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_MANUALDEMODOWNLOAD");
+            var manualDemoDownloadQueue = new QueueConnection(AMQP_URI, AMQP_MANUALDEMODOWNLOAD);
+            services.AddHostedService<ManualDownloadInsertInstructionConsumer>(services =>
             {
-                return new SituationsOperator(soQueue, services.GetRequiredService<IInQueueDBInterface>(), services.GetRequiredService<ILogger<SituationsOperator>>());
+                return new ManualDownloadInsertInstructionConsumer(
+                    services,
+                    services.GetRequiredService<ILogger<ManualDownloadInsertInstructionConsumer>>(),
+                    manualDemoDownloadQueue
+                );
             });
 
-            services.AddHostedService<IMatchWriter>(services =>
+            // Download Reports from DemoDownloader
+            var AMQP_DEMODOWNLOADER_REPLY = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_DEMODOWNLOADER_REPLY");
+            var demoDownloaderReportQueue = new QueueConnection(AMQP_URI, AMQP_DEMODOWNLOADER_REPLY);
+            services.AddHostedService<DemoDownloadReportConsumer>(services =>
             {
-                return new MatchWriter(matchWriterRpcQueue, services.GetRequiredService<IDemoCentralDBInterface>(),services.GetRequiredService<IBlobStorage>(),services.GetRequiredService<ILogger<MatchWriter>>());
+                return new DemoDownloadReportConsumer(services, services.GetRequiredService<ILogger<DemoDownloadReportConsumer>>(), demoDownloaderReportQueue);
             });
 
-            //WORKAROUND for requesting a hostedService
-            //Hosted services cant be addressed as an API, which we want to do with the PublishMessage() method
-            //so we add a Singleton and a hosted service, which points to the Singleton instance
-            //from https://github.com/aspnet/Extensions/issues/553
-            services.AddSingleton<IDemoFileWorker, DemoFileWorker>(services =>
+            // Analyze Reports from DemoFileWorker
+            var AMQP_DEMOFILEWORKER_REPLY = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_DEMOFILEWORKER_REPLY");
+            var demoFileWorkerReportQueue = new QueueConnection(AMQP_URI, AMQP_DEMOFILEWORKER_REPLY);
+            services.AddHostedService<DemoAnalyzeReportReportConsumer>(services =>
             {
-                return new DemoFileWorker(demoFileworkerRpcQueue, services);
-            });
-            services.AddHostedService<IDemoFileWorker>(p => p.GetRequiredService<IDemoFileWorker>());
-
-
-            //WORKAROUND for requesting a hostedService
-            //Hosted services cant be addressed as an API, which we want to do with the PublishMessage() method
-            //so we add a Singleton and a hosted service, which points to the Singleton instance
-            //from https://github.com/aspnet/Extensions/issues/553
-            services.AddSingleton<IDemoDownloader, DemoDownloader>(services =>
-             {
-                 return new DemoDownloader(demoDownloaderRpcQueue, services);
-             });
-
-            services.AddTransient<IProducer<DemoInsertInstruction>>(services => new Producer<DemoInsertInstruction>(gathererQueue));
-
-
-            services.AddTransient<IProducer<RedisLocalizationInstruction>>(services =>
-            {
-                return new FanoutProducer<RedisLocalizationInstruction>(fanoutExchangeConnection);
-            });
-            services.AddHostedService<IDemoDownloader>(p => p.GetRequiredService<IDemoDownloader>());
-
-
-            services.AddTransient<GathererWorker>();
-
-            services.AddHostedService<GathererConsumer>(services =>
-            {
-                return new GathererConsumer(
-                    gathererQueue,
-                    services.GetRequiredService<ILogger<GathererConsumer>>(),
-                    services);
+                return new DemoAnalyzeReportReportConsumer(services, services.GetRequiredService<ILogger<DemoAnalyzeReportReportConsumer>>(), demoFileWorkerReportQueue);
             });
 
-            services.AddHostedService<ManualUploadReceiver>(services =>
+            // Upload Reports from MatchWriter
+            var AMQP_MATCHWRITER_INSERTION_REPLY = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_MATCHWRITER_INSERTION_REPLY");
+            var matchwriterUploadReportQueue = new QueueConnection(AMQP_URI, AMQP_MATCHWRITER_INSERTION_REPLY);
+            services.AddHostedService<MatchDatabaseInsertionReportConsumer>(services =>
             {
-                return new ManualUploadReceiver(
-                    manualDemoDownloadQueue,
-                    services.GetRequiredService<IDemoFileWorker>(),
-                    services.GetRequiredService<IDemoCentralDBInterface>(),
-                    services.GetRequiredService<IInQueueDBInterface>(),
-                    services.GetRequiredService<IUserIdentityRetriever>(),
-                    services.GetRequiredService<ILogger<ManualUploadReceiver>>());
+                return new MatchDatabaseInsertionReportConsumer(services, services.GetRequiredService<ILogger<MatchDatabaseInsertionReportConsumer>>(), matchwriterUploadReportQueue);
             });
+
+            // Extraction Reports from SituationOperator
+            var AMQP_SITUATION_OPERATOR_REPLY = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_SITUATION_OPERATOR_REPLY");
+            var situationOperatorReplyQueue = new QueueConnection(AMQP_URI, AMQP_SITUATION_OPERATOR_REPLY);
+            services.AddHostedService<SituationExtractionReportConsumer>(services =>
+            {
+                return new SituationExtractionReportConsumer(services, services.GetRequiredService<ILogger<SituationExtractionReportConsumer>>(), situationOperatorReplyQueue);
+            });
+
+            // Removal Reports from MatchWriter
+            var AMQP_MATCHWRITER_DEMO_REMOVAL_REPLY = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_MATCHWRITER_DEMO_REMOVAL_REPLY");
+            var matchwriterRemovalReportQueue = new QueueConnection(AMQP_URI, AMQP_MATCHWRITER_DEMO_REMOVAL_REPLY);
+            services.AddHostedService<MatchWriterRemovalReportConsumer>(services =>
+            {
+                return new MatchWriterRemovalReportConsumer(services, services.GetRequiredService<ILogger<MatchWriterRemovalReportConsumer>>(), matchwriterRemovalReportQueue);
+            });
+            #endregion
+
+            #region Rabbit - Producers
+            // To DemoCentral (for matches uploaded via Browser-Extension)
+            services.AddProducer<DemoInsertInstruction>(AMQP_URI, AMQP_GATHERER);
+
+            // To DemoDownloader
+            var AMQP_DEMODOWNLOADER = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_DEMODOWNLOADER");
+            services.AddProducer<DemoDownloadInstruction>(AMQP_URI, AMQP_DEMODOWNLOADER);
+
+            // To DemoFileWorker
+            var AMQP_DEMOFILEWORKER = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_DEMOFILEWORKER");
+            services.AddProducer<DemoAnalyzeInstruction>(AMQP_URI, AMQP_DEMOFILEWORKER);
+
+            // To MatchData-Exchange
+            var AMQP_MATCHWRITER_INSERTION = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_MATCHWRITER_INSERTION");
+            services.AddProducer<MatchDatabaseInsertionInstruction>(AMQP_URI, AMQP_MATCHWRITER_INSERTION);
+
+            // To SituationOperator
+            var AMQP_SITUATION_OPERATOR = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_SITUATION_OPERATOR");
+            services.AddProducer<SituationExtractionInstruction>(AMQP_URI, AMQP_SITUATION_OPERATOR);
+
+            // Removal-Instructions to MatchWriter
+            var AMQP_MATCHWRITER_DEMO_REMOVAL = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_MATCHWRITER_DEMO_REMOVAL");
+            services.AddProducer<DemoRemovalInstruction>(AMQP_URI, AMQP_MATCHWRITER_DEMO_REMOVAL);
+            #endregion
+
+            #region Rabbit - MessageProcessors
+            services.AddTransient<DemoInsertInstructionProcessor>();
+            services.AddTransient<DemoDownloadReportProcessor>();
+            services.AddTransient<DemoAnalyzeReportProcessor>();
+            services.AddTransient<ManualDownloadInsertInstructionProcessor>();
+            services.AddTransient<MatchDatabaseInsertionReportProcessor>();
+            services.AddTransient<SituationExtractionReportProcessor>();
+            #endregion
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -249,8 +308,6 @@ namespace DemoCentral
             });
             #endregion
 
-            app.UseHttpsRedirection();
-
             app.UseRouting();
 
             app.UseAuthorization();
@@ -260,7 +317,13 @@ namespace DemoCentral
                 endpoints.MapControllers();
             });
 
-            services.GetRequiredService<DemoCentralContext>().Database.Migrate();
+            #region Run Migrations
+            // migrate if this is not an inmemory database
+            if (services.GetRequiredService<DemoCentralContext>().Database.ProviderName != "Microsoft.EntityFrameworkCore.InMemory")
+            {
+                services.GetRequiredService<DemoCentralContext>().Database.Migrate();
+            }
+            #endregion
         }
 
         /// <summary>
@@ -279,6 +342,26 @@ namespace DemoCentral
             else
             {
                 return value;
+            }
+        }
+
+        /// <summary>
+        /// Attempt to retrieve an Environment Variable
+        /// Returns default value if not found.
+        /// </summary>
+        /// <typeparam name="T">Type to retreive</typeparam>
+        private static T GetOptionalEnvironmentVariable<T>(IConfiguration config, string key, T defaultValue)
+        {
+            var stringValue = config.GetSection(key).Value;
+            try
+            {
+                T value = (T)Convert.ChangeType(stringValue, typeof(T), System.Globalization.CultureInfo.InvariantCulture);
+                return value;
+            }
+            catch (InvalidCastException e)
+            {
+                Console.WriteLine($"Env var [ {key} ] not specified. Defaulting to [ {defaultValue} ]");
+                return defaultValue;
             }
         }
     }

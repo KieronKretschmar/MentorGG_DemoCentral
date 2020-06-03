@@ -1,17 +1,15 @@
-using Database.Enumerals;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using RabbitCommunicationLib.TransferModels;
 using DemoCentral;
 using Moq;
 using Microsoft.EntityFrameworkCore;
-using DataBase.DatabaseClasses;
+using Database.DatabaseClasses;
 using System.Linq;
 using System;
 using RabbitCommunicationLib.Enums;
-using DataBase.Enumerals;
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
-using DemoCentral.Enumerals;
+using DemoCentral.Helpers;
 
 namespace DemoCentralTests
 {
@@ -19,26 +17,24 @@ namespace DemoCentralTests
     public class DemoCentralDBInterfaceTests
     {
         private DbContextOptions<DemoCentralContext> _test_config;
-        private IInQueueDBInterface _mockInQueueDb;
-        private ILogger<DemoCentralDBInterface> _mockILogger;
+        private IInQueueTableInterface _mockInQueueTableInterface;
+        private ILogger<DemoTableInterface> _mockILogger;
         private Demo _standardDemo;
 
         public DemoCentralDBInterfaceTests()
         {
             _test_config = DCTestsDBHelper.test_config;
-            _mockInQueueDb = new Mock<IInQueueDBInterface>().Object;
-            _mockILogger = new Mock<ILogger<DemoCentralDBInterface>>().Object;
+            _mockInQueueTableInterface = new Mock<IInQueueTableInterface>().Object;
+            _mockILogger = new Mock<ILogger<DemoTableInterface>>().Object;
 
             _standardDemo = new Demo
             {
                 DownloadUrl = "xyz",
-                FileStatus = (byte) FileStatus.New,
                 UploadDate = DateTime.UtcNow,
                 UploadType = UploadType.Unknown,
                 MatchDate = default(DateTime),
                 Quality = AnalyzerQuality.Low,
                 Source = Source.Unknown,
-                DemoFileWorkerVersion = "",
                 UploaderId = 1234,
             };
         }
@@ -67,7 +63,7 @@ namespace DemoCentralTests
 
             using (var context = new DemoCentralContext(_test_config))
             {
-                var test = new DemoCentralDBInterface(context, _mockILogger);
+                var test = new DemoTableInterface(context, _mockILogger);
                 ;
 
                 test.TryCreateNewDemoEntryFromGatherer(model, AnalyzerQuality.High, out matchId);
@@ -87,47 +83,6 @@ namespace DemoCentralTests
         }
 
         [TestMethod]
-        public void TryCreateNewDemoEntryFromGathererUpdatesAnalyzerQuality()
-        {
-            long matchId;
-
-            DemoInsertInstruction model = new DemoInsertInstruction
-            {
-                MatchDate = default(DateTime),
-                DownloadUrl = "1234",
-                Source = Source.Unknown,
-                UploaderId = 1234,
-                UploadType = UploadType.Unknown,
-            };
-
-            // TryCreate with low quality
-            using (var context = new DemoCentralContext(_test_config))
-            {
-                var test = new DemoCentralDBInterface(context, _mockILogger);
-
-                test.TryCreateNewDemoEntryFromGatherer(model, AnalyzerQuality.Low, out matchId);
-            }
-
-            // TryCreate with high quality
-            using (var context = new DemoCentralContext(_test_config))
-            {
-                var test = new DemoCentralDBInterface(context, _mockILogger);
-
-                test.TryCreateNewDemoEntryFromGatherer(model, AnalyzerQuality.High, out matchId);
-            }
-
-            // Assert that quality in database has been updated to AnalyzerQuality.High
-            using (var context = new DemoCentralContext(_test_config))
-            {
-                Demo demo = GetDemoByMatchId(matchId, context);
-                Assert.IsNotNull(demo);
-
-                Assert.AreEqual(AnalyzerQuality.High, demo.Quality);
-                Assert.AreEqual(FramesPerQuality.Frames[AnalyzerQuality.High], demo.FramesPerSecond);
-            }
-        }
-
-        [TestMethod]
         public void TryCreateNewDemoEntryFromGathererReturnsFalseOnKnownDemoWithSameQuality()
         {
 
@@ -135,7 +90,7 @@ namespace DemoCentralTests
             long second_matchId;
             bool success;
 
-            Mock<IInQueueDBInterface> mockInQueueDB = new Mock<IInQueueDBInterface>();
+            Mock<IInQueueTableInterface> mockInQueueDB = new Mock<IInQueueTableInterface>();
             var matchDate = default(DateTime);
             var downloadUrl = "xyz";
             var uploaderId = 1234;
@@ -152,7 +107,7 @@ namespace DemoCentralTests
 
             using (var context = new DemoCentralContext(_test_config))
             {
-                var test = new DemoCentralDBInterface(context, _mockILogger);
+                var test = new DemoTableInterface(context, _mockILogger);
 
                 test.TryCreateNewDemoEntryFromGatherer(model, quality, out first_matchId);
 
@@ -171,7 +126,7 @@ namespace DemoCentralTests
             long second_matchId;
             bool success;
 
-            Mock<IInQueueDBInterface> mockInQueueDB = new Mock<IInQueueDBInterface>();
+            Mock<IInQueueTableInterface> mockInQueueDB = new Mock<IInQueueTableInterface>();
             var matchDate = default(DateTime);
             var downloadUrl = "xyz";
             var uploaderId = 1234;
@@ -187,7 +142,7 @@ namespace DemoCentralTests
 
             using (var context = new DemoCentralContext(_test_config))
             {
-                var test = new DemoCentralDBInterface(context, _mockILogger);
+                var test = new DemoTableInterface(context, _mockILogger);
 
                 test.TryCreateNewDemoEntryFromGatherer(model, AnalyzerQuality.Low, out first_matchId);
 
@@ -207,14 +162,14 @@ namespace DemoCentralTests
 
             using (var context = new DemoCentralContext(_test_config))
             {
-                var test = new DemoCentralDBInterface(context, _mockILogger);
+                var test = new DemoTableInterface(context, _mockILogger);
                 AddDemoToDB(demo, context);
 
                 matchId = demo.MatchId;
                 test.SetHash(matchId, new_hash);
             }
 
-            Assert.AreEqual(new_hash, demo.Md5hash);
+            Assert.AreEqual(new_hash, demo.MD5Hash);
         }
 
         [TestMethod]
@@ -224,7 +179,7 @@ namespace DemoCentralTests
             var new_hash = "new_hash";
             using (var context = new DemoCentralContext(_test_config))
             {
-                var test = new DemoCentralDBInterface(context, _mockILogger);
+                var test = new DemoTableInterface(context, _mockILogger);
                 ;
 
                 Assert.ThrowsException<InvalidOperationException>(() => test.SetHash(unknown_matchId, new_hash));
@@ -240,17 +195,16 @@ namespace DemoCentralTests
             DemoAnalyzeInstruction assertModel;
             Demo demo = CopyDemo(_standardDemo);
             demo.BlobUrl = "abc";
-            demo.Event = "TESTING";
             demo.Source = Source.ManualUpload;
 
             using (var context = new DemoCentralContext(_test_config))
             {
-                var test = new DemoCentralDBInterface(context, _mockILogger);
+                var test = new DemoTableInterface(context, _mockILogger);
                 ;
                 AddDemoToDB(demo, context);
 
                 matchId = demo.MatchId;
-                assertModel = test.CreateAnalyzeInstructions(matchId);
+                assertModel = demo.ToAnalyzeInstruction();
             }
 
             Assert.AreEqual(demo.BlobUrl, assertModel.BlobUrl);
@@ -268,7 +222,7 @@ namespace DemoCentralTests
 
             using (var context = new DemoCentralContext(_test_config))
             {
-                var test = new DemoCentralDBInterface(context, _mockILogger);
+                var test = new DemoTableInterface(context, _mockILogger);
                 ;
                 AddDemoToDB(demo1, context);
                 AddDemoToDB(demo2, context);
@@ -297,7 +251,7 @@ namespace DemoCentralTests
 
             using (var context = new DemoCentralContext(_test_config))
             {
-                var test = new DemoCentralDBInterface(context, _mockILogger);
+                var test = new DemoTableInterface(context, _mockILogger);
                 ;
                 AddDemoToDB(demo1, context);
                 AddDemoToDB(demo2, context);
@@ -325,7 +279,7 @@ namespace DemoCentralTests
 
             using (var context = new DemoCentralContext(_test_config))
             {
-                var test = new DemoCentralDBInterface(context, _mockILogger);
+                var test = new DemoTableInterface(context, _mockILogger);
                 ;
                 AddDemoToDB(demo1, context);
                 AddDemoToDB(demo2, context);
@@ -354,7 +308,7 @@ namespace DemoCentralTests
 
             using (var context = new DemoCentralContext(_test_config))
             {
-                var test = new DemoCentralDBInterface(context, _mockILogger);
+                var test = new DemoTableInterface(context, _mockILogger);
                 ;
                 AddDemoToDB(demo1, context);
                 AddDemoToDB(demo2, context);
@@ -366,24 +320,6 @@ namespace DemoCentralTests
             }
         }
 
-
-        [TestMethod]
-        public void SetFileStatusInBlobStorageSetsCorrectStatus()
-        {
-            Demo demo = CopyDemo(_standardDemo);
-
-            using (var context = new DemoCentralContext(_test_config))
-            {
-                DemoCentralDBInterface test = new DemoCentralDBInterface(context, _mockILogger);
-                ;
-                AddDemoToDB(demo, context);
-
-                test.SetFileStatus(demo.MatchId, FileStatus.InBlobStorage);
-            }
-
-            Assert.IsTrue(demo.FileStatus == FileStatus.InBlobStorage);
-        }
-
         [TestMethod]
         public void AddFilePathSetsPath()
         {
@@ -393,11 +329,11 @@ namespace DemoCentralTests
 
             using (var context = new DemoCentralContext(_test_config))
             {
-                DemoCentralDBInterface test = new DemoCentralDBInterface(context, _mockILogger);
+                DemoTableInterface test = new DemoTableInterface(context, _mockILogger);
                 ;
                 AddDemoToDB(demo, context);
 
-                test.SetBlobUrl(demo.MatchId, test_path);
+                test.SetBlobUrl(demo, test_path);
             }
 
             Assert.AreEqual(test_path, demo.BlobUrl);
@@ -411,10 +347,10 @@ namespace DemoCentralTests
 
             using (var context = new DemoCentralContext(_test_config))
             {
-                DemoCentralDBInterface test = new DemoCentralDBInterface(context, _mockILogger);
+                DemoTableInterface test = new DemoTableInterface(context, _mockILogger);
                 ;
                 AddDemoToDB(demo, context);
-                test.RemoveDemo(demo.MatchId);
+                test.RemoveDemo(demo);
             }
 
             using (var context = new DemoCentralContext(_test_config))
@@ -422,23 +358,6 @@ namespace DemoCentralTests
                 var deleted_demo = GetDemoByMatchId(demo.MatchId, context);
                 Assert.IsNull(deleted_demo);
             }
-        }
-
-        [TestMethod]
-        public void SetUploadStatusSetsCorrectStatus()
-        {
-            Demo demo = CopyDemo(_standardDemo);
-
-            using (var context = new DemoCentralContext(_test_config))
-            {
-                DemoCentralDBInterface test = new DemoCentralDBInterface(context, _mockILogger);
-                ;
-                AddDemoToDB(demo, context);
-
-                test.SetUploadStatus(demo.MatchId, true);
-            }
-
-            Assert.IsTrue(demo.UploadStatus == UploadStatus.Finished);
         }
 
         [TestMethod]
@@ -452,7 +371,7 @@ namespace DemoCentralTests
 
             using (var context = new DemoCentralContext(_test_config))
             {
-                var test = new DemoCentralDBInterface(context, _mockILogger);
+                var test = new DemoTableInterface(context, _mockILogger);
                 ;
                 AddDemoToDB(demo1, context);
                 AddDemoToDB(demo2, context);
@@ -480,7 +399,7 @@ namespace DemoCentralTests
 
             using (var context = new DemoCentralContext(_test_config))
             {
-                var test = new DemoCentralDBInterface(context, _mockILogger);
+                var test = new DemoTableInterface(context, _mockILogger);
                 ;
                 AddDemoToDB(demo1, context);
                 AddDemoToDB(demo2, context);
@@ -509,7 +428,7 @@ namespace DemoCentralTests
 
             using (var context = new DemoCentralContext(_test_config))
             {
-                var test = new DemoCentralDBInterface(context, _mockILogger);
+                var test = new DemoTableInterface(context, _mockILogger);
                 ;
                 AddDemoToDB(demo1, context);
                 AddDemoToDB(demo2, context);
@@ -539,7 +458,7 @@ namespace DemoCentralTests
 
             using (var context = new DemoCentralContext(_test_config))
             {
-                var test = new DemoCentralDBInterface(context, _mockILogger);
+                var test = new DemoTableInterface(context, _mockILogger);
                 ;
                 AddDemoToDB(demo1, context);
                 AddDemoToDB(demo2, context);
@@ -557,18 +476,18 @@ namespace DemoCentralTests
             Demo demo = CopyDemo(_standardDemo);
             demo.Quality = AnalyzerQuality.Low;
             bool analysisRequired;
-            long matchId;
+            long? matchId = null;
 
             string duplicate_hash = "test_hash_duplicate";
 
-            demo.Md5hash = duplicate_hash;
+            demo.MD5Hash = duplicate_hash;
 
             using (var context = new DemoCentralContext(_test_config))
             {
-                var test = new DemoCentralDBInterface(context, _mockILogger);
+                var test = new DemoTableInterface(context, _mockILogger);
                 AddDemoToDB(demo, context);
 
-                analysisRequired = test.IsReanalysisRequired(duplicate_hash, out matchId,AnalyzerQuality.Low);
+                analysisRequired = test.IsAnalysisRequired(duplicate_hash, out matchId, AnalyzerQuality.Low);
             }
 
             Assert.IsFalse(analysisRequired);
@@ -581,20 +500,20 @@ namespace DemoCentralTests
         {
             Demo demo = CopyDemo(_standardDemo);
             bool analysisRequired;
-            long matchId;
+            long? matchId = null;
 
             string first_hash = "test_hash_non_duplicate_1";
             string second_hash = "test_hash_non_duplicate_2";
 
 
-            demo.Md5hash = first_hash;
+            demo.MD5Hash = first_hash;
 
             using (var context = new DemoCentralContext(_test_config))
             {
-                var test = new DemoCentralDBInterface(context, _mockILogger);
+                var test = new DemoTableInterface(context, _mockILogger);
                 AddDemoToDB(demo, context);
 
-                analysisRequired = test.IsReanalysisRequired(second_hash, out matchId, AnalyzerQuality.Low);
+                analysisRequired = test.IsAnalysisRequired(second_hash, out matchId, AnalyzerQuality.Low);
             }
 
             Assert.AreNotEqual(first_hash, second_hash);
@@ -619,12 +538,10 @@ namespace DemoCentralTests
             {
                 MatchId = demo1.MatchId,
                 DownloadUrl = demo1.DownloadUrl,
-                FileStatus = demo1.FileStatus,
                 UploadDate = demo1.UploadDate,
                 UploadType = demo1.UploadType,
                 MatchDate = demo1.MatchDate,
                 Source = demo1.Source,
-                DemoFileWorkerVersion = demo1.DemoFileWorkerVersion,
                 UploaderId = demo1.UploaderId,
             };
         }

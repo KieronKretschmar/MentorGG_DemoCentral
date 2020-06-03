@@ -18,12 +18,12 @@ namespace DemoCentral.Controllers
     [ApiController]
     public class QueueController : ControllerBase
     {
-        private readonly IInQueueDBInterface _dbInterface;
+        private readonly IInQueueTableInterface _inQueueTableInterface;
         private readonly ILogger<QueueController> _logger;
 
-        public QueueController(IInQueueDBInterface dbInterface, ILogger<QueueController> logger)
+        public QueueController(IInQueueTableInterface inQueueTableInterface, ILogger<QueueController> logger)
         {
-            _dbInterface = dbInterface;
+            _inQueueTableInterface = inQueueTableInterface;
             _logger = logger;
         }
 
@@ -40,7 +40,8 @@ namespace DemoCentral.Controllers
         {
             try
             {
-                return _dbInterface.GetQueuePosition(matchId);
+                var queuedDemo = _inQueueTableInterface.GetDemoById(matchId);
+                return _inQueueTableInterface.GetQueuePosition(queuedDemo);
             }
             catch (InvalidOperationException)
             {
@@ -62,9 +63,9 @@ namespace DemoCentral.Controllers
             var model = new QueueStatusModel();
 
             // assign matchids, starting with the match inserted first
-            model.MatchIds = _dbInterface.GetPlayerMatchesInQueue(steamId).OrderBy(x=>x.InsertDate).Select(x => x.MatchId).ToList();
-            model.FirstDemoPosition = model.MatchIds.Count > 0 ? _dbInterface.GetQueuePosition(model.MatchIds.First()) : -1;
-            model.TotalQueueLength = _dbInterface.GetTotalQueueLength();
+            model.MatchIds = _inQueueTableInterface.GetPlayerMatchesInQueue(steamId).OrderBy(x=>x.Demo.UploadDate).Select(x => x.MatchId).ToList();
+            model.FirstDemoPosition = model.MatchIds.Count > 0 ? _inQueueTableInterface.GetQueuePosition(_inQueueTableInterface.GetDemoById(model.MatchIds.First())) : -1;
+            model.TotalQueueLength = _inQueueTableInterface.GetTotalQueueLength();
             return model;
         }
     }

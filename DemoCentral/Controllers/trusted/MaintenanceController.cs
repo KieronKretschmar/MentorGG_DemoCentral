@@ -2,10 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Database.DatabaseClasses;
 using DemoCentral.Communication.Rabbit;
+using DemoCentral.Helpers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using RabbitCommunicationLib.Interfaces;
+using RabbitCommunicationLib.TransferModels;
 
 namespace DemoCentral.Controllers.trusted
 {
@@ -14,65 +18,78 @@ namespace DemoCentral.Controllers.trusted
     [ApiController]
     public class MaintenanceController : ControllerBase
     {
-        private readonly IDemoCentralDBInterface _dbInterface;
-        private readonly IInQueueDBInterface _inQueueDBInterface;
+        private readonly IDemoTableInterface _demoTableInterface;
+        private readonly IInQueueTableInterface _inQueueTableInterface;
         private readonly ILogger<MaintenanceController> _logger;
-        private readonly IDemoFileWorker _demoFileWorker;
+        private readonly IProducer<DemoAnalyzeInstruction> _demoFileWorker;
+        private readonly IProducer<DemoDownloadInstruction> _demoDownloader;
 
-        public MaintenanceController(IDemoCentralDBInterface dbInterface, IInQueueDBInterface inQueueDBInterface, ILogger<MaintenanceController> logger, IDemoFileWorker demoFileWorker)
+        public MaintenanceController(
+            IDemoTableInterface demoTableInterface,
+            IInQueueTableInterface inQueueTableInterface,
+            ILogger<MaintenanceController> logger,
+            IProducer<DemoAnalyzeInstruction> demoFileWorker,
+            IProducer<DemoDownloadInstruction> demoDownloader)
         {
-            _dbInterface = dbInterface;
-            _inQueueDBInterface = inQueueDBInterface;
+            _demoTableInterface = demoTableInterface;
+            _inQueueTableInterface = inQueueTableInterface;
             _logger = logger;
             _demoFileWorker = demoFileWorker;
+            _demoDownloader = demoDownloader;
         }
 
         /// <summary>
-        /// Resets and triggers re-analysis for all unfinished demos that are in blobStorage and were uploaded after minUploadDate.
+        /// Restarts failed Demos.
         /// </summary>
-        /// <param name="minUploadDate"></param>
+        /// <param name="minUploadDate">Minimum Upload Date to consider</param>
+        /// <param name="includeQueued">Include Demos currently in Queue</param>
         /// <returns></returns>
         [HttpPost("restart-unfinished-demos")]
-        public ActionResult RestartUnfinishedDemos(DateTime minUploadDate)
+        public ActionResult RestartFailedDemos(DateTime minUploadDate, bool includeQueued = false)
         {
-            var demosToReset = _dbInterface.GetUnfinishedDemos(minUploadDate);
+            var failedDemos = _demoTableInterface.GetFailedDemos(minUploadDate);
 
-            int resetCount = 0;
-            foreach (var demo in demosToReset)
+            List<long> toDemoDownloader = new List<long>();
+            List<long> toDemoFileWorker = new List<long>();
+            foreach (var demo in failedDemos)
             {
-                // Update Demo table
-                var isReset = _dbInterface.ResetAnalysis(demo.MatchId);
-                if (!isReset)
+
+                // If the Demo is currently in Queue.
+                if (demo.InQueueDemo != null)
                 {
-                    _logger.LogError($"Could not reset analysis for demo [ {demo} ]");
-                    continue;
+                    // It `includeQueued` is false, ignore this demo.
+                    if (!includeQueued)
+                    {
+                        continue;
+                    }
+                    // Otherwise, Remove it from the Queued table.
+                    else
+                    {
+                        _inQueueTableInterface.Remove(demo.InQueueDemo);
+                    }
                 }
 
-                // Update InQueueDemo table
-                // Try to remove demo from queue if it's in it
-                try
+                // If the BlobUrl is empty, Download the Demo.
+                if (string.IsNullOrEmpty(demo.BlobUrl))
                 {
-                    _inQueueDBInterface.RemoveDemoFromQueue(demo.MatchId);
+                    _demoDownloader.PublishMessage(demo.ToDownloadInstruction());
+                    _inQueueTableInterface.Add(demo.MatchId, Queue.DemoDownloader);
+                    toDemoDownloader.Add(demo.MatchId);
                 }
-                catch
-                {
-
+                // Otherwise, We can start the analysis process from DemoFileWorker.
+                else
+                {   
+                    _demoFileWorker.PublishMessage(demo.ToAnalyzeInstruction());
+                    _inQueueTableInterface.Add(demo.MatchId, Queue.DemoFileWorker);
+                    toDemoFileWorker.Add(demo.MatchId);
                 }
-                var inQueueDemo = _inQueueDBInterface.Add(demo.MatchId, demo.MatchDate, demo.Source, demo.UploaderId);
-                _inQueueDBInterface.UpdateProcessStatus(inQueueDemo, Database.Enumerals.ProcessedBy.DemoFileWorker, true);
-
-                // Publish message
-                var message = _dbInterface.CreateAnalyzeInstructions(demo);
-                _demoFileWorker.PublishMessage(message);
-
-                _logger.LogInformation($"Reset analysis for [ {demo.MatchId} ]");
-
-                resetCount++;
             }
 
-            var msg = $"Triggered reanalysis for [ {resetCount} ] of [ {demosToReset.Count} ] selected matches uploaded after [ {minUploadDate} ].";
-            _logger.LogInformation(msg);
-            return Content(msg);
+            _logger.LogInformation($"Restarted [ {failedDemos.Count} ] Demos.");
+            _logger.LogInformation($"Sent [ {toDemoDownloader.Count} ] To DemoDownloader: [ {String.Join(",", toDemoDownloader)} ]");
+            _logger.LogInformation($"Sent [ {toDemoFileWorker.Count} ] To DemoFileWorker: [ {String.Join(",", toDemoFileWorker)}]");
+
+            return Ok();
         }
     }
 }

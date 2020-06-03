@@ -1,25 +1,37 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
-
-namespace DataBase.DatabaseClasses
+﻿namespace Database.DatabaseClasses
 {
     public partial class InQueueDemo
     {
+        /// <summary>
+        /// Navigational Property.
+        /// </summary>
+        public Demo Demo { get; set; }
+
+        /// <summary>
+        /// MatchId.
+        /// </summary>
         public long MatchId { get; set; }
-        public long UploaderId { get; set; }
-        public DateTime MatchDate { get; set; }
-        public DateTime InsertDate { get; set; }
-        public bool DDQUEUE { get; set; }
-        public bool DFWQUEUE { get; set; }
-        public bool SOQUEUE { get; set; }
-        public int Retries { get; set; }
 
-        private List<bool> Queues => new List<bool> { DDQUEUE, DFWQUEUE, SOQUEUE };
+        /// <summary>
+        /// Amount of Retries attempted to complete the last `Demo.DemoAnalyzeFailure`.
+        /// </summary>
+        public int RetryAttemptsOnCurrentFailure { get; set; }
 
-        public bool InAnyQueue()
-        {
-            return Queues.Contains(true);
-        }
+        /// <summary>
+        /// Current Queue the Demo is in.
+        /// </summary>
+        public Queue CurrentQueue { get; set; }
+
+    }
+
+    public enum Queue : byte
+    {
+        DemoDownloader = 10,
+
+        DemoFileWorker = 20,
+
+        MatchWriter = 30,
+
+        SitutationOperator = 40,
     }
 }

@@ -39,7 +39,7 @@ Demo demo = CopyDemo(_standardDemo);
 
             using (var context = new DemoCentralContext(_test_config))
             {
-                var test = new DemoCentralDBInterface(context, _mockInQueueDb);
+                var test = new DemoCentralDBInterface(context, _mockInQueueTableInterface);
                 AddDemoToDB(demo, context);
 
                 //Update its hash

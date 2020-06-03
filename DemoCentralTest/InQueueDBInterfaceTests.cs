@@ -2,22 +2,21 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using DemoCentral;
 using System;
-using DataBase.DatabaseClasses;
+using Database.DatabaseClasses;
 using Moq;
 using Microsoft.EntityFrameworkCore;
 using RabbitCommunicationLib.Enums;
 using System.Linq;
-using Database.Enumerals;
 using System.Collections.Generic;
 
 namespace DemoCentralTests
 {
     [TestClass]
-    public class InQueueDBInterfaceTests
+    public class inQueueTableInterfaceTests
     {
         private DbContextOptions<DemoCentralContext> _test_config;
 
-        public InQueueDBInterfaceTests()
+        public inQueueTableInterfaceTests()
         {
             _test_config = DCTestsDBHelper.test_config;
         }
@@ -39,8 +38,8 @@ namespace DemoCentralTests
 
             using (var context = new DemoCentralContext(_test_config))
             {
-                InQueueDBInterface testObject = new InQueueDBInterface(context);
-                testObject.Add(matchId, matchDate, source, uploaderId);
+                InQueueTableInterface testObject = new InQueueTableInterface(context);
+                testObject.Add(matchId, Queue.DemoDownloader);
             }
 
             using (var context = new DemoCentralContext(_test_config))
@@ -49,60 +48,11 @@ namespace DemoCentralTests
                 InQueueDemo demo = GetDemoByMatchId(context, matchId);
 
                 Assert.AreEqual(matchId, demo.MatchId);
-                Assert.AreEqual(matchDate, demo.MatchDate);
-            }
-        }
-
-        [TestMethod]
-        public void AddCreatesANewDemoEntryNotInAnyQueues()
-        {
-            long matchId = 1;
-            DateTime matchDate = new DateTime();
-            Source source = Source.ManualUpload;
-            long uploaderId = 1234;
-
-            using (var context = new DemoCentralContext(_test_config))
-            {
-                InQueueDBInterface testObject = new InQueueDBInterface(context);
-                testObject.Add(matchId, matchDate, source, uploaderId);
-            }
-
-            using (var context = new DemoCentralContext(_test_config))
-            {
-                //Throws exception if entry not found or more than one are present
-                InQueueDemo demo = GetDemoByMatchId(context, matchId);
-
-                Assert.IsFalse(demo.SOQUEUE);
-                Assert.IsFalse(demo.DFWQUEUE);
-                Assert.IsFalse(demo.DDQUEUE);
+                Assert.AreEqual(matchDate, demo.Demo.MatchDate);
             }
         }
 
 
-        [TestMethod]
-        public void UpdateQueueStatusSetsStatusOnKnownQueue()
-        {
-            long matchId = 1;
-            using (var context = new DemoCentralContext(_test_config))
-            {
-                InQueueDBInterface test = new InQueueDBInterface(context);
-                test.Add(matchId, new DateTime(), Source.Faceit, 1234);
-                var inQueueDemo = test.GetDemoById(matchId);
-
-                test.UpdateProcessStatus(inQueueDemo, ProcessedBy.DemoDownloader, true);
-                test.UpdateProcessStatus(inQueueDemo, ProcessedBy.DemoFileWorker, true);
-                test.UpdateProcessStatus(inQueueDemo, ProcessedBy.SituationsOperator, true);
-            }
-
-            using (var context = new DemoCentralContext(_test_config))
-            {
-                InQueueDemo demo = GetDemoByMatchId(context, matchId);
-
-                Assert.IsTrue(demo.DDQUEUE);
-                Assert.IsTrue(demo.SOQUEUE);
-                Assert.IsTrue(demo.DFWQUEUE);
-            }
-        }
 
         [TestMethod]
         public void GetPlayerMatchesInQueueReturnsMatches()
@@ -112,17 +62,17 @@ namespace DemoCentralTests
 
             using (var context = new DemoCentralContext(_test_config))
             {
-                var test = new InQueueDBInterface(context);
-                test.Add(1, default(DateTime), Source.Unknown, playerId);
-                test.Add(2, default(DateTime), Source.Unknown, playerId);
-                test.Add(3, default(DateTime), Source.Unknown, playerId);
+                var test = new InQueueTableInterface(context);
+                test.Add(1, Queue.DemoDownloader);
+                test.Add(2, Queue.DemoDownloader);
+                test.Add(3, Queue.DemoDownloader);
 
                 matches = test.GetPlayerMatchesInQueue(playerId);
             }
 
             Assert.AreEqual(3, matches.Count);
             foreach (var match in matches)
-                Assert.AreEqual(match.UploaderId, playerId);
+                Assert.AreEqual(match.Demo.UploaderId, playerId);
         }
 
 
@@ -131,7 +81,7 @@ namespace DemoCentralTests
         {
             using (var context = new DemoCentralContext(_test_config))
             {
-                var test = new InQueueDBInterface(context);
+                var test = new InQueueTableInterface(context);
                 var matches = test.GetPlayerMatchesInQueue(1234);
 
                 Assert.AreEqual(0, matches.Count);
@@ -144,14 +94,14 @@ namespace DemoCentralTests
             long playerId = 1234;
             using (var context = new DemoCentralContext(_test_config))
             {
-                var test = new InQueueDBInterface(context);
+                var test = new InQueueTableInterface(context);
 
                 int queueLength = test.GetTotalQueueLength();
                 Assert.AreEqual(0, queueLength);
 
-                test.Add(1, default(DateTime), Source.Unknown, playerId);
-                test.Add(2, default(DateTime), Source.Unknown, playerId);
-                test.Add(3, default(DateTime), Source.Unknown, playerId);
+                test.Add(1, Queue.DemoDownloader);
+                test.Add(2, Queue.DemoDownloader);
+                test.Add(3, Queue.DemoDownloader);
 
                 queueLength = test.GetTotalQueueLength();
                 Assert.AreEqual(3, queueLength);
@@ -164,26 +114,15 @@ namespace DemoCentralTests
             long matchId = 1;
             using (var context = new DemoCentralContext(_test_config))
             {
-                var test = new InQueueDBInterface(context);
-                test.Add(matchId, default(DateTime), Source.Unknown, 1234);
-                test.RemoveDemoFromQueue(matchId);
+                var test = new InQueueTableInterface(context);
+                test.Add(matchId, Queue.DemoDownloader);
+                test.Remove(test.GetDemoById(matchId));
             }
 
             using (var context = new DemoCentralContext(_test_config))
             {
                 var demo = context.InQueueDemo.Where(x => x.MatchId == matchId).SingleOrDefault();
                 Assert.IsNull(demo);
-            }
-        }
-
-        [TestMethod]
-        public void RemoveDemoFromQueueFailsWithUnknownMatchId()
-        {
-            long matchId = 1;
-            using (var context = new DemoCentralContext(_test_config))
-            {
-                var test = new InQueueDBInterface(context);
-                Assert.ThrowsException<InvalidOperationException>(() => test.RemoveDemoFromQueue(matchId));
             }
         }
 
@@ -195,15 +134,15 @@ namespace DemoCentralTests
 
             using (var context = new DemoCentralContext(_test_config))
             {
-                var test = new InQueueDBInterface(context);
+                var test = new InQueueTableInterface(context);
 
-                test.Add(1, default(DateTime), Source.Unknown, playerId1);
-                test.Add(2, default(DateTime), Source.Unknown, playerId1);
-                test.Add(3, default(DateTime), Source.Unknown, playerId2);
-                test.Add(4, default(DateTime), Source.Unknown, playerId2);
+                test.Add(1, Queue.DemoDownloader);
+                test.Add(2, Queue.DemoDownloader);
+                test.Add(3, Queue.DemoDownloader);
+                test.Add(4, Queue.DemoDownloader);
 
                 for (int i = 1; i < 5; i++)
-                    Assert.AreEqual(i - 1, test.GetQueuePosition(i));
+                    Assert.AreEqual(i - 1, test.GetQueuePosition(test.GetDemoById(i)));
             }
         }
 
@@ -213,12 +152,12 @@ namespace DemoCentralTests
             long matchId = 1;
             using (var context = new DemoCentralContext(_test_config))
             {
-                var test = new InQueueDBInterface(context);
-                test.Add(matchId, default(DateTime), Source.Unknown, 1234);
+                var test = new InQueueTableInterface(context);
+                test.Add(matchId, Queue.DemoDownloader);
 
                 for (int retry = 0; retry < 3; retry++)
                 {
-                    Assert.AreEqual(retry, test.IncrementRetry(matchId));
+                    Assert.AreEqual(retry, test.IncrementRetry(test.GetDemoById(matchId)));
                 }
             }
         }

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using DataBase.DatabaseClasses;
 using DemoCentral.Helpers;
 using DemoCentral.Models;
 using Microsoft.AspNetCore.Http;
@@ -15,20 +14,20 @@ namespace DemoCentral.Controllers
     [ApiController]
     public class MatchDownloadController : ControllerBase
     {
-        private readonly IDemoCentralDBInterface _dBInterface;
+        private readonly IDemoTableInterface _demoTableInterface;
 
-        public MatchDownloadController(IDemoCentralDBInterface dBInterface)
+        public MatchDownloadController(IDemoTableInterface demoTableInterface, Communication.Rabbit.IBlobStorage blobStorage)
         {
-            _dBInterface = dBInterface;
+            _demoTableInterface = demoTableInterface;
         }
         
         [HttpGet("match/{matchId}/download-url")]
         public ActionResult<string> GetDownloadUrl(long matchId)
         {
-            Demo demo;
+            Database.DatabaseClasses.Demo demo;
             try
             {
-                demo = _dBInterface.GetDemoById(matchId);
+                demo = _demoTableInterface.GetDemoById(matchId);
                 if (!String.IsNullOrEmpty(demo.BlobUrl))
                 {
                     return demo.BlobUrl;
@@ -40,6 +39,7 @@ namespace DemoCentral.Controllers
                 return NotFound();
             }
         }
+        
 
         [HttpGet("matches/{matchIds}/download-urls")]
         public DownloadUrlModel GetDownloadUrlsForMatches([ModelBinder(typeof(CsvModelBinder))] List<long> matchIds) 
@@ -49,7 +49,7 @@ namespace DemoCentral.Controllers
             foreach (var matchId in matchIds)
             {
                 var demoUrlPair = new DemoUrlPair();
-                var demo = _dBInterface.GetDemoById(matchId);
+                var demo = _demoTableInterface.GetDemoById(matchId);
                 
                 demoUrlPair.MatchId = matchId;
                 demoUrlPair.DownloadUrl = demo.BlobUrl;

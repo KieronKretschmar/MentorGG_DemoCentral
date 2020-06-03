@@ -1,4 +1,4 @@
-﻿using DataBase.DatabaseClasses;
+﻿using Database.DatabaseClasses;
 using DemoCentral.Controllers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -18,32 +18,32 @@ namespace DemoCentralTests
     {
         private readonly DbContextOptions<DemoCentralContext> _test_config;
         private readonly ILogger<HashController> mockILogger;
-        private readonly IDemoCentralDBInterface mockIDemoDBInterface;
+        private readonly IDemoTableInterface mockIDemoDBInterface;
 
         public TrustedHashControllerTests()
         {
             _test_config = DCTestsDBHelper.test_config;
             mockILogger = new Mock<ILogger<HashController>>().Object;
-            mockIDemoDBInterface = new Mock<IDemoCentralDBInterface>().Object;
+            mockIDemoDBInterface = new Mock<IDemoTableInterface>().Object;
         }
 
         [TestMethod]
         public void CreateHashReturnsHTTPConflictIfDuplicated()
         {
-            var mockIDemoDBInterface = new Mock<IDemoCentralDBInterface>();
-            long matchId = 1;
+            var mockIDemoDBInterface = new Mock<IDemoTableInterface>();
+            long? matchId = 1;
             string hash = "test_hash";
             AnalyzerQuality quality = AnalyzerQuality.High;
 
-            mockIDemoDBInterface.Setup(x => x.IsReanalysisRequired(hash, out matchId, quality)).Returns(false);
+            mockIDemoDBInterface.Setup(x => x.IsAnalysisRequired(hash, out matchId, quality)).Returns(false);
             ActionResult response;
 
-            mockIDemoDBInterface.Object.IsReanalysisRequired(hash, out matchId, quality);
+            mockIDemoDBInterface.Object.IsAnalysisRequired(hash, out matchId, quality);
 
             using (var context = new DemoCentralContext(_test_config))
             {
                 var test = new HashController(mockIDemoDBInterface.Object, mockILogger);
-                response = test.CreateHash(matchId, quality, hash);
+                response = test.CreateHash((long)matchId, quality, hash);
             }
             Assert.IsInstanceOfType(response, typeof(ConflictObjectResult));
         }
@@ -52,38 +52,20 @@ namespace DemoCentralTests
         [TestMethod]
         public void CreateHashReturnsHTTPOkIfNotDuplicated()
         {
-            var mockIDemoDBInterface = new Mock<IDemoCentralDBInterface>();
-            long matchId = 1;
+            var mockIDemoDBInterface = new Mock<IDemoTableInterface>();
+            long? matchId = 1;
             AnalyzerQuality quality = AnalyzerQuality.Low;
-            mockIDemoDBInterface.Setup(x => x.IsReanalysisRequired("", out matchId, quality)).Returns(true);
+            mockIDemoDBInterface.Setup(x => x.IsAnalysisRequired("", out matchId, quality)).Returns(true);
             ActionResult response;
 
             using (var context = new DemoCentralContext(_test_config))
             {
                 var test = new HashController(mockIDemoDBInterface.Object, mockILogger);
-                response = test.CreateHash(matchId, quality,"");
+                response = test.CreateHash((long)matchId, quality,"");
             }
             Assert.IsInstanceOfType(response, typeof(OkResult));
         }
 
 
-        [TestMethod]
-        public void CreateHashSavesHashIfNotDuplicated()
-        {
-            var mockIDemoDBInterface = new Mock<IDemoCentralDBInterface>();
-            long matchId = 1;
-            AnalyzerQuality quality = AnalyzerQuality.Low;
-            string hash = "test_hash";
-            mockIDemoDBInterface.Setup(x => x.IsReanalysisRequired(hash, out matchId,quality)).Returns(true);
-            ActionResult response;
-
-            using (var context = new DemoCentralContext(_test_config))
-            {
-                var test = new HashController(mockIDemoDBInterface.Object, mockILogger);
-                response = test.CreateHash(matchId,quality, hash);
-            }
-            mockIDemoDBInterface.Verify(x => x.SetHash(matchId, hash), Times.Once);
-            Assert.IsInstanceOfType(response, typeof(OkResult));
-        }
     }
 }

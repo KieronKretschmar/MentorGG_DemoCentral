@@ -4,9 +4,8 @@ using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Pomelo.EntityFrameworkCore.MySql;
 using RabbitCommunicationLib.Enums;
-using DataBase.Enumerals;
 
-namespace DataBase.DatabaseClasses
+namespace Database.DatabaseClasses
 {
     public partial class DemoCentralContext : DbContext
     {
@@ -36,6 +35,20 @@ namespace DataBase.DatabaseClasses
                 entity.HasKey(e => e.MatchId);                    
 
                 entity.Property(e => e.MatchId).ValueGeneratedOnAdd();
+            });
+
+
+            // Setup Navigation Properties for Demo and InQueueDemo Tables.
+            modelBuilder.Entity<InQueueDemo>(entity =>
+            {
+                entity.HasKey(e => e.MatchId);
+
+                // One to zero/one relation
+                // Every InQueueDemo has a Demo, but not every Demo has an InQueueDemo
+                entity.HasOne(d => (Demo)d.Demo)
+                    .WithOne(p => p.InQueueDemo)
+                    .HasForeignKey<InQueueDemo>(d => d.MatchId)
+                    .IsRequired();
             });
         }
     }
