@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Database.DatabaseClasses;
 using DemoCentral.Communication.HTTP;
 using DemoCentral.Communication.Rabbit;
+using DemoCentral.Helpers;
 using Microsoft.Extensions.Logging;
 using RabbitCommunicationLib.Enums;
 using RabbitCommunicationLib.Interfaces;
@@ -19,17 +20,26 @@ namespace DemoCentral.Communication.MessageProcessors
         private readonly IDemoTableInterface _demoTableInterface;
         private readonly IInQueueTableInterface _inQueueTableInterface;
         private readonly IProducer<SituationExtractionInstruction> _situationOperatorProducer;
+        private readonly IProducer<MatchDatabaseInsertionInstruction> _databaseInsertionProducer;
+        private readonly IProducer<DemoAnalyzeInstruction> _demoFileWorkerProducer;
+        private readonly IBlobStorage _blobStorage;
 
         public MatchDatabaseInsertionReportProcessor(
             ILogger<MatchDatabaseInsertionReportProcessor> logger,
             IDemoTableInterface demoTableInterface,
             IInQueueTableInterface inQueueTableInterface,
-            IProducer<SituationExtractionInstruction> situationOperatorProducer)
+            IProducer<SituationExtractionInstruction> situationOperatorProducer,
+            IProducer<DemoAnalyzeInstruction> demoFileWorkerProducer,
+            IProducer<MatchDatabaseInsertionInstruction> databaseInsertionProducer,
+            IBlobStorage blobStorage)
         {
             _logger = logger;
             _demoTableInterface = demoTableInterface;
             _inQueueTableInterface = inQueueTableInterface;
             _situationOperatorProducer = situationOperatorProducer;
+            _demoFileWorkerProducer = demoFileWorkerProducer;
+            _databaseInsertionProducer = databaseInsertionProducer;
+            _blobStorage = blobStorage;
         }
 
 
@@ -77,28 +87,63 @@ namespace DemoCentral.Communication.MessageProcessors
             {
                 _logger.LogError($"Demo [ {matchId} ]. MatchWriter failed with DemoAnalysisBlock [ { model.Block} ].");
 
+                // If what is currently stored in DemoAnalysisBlock does not match the current failure
+                // Reset the retry counter
+                // If not, increment the counter.
+                int retryAttempts;
+                if (dbDemo.AnalysisBlockReason != model.Block)
+                {
+                    _inQueueTableInterface.ResetRetry(queuedDemo);
+                    retryAttempts = 0;
+                }
+                else
+                {
+                    retryAttempts = _inQueueTableInterface.IncrementRetry(queuedDemo);
+                }
+
+                _demoTableInterface.SetAnalyzeState(dbDemo, false, model.Block);
+
+                int maxRetries;
                 switch (model.Block)
                 {
                     case DemoAnalysisBlock.MatchWriter_MatchDataSetUnavailable:
-                        // TODO: Retry analysis starting at DFW or even DemoDownloader
+                        // Retry from DFW to make MatchDataSet available.
+                        _demoFileWorkerProducer.PublishMessage(dbDemo.ToAnalyzeInstruction());
+                        _inQueueTableInterface.UpdateCurrentQueue(queuedDemo, Queue.DemoFileWorker);
+                        return;
+                        
                     case DemoAnalysisBlock.MatchWriter_RedisConnectionFailed:
                     case DemoAnalysisBlock.MatchWriter_Timeout:
-                        // TODO: Retry this step (MatchDatabaseInsertion) up to 3 times, then stop analysis.
-
+                        // Retry this step (MatchDatabaseInsertion) up to 3 times, then stop analysis.
+                        maxRetries = 3;
+                        if (retryAttempts >= maxRetries)
+                        {
+                            _blobStorage.DeleteBlobAsync(dbDemo.BlobUrl);
+                            _inQueueTableInterface.Remove(queuedDemo);
+                            return;
+                        }
+                        break;
+                        
                     case DemoAnalysisBlock.MatchWriter_DatabaseUpload:
-                        // TODO: Retry this step (MatchDatabaseInsertion) up to 1 times, then stop analysis.
-
                     case DemoAnalysisBlock.MatchWriter_Unknown:
-                        // TODO: Retry this step (MatchDatabaseInsertion) up to 1 times, then stop analysis.
+                        maxRetries = 1;
+                        if (retryAttempts >= maxRetries)
+                        {
+                            _blobStorage.DeleteBlobAsync(dbDemo.BlobUrl);
+                            _inQueueTableInterface.Remove(queuedDemo);
+                            return;
+                        }
+                        break;
 
                     default:
-                        _logger.LogWarning($"Demo [ {matchId} ]. MatchWriter failed with unhandled DemoAnalysisBlock [ { model.Block} ]!");
-
-                        // Stop analysis
+                        _logger.LogWarning($"Demo [ {matchId} ]. MatchWriter failed with unhandled DemoAnalysisBlock [ { model.Block} ]! Removed");
+                        _blobStorage.DeleteBlobAsync(dbDemo.BlobUrl);
                         _inQueueTableInterface.Remove(queuedDemo);
-                        _demoTableInterface.SetAnalyzeState(dbDemo, false, model.Block);
                         break;
                 }
+
+                _logger.LogInformation($"Re-sending Match [ {dbDemo.MatchId} ] to MatchWriter for a retry.");
+                _databaseInsertionProducer.PublishMessage(new MatchDatabaseInsertionInstruction {MatchId = dbDemo.MatchId});
             }
         }
     }

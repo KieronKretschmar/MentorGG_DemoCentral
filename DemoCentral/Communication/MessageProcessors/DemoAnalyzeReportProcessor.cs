@@ -110,13 +110,15 @@ namespace DemoCentral.Communication.MessageProcessors
             // If what is currently stored in DemoAnalysisBlock does not match the current failure
             // Reset the retry counter
             // If not, increment the counter.
+            int retryAttempts;
             if (dbDemo.AnalysisBlockReason != block)
             {
                 _inQueueTableInterface.ResetRetry(inQueueDemo);
+                retryAttempts = 0;
             }
             else
             {
-                _inQueueTableInterface.IncrementRetry(inQueueDemo);
+                retryAttempts = _inQueueTableInterface.IncrementRetry(inQueueDemo);
             }
 
             // Store the Analyze state with the current failure
@@ -124,7 +126,7 @@ namespace DemoCentral.Communication.MessageProcessors
 
             // If the amount of retries exceeds the maximum allowed - stop retrying this demo.
             // OR if the demo is a duplicate.
-            if (inQueueDemo.RetryAttemptsOnCurrentFailure > MAX_RETRIES)
+            if (retryAttempts > MAX_RETRIES)
             {
                 _blobStorage.DeleteBlobAsync(dbDemo.BlobUrl);
                 _inQueueTableInterface.Remove(inQueueDemo);
