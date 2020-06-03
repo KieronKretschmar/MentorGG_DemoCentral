@@ -125,7 +125,6 @@ namespace DemoCentral.Communication.MessageProcessors
             {
                 _blobStorage.DeleteBlobAsync(dbDemo.BlobUrl);
                 _inQueueTableInterface.Remove(inQueueDemo);
-                _demoTableInterface.RemoveDemo(dbDemo);
                 _logger.LogInformation($"Demo [ {matchId} ]. Exceeded the maximum retry limit of [ {MAX_RETRIES} ].  Removed");
                 return;
             }
@@ -134,7 +133,6 @@ namespace DemoCentral.Communication.MessageProcessors
             {
                 _blobStorage.DeleteBlobAsync(dbDemo.BlobUrl);
                 _inQueueTableInterface.Remove(inQueueDemo);
-                _demoTableInterface.RemoveDemo(dbDemo);
                 _logger.LogInformation($"Demo [ {matchId} ]. Duplicate, determinted by the MD5Hash");
                 return;
             }
