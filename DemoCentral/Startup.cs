@@ -226,9 +226,9 @@ namespace DemoCentral
             // Analyze Reports from DemoFileWorker
             var AMQP_DEMOFILEWORKER_REPLY = GetRequiredEnvironmentVariable<string>(Configuration, "AMQP_DEMOFILEWORKER_REPLY");
             var demoFileWorkerReportQueue = new QueueConnection(AMQP_URI, AMQP_DEMOFILEWORKER_REPLY);
-            services.AddHostedService<DemoAnalyzeReportReportConsumer>(services =>
+            services.AddHostedService<DemoAnalyzeReportConsumer>(services =>
             {
-                return new DemoAnalyzeReportReportConsumer(services, services.GetRequiredService<ILogger<DemoAnalyzeReportReportConsumer>>(), demoFileWorkerReportQueue);
+                return new DemoAnalyzeReportConsumer(services, services.GetRequiredService<ILogger<DemoAnalyzeReportConsumer>>(), demoFileWorkerReportQueue);
             });
 
             // Upload Reports from MatchWriter
