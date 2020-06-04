@@ -17,15 +17,15 @@ namespace DemoCentral.Communication.RabbitConsumers
     /// Consumer for the DemoFileWorker report queue.
     /// Messages are being processed by <see cref="DemoAnalyzeReportProcessor"/>.
     /// </summary>
-    public class DemoAnalyzeReportReportConsumer : Consumer<DemoAnalyzeReport>
+    public class DemoAnalyzeReportConsumer : Consumer<DemoAnalyzeReport>
     {
 
         private readonly IServiceProvider _serviceProvider;
-        private ILogger<DemoAnalyzeReportReportConsumer> _logger;
+        private ILogger<DemoAnalyzeReportConsumer> _logger;
 
-        public DemoAnalyzeReportReportConsumer(
+        public DemoAnalyzeReportConsumer(
             IServiceProvider serviceProvider,
-            ILogger<DemoAnalyzeReportReportConsumer> logger,
+            ILogger<DemoAnalyzeReportConsumer> logger,
             IQueueConnection queueConnection
             ) : base(queueConnection)
         {
