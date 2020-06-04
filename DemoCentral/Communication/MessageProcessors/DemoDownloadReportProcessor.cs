@@ -53,7 +53,9 @@ namespace DemoCentral.Communication.MessageProcessors
             }
             catch (Exception e)
             {
-                _logger.LogError(e, $"Could not update demo [ {model.MatchId} ] from DemoDownloadReport.");
+                _logger.LogError(e, $"Failed to update demo [ {model.MatchId} ] in database. Removed from Queue.");
+                InQueueDemo queueDemo = _inQueueTableInterface.GetDemoById(model.MatchId);
+                _inQueueTableInterface.Remove(queueDemo);
             }
         }
 
