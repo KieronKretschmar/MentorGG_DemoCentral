@@ -154,10 +154,14 @@ namespace DemoCentral
             {
                 // Set the output parameter to it's MatchId.
                 matchId = demo.MatchId;
-                
-                // If the requested quality it HIGHER than the currently analysed
-                // Quality, return true to indciate that this Demo does need analysed 
-                if (requestedQuality > demo.Quality && demo.AnalysisSucceeded)
+
+                // If the Analysis has no succeded (To retry if it had failed previously)
+                // OR the requested quality is higher than the currently analysed quality.
+                if(demo.AnalysisSucceeded == false)
+                {
+                    return true;
+                }
+                else if (requestedQuality > demo.Quality)
                 {
                     return true;
                 }
