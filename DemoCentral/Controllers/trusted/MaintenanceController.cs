@@ -42,10 +42,9 @@ namespace DemoCentral.Controllers.trusted
         /// Restarts failed Demos.
         /// </summary>
         /// <param name="minUploadDate">Minimum Upload Date to consider</param>
-        /// <param name="includeQueued">Include Demos currently in Queue</param>
         /// <returns></returns>
         [HttpPost("restart-unfinished-demos")]
-        public ActionResult RestartFailedDemos(DateTime minUploadDate, bool includeQueued = false)
+        public ActionResult RestartFailedDemos(DateTime minUploadDate)
         {
             var failedDemos = _demoTableInterface.GetFailedDemos(minUploadDate);
 
@@ -53,22 +52,6 @@ namespace DemoCentral.Controllers.trusted
             List<long> toDemoFileWorker = new List<long>();
             foreach (var demo in failedDemos)
             {
-
-                // If the Demo is currently in Queue.
-                if (demo.InQueueDemo != null)
-                {
-                    // It `includeQueued` is false, ignore this demo.
-                    if (!includeQueued)
-                    {
-                        continue;
-                    }
-                    // Otherwise, Remove it from the Queued table.
-                    else
-                    {
-                        _inQueueTableInterface.Remove(demo.InQueueDemo);
-                    }
-                }
-
                 // If the BlobUrl is empty, Download the Demo.
                 if (string.IsNullOrEmpty(demo.BlobUrl))
                 {
