@@ -55,24 +55,35 @@ namespace DemoCentral.Controllers.trusted
                 // If the BlobUrl is empty, Download the Demo.
                 if (string.IsNullOrEmpty(demo.BlobUrl))
                 {
-                    _demoDownloader.PublishMessage(demo.ToDownloadInstruction());
-                    _inQueueTableInterface.Add(demo.MatchId, Queue.DemoDownloader);
+                    AddToDemoDownloaderQueue(demo);
                     toDemoDownloader.Add(demo.MatchId);
                 }
                 // Otherwise, We can start the analysis process from DemoFileWorker.
                 else
-                {   
-                    _demoFileWorker.PublishMessage(demo.ToAnalyzeInstruction());
-                    _inQueueTableInterface.Add(demo.MatchId, Queue.DemoFileWorker);
+                {
+                    AddToDemoFileWorkerQueue(demo);
                     toDemoFileWorker.Add(demo.MatchId);
                 }
             }
 
             _logger.LogInformation($"Restarted [ {failedDemos.Count} ] Demos.");
             _logger.LogInformation($"Sent [ {toDemoDownloader.Count} ] To DemoDownloader: [ {String.Join(",", toDemoDownloader)} ]");
-            _logger.LogInformation($"Sent [ {toDemoFileWorker.Count} ] To DemoFileWorker: [ {String.Join(",", toDemoFileWorker)}]");
+            _logger.LogInformation($"Sent [ {toDemoFileWorker.Count} ] To DemoFileWorker: [ {String.Join(",", toDemoFileWorker)} ]");
 
             return Ok();
+        }
+
+
+        private void AddToDemoDownloaderQueue(Demo demo)
+        {
+            _demoDownloader.PublishMessage(demo.ToDownloadInstruction());
+            _inQueueTableInterface.Add(demo.MatchId, Queue.DemoDownloader);
+        }
+
+        private void AddToDemoFileWorkerQueue(Demo demo)
+        {
+            _demoFileWorker.PublishMessage(demo.ToAnalyzeInstruction());
+            _inQueueTableInterface.Add(demo.MatchId, Queue.DemoFileWorker);
         }
     }
 }
