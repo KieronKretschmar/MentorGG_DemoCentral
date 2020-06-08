@@ -34,5 +34,13 @@ namespace DemoCentral.Helpers
                 DownloadUrl = demo.DownloadUrl
             };
         }
+
+        public static SituationExtractionInstruction ToSituationExtractionInstruction(this Demo demo)
+        {
+            return new SituationExtractionInstruction
+            {
+                MatchId = demo.MatchId,
+            };
+        }
     }
 }

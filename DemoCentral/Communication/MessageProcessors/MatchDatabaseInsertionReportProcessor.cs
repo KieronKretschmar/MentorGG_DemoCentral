@@ -77,10 +77,7 @@ namespace DemoCentral.Communication.MessageProcessors
 
                 _logger.LogInformation($"Demo [ {matchId} ]. MatchWriter stored the MatchData successfully.");
 
-                var instructions = new SituationExtractionInstruction 
-                {
-                    MatchId = model.MatchId,
-                };
+                var instructions = dbDemo.ToSituationExtractionInstruction(); 
                 _situationOperatorProducer.PublishMessage(instructions);
                 _inQueueTableInterface.UpdateCurrentQueue(queuedDemo, Queue.SitutationOperator);
                 _logger.LogInformation($"Sent demo [ {model.MatchId} ] to SituationOperator queue");

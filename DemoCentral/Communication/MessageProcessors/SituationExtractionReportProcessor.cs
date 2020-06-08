@@ -59,19 +59,18 @@ namespace DemoCentral.Communication.MessageProcessors
             var matchId = model.MatchId;
             _logger.LogInformation($"Received report for demo [ {matchId} ] situation extraction - success : [ {model.Success} ] ");
             var demo = _demoTableInterface.GetDemoById(matchId);
-            var queuedDemo = _inQueueTableInterface.GetDemoById(matchId);
 
             if (model.Success)
             {
-                _inQueueTableInterface.ResetRetry(queuedDemo);
-                
                 _demoTableInterface.SetAnalyzeState(
                     demo,
                     true);
 
                 await _matchRedis.DeleteMatchAsync(matchId);
 
+                _inQueueTableInterface.TryRemove(matchId);
                 _logger.LogInformation($"Demo [ {matchId} ]. Analysis finished successfully.");
+
             }
             else
             {
@@ -80,10 +79,9 @@ namespace DemoCentral.Communication.MessageProcessors
                     false,
                     model.Block);
 
+                _inQueueTableInterface.TryRemove(matchId);
                 _logger.LogError($"Demo [ {matchId} ]. Analysis failed.");
             }
-
-            _inQueueTableInterface.Remove(queuedDemo);
         }
     }
 }

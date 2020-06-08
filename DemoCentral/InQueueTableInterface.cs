@@ -34,6 +34,13 @@ namespace DemoCentral
         /// Remove the item from the InQueueDemo table.
         /// </summary>
         void Remove(InQueueDemo demo);
+
+        /// <summary>
+        /// Tries to remove the demo from the InQueueDemo table.
+        /// </summary>
+        /// <param name="matchId"></param>
+        /// <returns></returns>
+        void TryRemove(long matchId);
     }
 
     /// <summary>
@@ -53,7 +60,7 @@ namespace DemoCentral
             var newDemo = new InQueueDemo
             {
                 MatchId = matchId,
-                CurrentQueue =  currentQueue,
+                CurrentQueue = currentQueue,
             };
 
             _context.InQueueDemo.Add(newDemo);
@@ -110,6 +117,15 @@ namespace DemoCentral
         {
             _context.InQueueDemo.Remove(demo);
             _context.SaveChanges();
+        }
+
+        public void TryRemove(long matchId)
+        {
+            var entry = _context.InQueueDemo.SingleOrDefault(x => x.MatchId == matchId);
+            if (entry != null)
+            {
+                Remove(entry);
+            }
         }
     }
 }
