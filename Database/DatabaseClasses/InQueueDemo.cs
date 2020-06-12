@@ -32,6 +32,6 @@
 
         MatchWriter = 30,
 
-        SitutationOperator = 40,
+        SituationOperator = 40,
     }
 }

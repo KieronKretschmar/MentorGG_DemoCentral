@@ -112,7 +112,7 @@ namespace DemoCentral.Controllers.trusted
                     case Queue.MatchWriter:
                         return BadRequest("Can not requeue demo at MatchWriter, as it depends on redis insertion from DemoFileWorker. Please choose DemoFileWorker instead.");
 
-                    case Queue.SitutationOperator:
+                    case Queue.SituationOperator:
                         if (TryAddToSituationOperatorQueue(demo))
                         {
                             requeuedDemos.Add(demo.MatchId);
@@ -160,7 +160,7 @@ namespace DemoCentral.Controllers.trusted
 
 
             _situationOperator.PublishMessage(demo.ToSituationExtractionInstruction());
-            _inQueueTableInterface.Add(demo.MatchId, Queue.SitutationOperator);
+            _inQueueTableInterface.Add(demo.MatchId, Queue.SituationOperator);
             return true;
         }
     }
