@@ -60,14 +60,18 @@ namespace DemoCentral.Controllers.trusted
                 // If the BlobUrl is empty, Download the Demo.
                 if (string.IsNullOrEmpty(demo.BlobUrl))
                 {
-                    TryAddToDemoDownloaderQueue(demo);
-                    toDemoDownloader.Add(demo.MatchId);
+                    if (TryAddToDemoDownloaderQueue(demo))
+                    {
+                        toDemoDownloader.Add(demo.MatchId);
+                    }
                 }
                 // Otherwise, We can start the analysis process from DemoFileWorker.
                 else
                 {
-                    TryAddToDemoFileWorkerQueue(demo);
-                    toDemoFileWorker.Add(demo.MatchId);
+                    if (TryAddToDemoFileWorkerQueue(demo))
+                    {
+                        toDemoFileWorker.Add(demo.MatchId);
+                    }
                 }
             }
 
@@ -92,35 +96,9 @@ namespace DemoCentral.Controllers.trusted
             foreach (var matchId in matchIds)
             {
                 var demo = _demoTableInterface.GetDemoById(matchId);
-
-                switch (queue)
+                if (RequeueDemo(demo, queue))
                 {
-                    case Queue.DemoDownloader:
-                        if (TryAddToDemoDownloaderQueue(demo))
-                        {
-                            requeuedDemos.Add(demo.MatchId);
-                        }
-                        break;
-
-                    case Queue.DemoFileWorker:
-                        if (TryAddToDemoFileWorkerQueue(demo))
-                        {
-                            requeuedDemos.Add(demo.MatchId);
-                        }
-                        break;
-
-                    case Queue.MatchWriter:
-                        return BadRequest("Can not requeue demo at MatchWriter, as it depends on redis insertion from DemoFileWorker. Please choose DemoFileWorker instead.");
-
-                    case Queue.SituationOperator:
-                        if (TryAddToSituationOperatorQueue(demo))
-                        {
-                            requeuedDemos.Add(demo.MatchId);
-                        }
-                        break;
-
-                    default:
-                        throw new NotImplementedException($"Requeue is not implemented for queue [ {queue} ] is not implemented.");
+                    requeuedDemos.Add(demo.MatchId);
                 }
             }
 
@@ -129,6 +107,36 @@ namespace DemoCentral.Controllers.trusted
             return Ok(msg);
         }
 
+        /// <summary>
+        /// Attempts to insert demo to the given queue and update database accordingly.
+        /// </summary>
+        /// <param name="demo"></param>
+        /// <param name="queue"></param>
+        /// <returns>Whether queueing was succesful.</returns>
+        private bool RequeueDemo(Demo demo, Queue queue)
+        {
+            switch (queue)
+            {
+                case Queue.DemoDownloader:
+                    return TryAddToDemoDownloaderQueue(demo);
+
+                case Queue.DemoFileWorker:
+                    return TryAddToDemoFileWorkerQueue(demo);
+
+                case Queue.SituationOperator:
+                    return TryAddToSituationOperatorQueue(demo);
+
+                default:
+                    throw new NotImplementedException($"Requeue is not implemented for queue [ {queue} ] is not implemented.");
+            }
+
+        }
+
+        /// <summary>
+        /// Attempts to insert demo to DemoDownloader and update database accordingly.
+        /// </summary>
+        /// <param name="demo"></param>
+        /// <returns>Whether queueing was succesful.</returns>
         private bool TryAddToDemoDownloaderQueue(Demo demo)
         {
             _demoDownloader.PublishMessage(demo.ToDownloadInstruction());
@@ -136,11 +144,17 @@ namespace DemoCentral.Controllers.trusted
             return true;
         }
 
+        /// <summary>
+        /// Attempts to insert demo to DemoFileWorker and update database accordingly.
+        /// </summary>
+        /// <param name="demo"></param>
+        /// <returns>Whether queueing was succesful.</returns>
         private bool TryAddToDemoFileWorkerQueue(Demo demo)
         {
             // Abort if blob is not available
             if (string.IsNullOrEmpty(demo.BlobUrl))
             {
+                _logger.LogInformation($"Requeuing demo [ {demo.MatchId} ] to DemoFileWorker was not possible as demo is not in BlobStorage.");
                 return false;
             }
 
@@ -149,15 +163,20 @@ namespace DemoCentral.Controllers.trusted
             return true;
         }
 
+        /// <summary>
+        /// Attempts to insert demo to ituationOperator and update database accordingly.
+        /// </summary>
+        /// <param name="demo"></param>
+        /// <returns>Whether queueing was succesful.</returns>
         private bool TryAddToSituationOperatorQueue(Demo demo)
         {
             // Abort if match does not seem to be in MatchDb
             var isInMatchDb = demo.AnalysisSucceeded || (int)demo.AnalysisBlockReason >= (int)DemoAnalysisBlock.SituationOperator_Unknown;
             if (!isInMatchDb)
             {
+                _logger.LogInformation($"Requeuing demo [ {demo.MatchId} ] to SituationOperator was not possible as match is not in MatchDb.");
                 return false;
             }
-
 
             _situationOperator.PublishMessage(demo.ToSituationExtractionInstruction());
             _inQueueTableInterface.Add(demo.MatchId, Queue.SituationOperator);
