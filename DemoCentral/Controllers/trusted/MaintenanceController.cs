@@ -89,7 +89,7 @@ namespace DemoCentral.Controllers.trusted
         /// <param name="matchIds"></param>
         /// <param name="queue"></param>
         /// <returns></returns>
-        [HttpPost("requeue-demos")]
+        [HttpPost("requeue-demos/by-matchids")]
         public ActionResult RequeueDemos([ModelBinder(typeof(CsvModelBinder))] List<long> matchIds, Queue queue)
         {
             List<long> requeuedDemos = new List<long>();
