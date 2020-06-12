@@ -123,7 +123,6 @@ namespace DemoCentral.Controllers.trusted
             var matchIds = _demoTableInterface.GetDemos(minMatchId, maxMatchId, minUploadDate, maxUploadDate)
                 .Select(x=>x.MatchId)
                 .ToList();
-            return Ok();
 
             List<long> requeuedDemos = new List<long>();
             foreach (var matchId in matchIds)
