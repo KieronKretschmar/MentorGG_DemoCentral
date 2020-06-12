@@ -79,7 +79,7 @@ namespace DemoCentral.Communication.MessageProcessors
 
                 var instructions = dbDemo.ToSituationExtractionInstruction(); 
                 _situationOperatorProducer.PublishMessage(instructions);
-                _inQueueTableInterface.UpdateCurrentQueue(queuedDemo, Queue.SitutationOperator);
+                _inQueueTableInterface.UpdateCurrentQueue(queuedDemo, Queue.SituationOperator);
                 _logger.LogInformation($"Sent demo [ {model.MatchId} ] to SituationOperator queue");
             }
             else
