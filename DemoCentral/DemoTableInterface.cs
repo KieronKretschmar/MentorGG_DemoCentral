@@ -17,6 +17,16 @@ namespace DemoCentral
         Demo GetDemoById(long matchId);
 
         /// <summary>
+        /// Returns demos that fulfill the given conditions.
+        /// </summary>
+        /// <param name="minMatchId"></param>
+        /// <param name="maxMatchId"></param>
+        /// <param name="minUploadDate"></param>
+        /// <param name="maxUploadDate"></param>
+        /// <returns></returns>
+        IQueryable<Demo> GetDemos(int? minMatchId = null, int? maxMatchId = null, DateTime? minUploadDate = null, DateTime? maxUploadDate = null);
+
+        /// <summary>
         /// Returns the player matches in queue , empty list if none found
         /// </summary>
         List<Demo> GetRecentMatches(long playerId, int recentMatches, int offset = 0);
@@ -271,6 +281,29 @@ namespace DemoCentral
                 demo.AnalysisBlockReason = block;
             }
             _context.SaveChanges();
+        }
+
+        public IQueryable<Demo> GetDemos(int? minMatchId = null, int? maxMatchId = null, DateTime? minUploadDate = null, DateTime? maxUploadDate = null)
+        {
+            // make sure this method is not accidentally called without filters, making it resource hungry
+            if(minMatchId == null && maxMatchId == null && minUploadDate == null && maxUploadDate == null)
+            {
+                throw new ArgumentException("Using GetDemos without any filters is not allowed. At least one parameter should be not-null.");
+            }
+
+
+            var demos = _context.Demo.AsQueryable();
+
+            if (minMatchId != null)
+                demos = demos.Where(x => minMatchId <= x.MatchId);
+            if (maxMatchId != null)
+                demos = demos.Where(x => x.MatchId <= maxMatchId);
+            if (minUploadDate != null)
+                demos = demos.Where(x => minUploadDate <= x.UploadDate);
+            if (maxUploadDate != null)
+                demos = demos.Where(x => x.UploadDate <= maxUploadDate);
+
+            return demos;
         }
     }
 

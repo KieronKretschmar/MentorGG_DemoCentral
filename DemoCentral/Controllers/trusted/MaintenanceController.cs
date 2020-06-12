@@ -108,6 +108,39 @@ namespace DemoCentral.Controllers.trusted
         }
 
         /// <summary>
+        /// Restarts analysis for the specified demos starting at the specified queue.
+        /// If a match is not ready to be inserted to the given queue because the previous step wasn't completed, it is skipped.
+        /// </summary>
+        /// <param name="queue"></param>
+        /// <param name="minMatchId"></param>
+        /// <param name="maxMatchId"></param>
+        /// <param name="minUploadDate"></param>
+        /// <param name="maxUploadDate"></param>
+        /// <returns></returns>
+        [HttpPost("requeue-demos/by-conditions")]
+        public ActionResult RequeueDemos(Queue queue, int? minMatchId = null, int? maxMatchId = null, DateTime? minUploadDate = null, DateTime? maxUploadDate = null)
+        {
+            var matchIds = _demoTableInterface.GetDemos(minMatchId, maxMatchId, minUploadDate, maxUploadDate)
+                .Select(x=>x.MatchId)
+                .ToList();
+            return Ok();
+
+            List<long> requeuedDemos = new List<long>();
+            foreach (var matchId in matchIds)
+            {
+                var demo = _demoTableInterface.GetDemoById(matchId);
+                if (RequeueDemo(demo, queue))
+                {
+                    requeuedDemos.Add(demo.MatchId);
+                }
+            }
+
+            var msg = $"Requeued [ {requeuedDemos.Count} ] Demos to queue [ {queue} ]: [ {String.Join(",", requeuedDemos)} ]";
+            _logger.LogInformation(msg);
+            return Ok(msg);
+        }
+
+        /// <summary>
         /// Attempts to insert demo to the given queue and update database accordingly.
         /// </summary>
         /// <param name="demo"></param>
