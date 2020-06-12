@@ -120,6 +120,11 @@ namespace DemoCentral.Controllers.trusted
         [HttpPost("requeue-demos/by-conditions")]
         public ActionResult RequeueDemos(Queue queue, int? minMatchId = null, int? maxMatchId = null, DateTime? minUploadDate = null, DateTime? maxUploadDate = null)
         {
+            if(minMatchId == null && minUploadDate == null)
+            {
+                return BadRequest("As a safety measure, either minMatchId or minUploadDate must be specified. This is for safety.");
+            }
+
             var matchIds = _demoTableInterface.GetDemos(minMatchId, maxMatchId, minUploadDate, maxUploadDate)
                 .Select(x=>x.MatchId)
                 .ToList();
