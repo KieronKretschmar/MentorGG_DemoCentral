@@ -95,10 +95,17 @@ namespace DemoCentral.Controllers.trusted
             List<long> requeuedDemos = new List<long>();
             foreach (var matchId in matchIds)
             {
-                var demo = _demoTableInterface.GetDemoById(matchId);
-                if (RequeueDemo(demo, queue))
+                try
                 {
-                    requeuedDemos.Add(demo.MatchId);
+                    var demo = _demoTableInterface.GetDemoById(matchId);
+                    if (RequeueDemo(demo, queue))
+                    {
+                        requeuedDemos.Add(demo.MatchId);
+                    }
+                }
+                catch (Exception e)
+                {
+                    _logger.LogError(e, $"Error when requeueing demo [ {matchId} ]. Skipping it.");
                 }
             }
 
@@ -120,26 +127,31 @@ namespace DemoCentral.Controllers.trusted
         [HttpPost("requeue-demos/by-conditions")]
         public ActionResult RequeueDemos(Queue queue, int? minMatchId = null, int? maxMatchId = null, DateTime? minUploadDate = null, DateTime? maxUploadDate = null)
         {
-            if(minMatchId == null && minUploadDate == null)
+            if (minMatchId == null && minUploadDate == null)
             {
                 return BadRequest("As a safety measure, either minMatchId or minUploadDate must be specified. This is for safety.");
             }
 
-            var matchIds = _demoTableInterface.GetDemos(minMatchId, maxMatchId, minUploadDate, maxUploadDate)
-                .Select(x=>x.MatchId)
+            var demos = _demoTableInterface.GetDemos(minMatchId, maxMatchId, minUploadDate, maxUploadDate)
                 .ToList();
 
             List<long> requeuedDemos = new List<long>();
-            foreach (var matchId in matchIds)
+            foreach (var demo in demos)
             {
-                var demo = _demoTableInterface.GetDemoById(matchId);
-                if (RequeueDemo(demo, queue))
+                try
                 {
-                    requeuedDemos.Add(demo.MatchId);
+                    if (RequeueDemo(demo, queue))
+                    {
+                        requeuedDemos.Add(demo.MatchId);
+                    }
+                }
+                catch (Exception e)
+                {
+                    _logger.LogError(e, $"Error when requeueing demo [ {demo.MatchId} ]. Skipping it.");
                 }
             }
 
-            var msg = $"Requeued [ {requeuedDemos.Count} ] Demos to queue [ {queue} ]: [ {String.Join(",", requeuedDemos)} ]";
+            var msg = $"Requeued [ {requeuedDemos.Count} / {demos.Count} ] Demos to queue [ {queue} ]: [ {String.Join(",", requeuedDemos)} ]";
             _logger.LogInformation(msg);
             return Ok(msg);
         }
