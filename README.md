@@ -34,6 +34,10 @@ Set all the required environment variables, see `Startup.cs`
 - `MENTORINTERFACE_BASE_ADDRESS` : URI for MentorInterface. Specify "mock" to create an endpoint that always returns the lowest subscription
 - `MATCHRETRIEVER_BASE_ADDRESS` : URI for MatchRetriever [\*]
 
+## Loading the Subscription Config
+
+A SubscriptionConfig must be mounted to `/app/config/subscriptions.json` inside the container.
+
 # Flow
 General flow of demo aquisition 
 

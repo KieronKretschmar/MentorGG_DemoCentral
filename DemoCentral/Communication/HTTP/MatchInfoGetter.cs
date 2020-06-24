@@ -1,5 +1,6 @@
 ﻿using Database.DatabaseClasses;
 using DemoCentral.Enumerals;
+using DemoCentral.Helpers.SubscriptionConfig;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
@@ -23,13 +24,21 @@ namespace DemoCentral.Communication.HTTP
         private readonly HttpClient _client;
         private readonly IUserIdentityRetriever _userIdentityRetriever;
         private readonly IDemoTableInterface _dBInterface;
+
+        private readonly SubscriptionConfig _subscriptionConfig;
         private readonly ILogger<MatchInfoGetter> _logger;
 
-        public MatchInfoGetter(IHttpClientFactory clientFactory, IUserIdentityRetriever userIdentityRetriever, IDemoTableInterface dBInterface, ILogger<MatchInfoGetter> logger)
+        public MatchInfoGetter(
+            IHttpClientFactory clientFactory,
+            IUserIdentityRetriever userIdentityRetriever,
+            IDemoTableInterface dBInterface,
+            ISubscriptionConfigProvider subscriptionConfigProvider,
+            ILogger<MatchInfoGetter> logger)
         {
             _client = clientFactory.CreateClient("match-retriever");
             _userIdentityRetriever = userIdentityRetriever;
             _dBInterface = dBInterface;
+            _subscriptionConfig = subscriptionConfigProvider.Config;
             _logger = logger;
         }
 
@@ -69,7 +78,8 @@ namespace DemoCentral.Communication.HTTP
         public async Task<DateTime> CalculateDemoRemovalDateAsync(Demo demo)
         {
             var subscription = await GetMaxUserSubscriptionInMatchAsync(demo.MatchId);
-            var storageTime = StorageDurationBySubscription.Durations[subscription];
+            var storageTime = TimeSpan.FromDays(
+                _subscriptionConfig.SettingsFromSubscriptionType(subscription).MatchAccessDurationInDays);
             var removalDate = demo.MatchDate + storageTime;
             return removalDate;
         }
