@@ -2,7 +2,13 @@
 using System.Collections.Generic;
 using System.Text;
 using DemoCentral;
+using DemoCentral.Communication.Rabbit;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
+using RabbitCommunicationLib.Interfaces;
+using RabbitCommunicationLib.TransferModels;
 
 namespace DemoCentralTests
 {
@@ -20,12 +26,7 @@ namespace DemoCentralTests
 
         }
 
-        [TestMethod]
-        public void ReceivingZipFailedMessageUpdatesStatus()
-        {
-
-        }
-
+       
         [TestMethod]
         public void ReceivingZipFailedMessageRemovesDemo()
         {
@@ -53,7 +54,7 @@ namespace DemoCentralTests
 
 
 
-        private static readonly string successfulResponseJSON = 
+        private static readonly string successfulResponseJSON =
             "{\"Success\": true,  \"Version\": \"testVersion\",  \"BlobDownloadFailed\": false,  \"Unzipped\": true,  \"DuplicateChecked\": true,\"IsDuplicate\": false,  \"UploadedToRedis\": true,  \"FramesPerSecond\": 1,  \"Hash\": \"testHash\"}";
     }
 }

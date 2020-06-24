@@ -17,14 +17,12 @@ namespace DemoCentral.Controllers.trusted
     public class MatchController : ControllerBase
     {
         private readonly ILogger<MatchController> _logger;
-        private readonly IProducer<DemoRemovalInstruction> _matchWriterRemovalProducer;
-        private readonly IDemoTableInterface _demoTableInterface;
+        private readonly IDemoRemover _demoRemover;
 
-        public MatchController(ILogger<MatchController> logger, IProducer<DemoRemovalInstruction> matchWriterRemovalProducer, IDemoTableInterface demoTableInterface)
+        public MatchController(ILogger<MatchController> logger, IDemoRemover demoRemover)
         {
             _logger = logger;
-            _matchWriterRemovalProducer = matchWriterRemovalProducer;
-            _demoTableInterface = demoTableInterface;
+            _demoRemover = demoRemover;
         }
 
         /// <summary>
@@ -36,31 +34,21 @@ namespace DemoCentral.Controllers.trusted
         {
             _logger.LogInformation($"Received request for removal from storage of match [ {matchId} ]");
 
-            try
+            var removalResult = _demoRemover.RemoveDemo(matchId);
+
+            switch (removalResult)
             {
-                var demo = _demoTableInterface.GetDemoById(matchId);
-                if (demo.BlobUrl == null)
-                    throw new ArgumentException($"Demo [ {matchId} ] is not in blob storage, Removal request cancelled");
-            }
-            catch (Exception e) when ( e is ArgumentException)
-            {
-                _logger.LogInformation(e, $"Demo [ {matchId} ] was not removed from blob storage");
-                return BadRequest();
-            }
-            catch(Exception e) when (e is InvalidOperationException)
-            {
-                _logger.LogInformation(e, $"Demo [ {matchId} ] does not exist, Removal request cancelled");
-                return NotFound();
+                case DemoRemover.DemoRemovalResult.Successful:
+                    return Ok();
+                case DemoRemover.DemoRemovalResult.NotInStorage:
+                    return BadRequest();
+                case DemoRemover.DemoRemovalResult.NotFound:
+                    return NotFound();
             }
 
-            var instruction = new DemoRemovalInstruction
-            {
-                MatchId = matchId,
-            };
-
-            _matchWriterRemovalProducer.PublishMessage(instruction);
-            _logger.LogTrace($"Forwarded request of demo [ {matchId} ] to MatchWriter for removal from database");
-            return Ok();
+            //If you get here, there has to be an internal error,
+            //as the above enum should catch all possible outcomes
+            return StatusCode(500);
         }
     }
 }

@@ -171,11 +171,37 @@ namespace DemoCentral
             }
             #endregion
 
+            var ALLOWED_TIME_AFTER_EXPIRATION_DAYS = GetRequiredEnvironmentVariable<int>(Configuration, "ALLOWED_TIME_AFTER_EXPIRATION_DAYS");
+            var FREQUENCY_FOR_EXPIRED_DEMO_REMOVAL_HOURS = GetRequiredEnvironmentVariable<int>(Configuration, "FREQUENCY_FOR_EXPIRED_DEMO_REMOVAL_HOURS");
+            services.AddHostedService<TimedDemoRemovalCaller>(services =>
+            {
+                return new TimedDemoRemovalCaller(TimeSpan.FromHours(FREQUENCY_FOR_EXPIRED_DEMO_REMOVAL_HOURS),
+                    TimeSpan.FromDays(ALLOWED_TIME_AFTER_EXPIRATION_DAYS), 
+                    services.GetRequiredService<IDemoRemover>(), 
+                    services.GetRequiredService<ILogger<TimedDemoRemovalCaller>>());
+            });
+            
+            services.AddTransient<IDemoRemover,DemoRemover>();
+            services.AddTransient<IMatchInfoGetter,MatchInfoGetter>();
+
             #region Http related services
+
             var MENTORINTERFACE_BASE_ADDRESS = GetRequiredEnvironmentVariable<string>(Configuration, "MENTORINTERFACE_BASE_ADDRESS");
             services.AddHttpClient("mentor-interface", c =>
             {
                 c.BaseAddress = new Uri(MENTORINTERFACE_BASE_ADDRESS);
+            });
+
+
+            var MATCHRETRIEVER_BASE_ADDRESS = GetRequiredEnvironmentVariable<string>(Configuration, "MATCHRETRIEVER_BASE_ADDRESS");
+            services.AddHttpClient("match-retriever", c => 
+            {
+                c.BaseAddress = new Uri(MATCHRETRIEVER_BASE_ADDRESS);
+            });
+
+            services.AddTransient<IBlobStorage>(services => 
+            {
+                return new BlobStorage(BLOBSTORAGE_CONNECTION_STRING, services.GetRequiredService<ILogger<BlobStorage>>());
             });
 
             services.AddTransient<IUserIdentityRetriever>(services =>

@@ -126,7 +126,6 @@ namespace DemoCentralTests
             long second_matchId;
             bool success;
 
-            Mock<IInQueueTableInterface> mockInQueueDB = new Mock<IInQueueTableInterface>();
             var matchDate = default(DateTime);
             var downloadUrl = "xyz";
             var uploaderId = 1234;
@@ -145,6 +144,10 @@ namespace DemoCentralTests
                 var test = new DemoTableInterface(context, _mockILogger);
 
                 test.TryCreateNewDemoEntryFromGatherer(model, AnalyzerQuality.Low, out first_matchId);
+                
+                var demo = context.Demo.Single(x => x.MatchId == first_matchId);
+                demo.AnalysisSucceeded = true;
+                context.SaveChanges();
 
                 success = test.TryCreateNewDemoEntryFromGatherer(model, AnalyzerQuality.High, out second_matchId);
             }

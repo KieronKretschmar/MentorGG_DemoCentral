@@ -51,7 +51,9 @@ namespace DemoCentral
         void SetAnalyzeState(Demo demo, bool analysisFinishedSuccessfully, DemoAnalysisBlock? block = null);
 
         void SetHash(Demo demo, string hash);
-        
+        void SetHash(long matchId, string hash);
+        List<long> GetExpiredDemosId();
+
         /// <summary>
         /// try to create a new entry in the demo table. Returns false and the matchId of the match, if the downloadUrl is already known, return true otherwise
         /// </summary>
@@ -283,6 +285,7 @@ namespace DemoCentral
             _context.SaveChanges();
         }
 
+
         public IQueryable<Demo> GetDemos(int? minMatchId = null, int? maxMatchId = null, DateTime? minUploadDate = null, DateTime? maxUploadDate = null)
         {
             // make sure this method is not accidentally called without filters, making it resource hungry
@@ -304,6 +307,12 @@ namespace DemoCentral
                 demos = demos.Where(x => x.UploadDate <= maxUploadDate);
 
             return demos;
+
+        }
+
+        public List<long> GetExpiredDemosId()
+        {
+            throw new NotImplementedException();
         }
     }
 
