@@ -32,11 +32,6 @@
 
         MatchWriter = 30,
 
-<<<<<<< HEAD
         SituationOperator = 40,
-=======
-        SitutationOperator = 40,
-        UnQueued = 41,
->>>>>>> origin/add-removal-date
     }
 }
