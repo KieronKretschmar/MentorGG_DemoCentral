@@ -16,7 +16,11 @@ namespace DemoCentral
         private readonly ILogger<TimedDemoRemovalCaller> _logger;
         private Timer _timer;
 
-        public TimedDemoRemovalCaller(TimeSpan interval,TimeSpan allowedTimeAfterRemoval, IDemoRemover demoRemover, ILogger<TimedDemoRemovalCaller> logger)
+        public TimedDemoRemovalCaller(
+            TimeSpan interval,
+            TimeSpan allowedTimeAfterRemoval,
+            IDemoRemover demoRemover,
+            ILogger<TimedDemoRemovalCaller> logger)
         {
             _interval = interval;
             _allowedTimeAfterExpiration = allowedTimeAfterRemoval;

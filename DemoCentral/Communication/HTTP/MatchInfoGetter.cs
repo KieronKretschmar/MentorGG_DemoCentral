@@ -16,7 +16,6 @@ namespace DemoCentral.Communication.HTTP
         Task<List<long>> GetParticipatingPlayersAsync(long matchId);
         Task<SubscriptionType> GetMaxUserSubscriptionInMatchAsync(long matchId);
         Task<DateTime> CalculateDemoRemovalDateAsync(Demo demo);
-        Task<DateTime> CalculateDemoRemovalDateAsync(long matchId);
     }
 
     public class MatchInfoGetter : IMatchInfoGetter
@@ -78,19 +77,12 @@ namespace DemoCentral.Communication.HTTP
         public async Task<DateTime> CalculateDemoRemovalDateAsync(Demo demo)
         {
             var subscription = await GetMaxUserSubscriptionInMatchAsync(demo.MatchId);
+            
             var storageTime = TimeSpan.FromDays(
                 _subscriptionConfig.SettingsFromSubscriptionType(subscription).MatchAccessDurationInDays);
+
             var removalDate = demo.MatchDate + storageTime;
             return removalDate;
-        }
-
-        public async Task<DateTime> CalculateDemoRemovalDateAsync(long matchId)
-        {
-            //TODO Move this to a seperate class
-            //Ideally this should not be here, but in a seperate class, as the match Info getter in the http directory
-            //should not have database access
-            var demo = _dBInterface.GetDemoById(matchId);
-            return await CalculateDemoRemovalDateAsync(demo);
         }
 
         public class PlayerInMatchModel

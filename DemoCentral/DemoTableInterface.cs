@@ -52,7 +52,8 @@ namespace DemoCentral
 
         void SetHash(Demo demo, string hash);
         void SetHash(long matchId, string hash);
-        List<long> GetExpiredDemosId();
+
+        List<Demo> GetExpiredDemos();
 
         /// <summary>
         /// try to create a new entry in the demo table. Returns false and the matchId of the match, if the downloadUrl is already known, return true otherwise
@@ -310,7 +311,7 @@ namespace DemoCentral
 
         }
 
-        public List<long> GetExpiredDemosId()
+        public List<Demo> GetExpiredDemos()
         {
             throw new NotImplementedException();
         }

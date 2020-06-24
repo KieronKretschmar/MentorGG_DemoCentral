@@ -1,4 +1,5 @@
-﻿using DemoCentral.Communication.HTTP;
+﻿using Database.DatabaseClasses;
+using DemoCentral.Communication.HTTP;
 using DemoCentral.Communication.Rabbit;
 using DemoCentral.Enumerals;
 using Microsoft.Extensions.Logging;
@@ -33,9 +34,10 @@ namespace DemoCentral
 
         public DemoRemovalResult RemoveDemo(long matchId)
         {
+            Demo demo;
             try
             {
-                var demo = _dBInterface.GetDemoById(matchId);
+                demo = _dBInterface.GetDemoById(matchId);
             }
             catch (Exception e) when (e is ArgumentException)
             {
@@ -47,28 +49,33 @@ namespace DemoCentral
                 _logger.LogInformation(e, $"Demo [ {matchId} ] does not exist, Removal request cancelled");
                 return DemoRemovalResult.NotFound;
             }
+            
+            return RemoveDemo(demo);
+        }
 
+        public DemoRemovalResult RemoveDemo(Demo demo)
+        {
             var instruction = new DemoRemovalInstruction
             {
-                MatchId = matchId,
+                MatchId = demo.MatchId,
             };
 
             _matchWriter.PublishMessage(instruction);
-            _logger.LogTrace($"Forwarded request of demo [ {matchId} ] to MatchWriter for removal from database");
+            _logger.LogTrace($"Forwarded request of demo [ {demo.MatchId} ] to MatchWriter for removal from database");
             return DemoRemovalResult.Successful;
         }
 
-        public async Task RemoveExpiredDemos(TimeSpan removalDelay)
+        public async Task RemoveExpiredDemos(TimeSpan removalExtraAllowance)
         {
             _logger.LogInformation("Removing expired demos.");
 
-            List<long> expiredDemos  = _dBInterface.GetExpiredDemosId();
+            List<Demo> expiredDemos  = _dBInterface.GetExpiredDemos();
             _logger.LogInformation($"Removing demos [ {string.Join(", ", expiredDemos)} ] ");
 
             foreach (var demo in expiredDemos)
             {
                 DateTime removalDate = await _matchInfoGetter.CalculateDemoRemovalDateAsync(demo);
-                var outdated = removalDate + removalDelay < DateTime.UtcNow;
+                var outdated = removalDate + removalExtraAllowance < DateTime.UtcNow;
 
                 if (outdated)
                     RemoveDemo(demo);

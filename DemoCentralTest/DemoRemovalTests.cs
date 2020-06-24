@@ -150,11 +150,10 @@ namespace DemoCentralTests
             var mockMatchWriter = new Mock<IProducer<DemoRemovalInstruction>>();
             var mockMatchInfoGetter = new Mock<IMatchInfoGetter>();
 
-            mockDbInterface.Setup(x => x.GetExpiredDemosId()).Returns(new List<long> { testId });
+            mockDbInterface.Setup(x => x.GetExpiredDemos()).Returns(new List<Demo> { new Demo { MatchId = testId} });
             mockDbInterface.Setup(x => x.GetDemoById(testId)).Throws<InvalidOperationException>();
             int hasCalled = 0;
             mockMatchInfoGetter.Setup(x => x.CalculateDemoRemovalDateAsync(It.IsAny<Demo>())).Callback(() => hasCalled += 1);
-            mockMatchInfoGetter.Setup(x => x.CalculateDemoRemovalDateAsync(It.IsAny<long>())).Callback(() => hasCalled += 1);
 
             var test = new DemoRemover(mockDbInterface.Object, mockLogger.Object, mockMatchWriter.Object, mockMatchInfoGetter.Object);
             await test.RemoveExpiredDemos(TimeSpan.Zero);
