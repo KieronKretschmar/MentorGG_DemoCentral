@@ -20,7 +20,7 @@ namespace DemoCentral.Communication.HTTP
 
     public class MatchInfoGetter : IMatchInfoGetter
     {
-        private readonly HttpClient _client;
+        private readonly IHttpClientFactory _clientFactory;
         private readonly IUserIdentityRetriever _userIdentityRetriever;
         private readonly IDemoTableInterface _dBInterface;
 
@@ -34,7 +34,7 @@ namespace DemoCentral.Communication.HTTP
             ISubscriptionConfigProvider subscriptionConfigProvider,
             ILogger<MatchInfoGetter> logger)
         {
-            _client = clientFactory.CreateClient("match-retriever");
+            _clientFactory = clientFactory;
             _userIdentityRetriever = userIdentityRetriever;
             _dBInterface = dBInterface;
             _subscriptionConfig = subscriptionConfigProvider.Config;
@@ -44,9 +44,8 @@ namespace DemoCentral.Communication.HTTP
         public async Task<List<long>> GetParticipatingPlayersAsync(long matchId)
         {
             _logger.LogInformation($"Requesting participating players for match [ {matchId} ]");
-            var players = new List<long>();
 
-            var response = await _client.GetAsync($"match/{matchId}/players");
+            var response = await _clientFactory.CreateClient("match-retriever").GetAsync($"match/{matchId}/players");
 
             if (!response.IsSuccessStatusCode)
             {
@@ -56,10 +55,9 @@ namespace DemoCentral.Communication.HTTP
             }
 
             var res = JsonConvert.DeserializeObject<PlayerInMatchModel>(await response.Content.ReadAsStringAsync());
-            players = res.Players;
 
-            _logger.LogInformation($"Participating players in match [ {matchId} ] are [ {string.Join(",", players)} ]");
-            return players;
+            _logger.LogInformation($"Participating players in match [ {matchId} ] are [ {string.Join(",", res.Players)} ]");
+            return res.Players;
         }
 
         public async Task<SubscriptionType> GetMaxUserSubscriptionInMatchAsync(long matchId)

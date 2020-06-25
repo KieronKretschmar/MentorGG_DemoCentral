@@ -24,13 +24,15 @@ namespace DemoCentral.Communication.HTTP
     public class UserIdentityRetriever : IUserIdentityRetriever
     {
         private readonly ILogger<UserIdentityRetriever> _logger;
-        private readonly HttpClient Client;
+        private readonly IHttpClientFactory _clientFactory;
 
 
-        public UserIdentityRetriever(IHttpClientFactory httpClientFactory, ILogger<UserIdentityRetriever> logger)
+        public UserIdentityRetriever(
+            IHttpClientFactory clientFactory,
+            ILogger<UserIdentityRetriever> logger)
         {
             _logger = logger;
-            Client = httpClientFactory.CreateClient("mentor-interface");
+            _clientFactory = clientFactory;
         }
 
         /// <summary>
@@ -61,7 +63,7 @@ namespace DemoCentral.Communication.HTTP
 
         public async Task<UserIdentity> GetUserIdentityAsync(long steamId)
         {
-            var response = await Client.GetAsync($"/identity/{steamId}");
+            var response = await _clientFactory.CreateClient("mentor-interface").GetAsync($"/identity/{steamId}");
 
             if (!response.IsSuccessStatusCode)
             {
