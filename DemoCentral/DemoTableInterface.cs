@@ -67,7 +67,7 @@ namespace DemoCentral
         /// </summary>
         /// <returns>MatchId of the newly created match</returns>
         long CreateNewDemoEntryFromManualUpload(ManualDownloadInsertInstruction model, AnalyzerQuality requestedQuality);
-        List<Demo> GetRecentFailedMatches(long playerId, int recentMatches, int offset = 0);
+        List<Demo> GetRecentFailedMatchesBeforeSO(long playerId, int recentMatches, int offset = 0);
         List<Demo> GetFailedDemos(DateTime minUploadDate);
     }
 
@@ -138,11 +138,18 @@ namespace DemoCentral
             return recentMatchesId;
         }
 
-        public List<Demo> GetRecentFailedMatches(long playerId, int recentMatches, int offset = 0)
+        /// <summary>
+        /// Return recently failed matches that occured before SituationOperator
+        /// </summary>
+        /// <param name="playerId"></param>
+        /// <param name="recentMatches"></param>
+        /// <param name="offset"></param>
+        /// <returns></returns>
+        public List<Demo> GetRecentFailedMatchesBeforeSO(long playerId, int recentMatches, int offset = 0)
         {
             var recentMatchesId = _context.Demo
                 .Where(x => x.UploaderId == playerId)
-                .Where(x => x.AnalysisSucceeded == false)
+                .Where(x => x.AnalysisSucceeded == false && x.AnalysisBlockReason < DemoAnalysisBlock.SituationOperator_Unknown)
                 .Take(recentMatches + offset)
                 .ToList();
             recentMatchesId.RemoveRange(0, offset);
