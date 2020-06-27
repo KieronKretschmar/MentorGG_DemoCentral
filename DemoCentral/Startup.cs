@@ -172,6 +172,8 @@ namespace DemoCentral
             }
             #endregion
 
+            #region Demo Removal
+
             var DEMO_REMOVAL_ALLOWANCE = GetRequiredEnvironmentVariable<int>(Configuration, "DEMO_REMOVAL_ALLOWANCE");
             var DEMO_REMOVAL_INTERVAL = GetRequiredEnvironmentVariable<int>(Configuration, "DEMO_REMOVAL_INTERVAL");
             services.AddHostedService<TimedDemoRemovalCaller>(services =>
@@ -183,8 +185,10 @@ namespace DemoCentral
                     services.GetRequiredService<ILogger<TimedDemoRemovalCaller>>());
             });
             
-            services.AddTransient<IDemoRemover,DemoRemover>();
-            services.AddTransient<IMatchInfoGetter,MatchInfoGetter>();
+            services.AddTransient<IDemoRemover, DemoRemover>();
+            services.AddTransient<IMatchInfoGetter, MatchInfoGetter>();
+
+            #endregion
 
             #region Http related services
 
