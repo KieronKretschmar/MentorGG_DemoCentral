@@ -36,9 +36,9 @@ namespace DemoCentral
             return Task.CompletedTask;
         }
 
-        private void CallDemoRemoverAsync(object state)
+        private async void CallDemoRemoverAsync(object state)
         {
-            _demoRemover.RemoveExpiredDemos(_allowance);
+            await _demoRemover.RemoveExpiredDemos(_allowance);
         }
 
         public Task StopAsync(CancellationToken cancellationToken)
