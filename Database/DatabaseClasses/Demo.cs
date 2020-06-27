@@ -83,6 +83,12 @@ namespace Database.DatabaseClasses
         /// <value></value>
         public DateTime UploadDate { get; set; }
 
+        /// <summary>
+        /// When the Demo is set to expire.
+        /// </summary>
+        /// <value></value>
+        public DateTime ExpiryDate { get; set; }
+
 
         public static Demo FromGatherTransferModel(DemoInsertInstruction model)
         {

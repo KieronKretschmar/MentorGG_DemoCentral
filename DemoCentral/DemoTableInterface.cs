@@ -53,7 +53,7 @@ namespace DemoCentral
         void SetHash(Demo demo, string hash);
         void SetHash(long matchId, string hash);
 
-        List<Demo> GetExpiredDemos();
+        List<Demo> GetDemosForRemoval(TimeSpan extraAllowance);
 
         /// <summary>
         /// try to create a new entry in the demo table. Returns false and the matchId of the match, if the downloadUrl is already known, return true otherwise
@@ -69,6 +69,8 @@ namespace DemoCentral
         long CreateNewDemoEntryFromManualUpload(ManualDownloadInsertInstruction model, AnalyzerQuality requestedQuality);
         List<Demo> GetRecentFailedMatchesBeforeSO(long playerId, int recentMatches, int offset = 0);
         List<Demo> GetFailedDemos(DateTime minUploadDate);
+
+        void SetExpiryDate(Demo demo, DateTime expiryDate);
     }
 
     /// <summary>
@@ -318,9 +320,22 @@ namespace DemoCentral
 
         }
 
-        public List<Demo> GetExpiredDemos()
+        /// <summary>
+        /// Return Demos where their ExpiryDate plus an allowance is before the current time.
+        /// </summary>
+        /// <param name="extraAllowance"></param>
+        /// <returns></returns>
+        public List<Demo> GetDemosForRemoval(TimeSpan extraAllowance)
         {
-            throw new NotImplementedException();
+            return _context.Demo
+                .Where(x => x.ExpiryDate + extraAllowance < DateTime.UtcNow)
+                .ToList();
+        }
+
+        public void SetExpiryDate(Demo demo, DateTime expiryDate)
+        {
+            demo.ExpiryDate = expiryDate;
+            _context.SaveChanges();
         }
     }
 
