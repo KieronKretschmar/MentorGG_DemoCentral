@@ -75,9 +75,16 @@ namespace DemoCentral
 
         public async Task RemoveExpiredDemos(TimeSpan allowance)
         {
-            _logger.LogInformation("Removing expired demos.");
+            _logger.LogInformation($"Seeking Demos to remove with TimeSpan Allowance: [ {allowance} ]");
 
             List<Demo> demosToRemove = _demoTable.GetDemosForRemoval(allowance);
+
+            if(demosToRemove.Count == 0)
+            {
+                _logger.LogInformation("Found no Demos to remove");
+                return;
+            }
+
 
             foreach (var demo in demosToRemove)
             {
