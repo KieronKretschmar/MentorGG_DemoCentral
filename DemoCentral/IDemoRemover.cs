@@ -2,6 +2,7 @@
 using DemoCentral.Communication.HTTP;
 using DemoCentral.Communication.Rabbit;
 using DemoCentral.Enumerals;
+using DemoCentral.Helpers.SubscriptionConfig;
 using Microsoft.Extensions.Logging;
 using RabbitCommunicationLib.Interfaces;
 using RabbitCommunicationLib.TransferModels;
@@ -19,16 +20,23 @@ namespace DemoCentral
 
     public class DemoRemover : IDemoRemover
     {
-        private readonly IDemoTableInterface _dBInterface;
+        private readonly IDemoTableInterface _demoTable;
         private readonly ILogger<DemoRemover> _logger;
-        private readonly IProducer<DemoRemovalInstruction> _matchWriter;
+        private readonly IProducer<DemoRemovalInstruction> _matchWriterProducer;
+        private readonly ISubscriptionConfigProvider _subscriptionConfigProvider;
         private readonly IMatchInfoGetter _matchInfoGetter;
 
-        public DemoRemover(IDemoTableInterface dBInterface, ILogger<DemoRemover> logger, IProducer<DemoRemovalInstruction> matchWriter, IMatchInfoGetter matchInfoGetter)
+        public DemoRemover(
+            IDemoTableInterface demoTable,
+            ILogger<DemoRemover> logger,
+            IProducer<DemoRemovalInstruction> matchWriterProducer,
+            ISubscriptionConfigProvider subscriptionConfigProvider,
+            IMatchInfoGetter matchInfoGetter)
         {
-            _dBInterface = dBInterface;
+            _demoTable = demoTable;
             _logger = logger;
-            _matchWriter = matchWriter;
+            _matchWriterProducer = matchWriterProducer;
+            _subscriptionConfigProvider = subscriptionConfigProvider;
             _matchInfoGetter = matchInfoGetter;
         }
 
@@ -37,7 +45,7 @@ namespace DemoCentral
             Demo demo;
             try
             {
-                demo = _dBInterface.GetDemoById(matchId);
+                demo = _demoTable.GetDemoById(matchId);
             }
             catch (Exception e) when (e is ArgumentException)
             {
@@ -60,25 +68,31 @@ namespace DemoCentral
                 MatchId = demo.MatchId,
             };
 
-            _matchWriter.PublishMessage(instruction);
+            _matchWriterProducer.PublishMessage(instruction);
             _logger.LogTrace($"Forwarded request of demo [ {demo.MatchId} ] to MatchWriter for removal from database");
             return DemoRemovalResult.Successful;
         }
 
-        public async Task RemoveExpiredDemos(TimeSpan removalExtraAllowance)
+        public async Task RemoveExpiredDemos(TimeSpan extraAllowance)
         {
             _logger.LogInformation("Removing expired demos.");
 
-            List<Demo> expiredDemos  = _dBInterface.GetExpiredDemos();
-            _logger.LogInformation($"Removing demos [ {string.Join(", ", expiredDemos)} ] ");
+            List<Demo> demosToRemove = _demoTable.GetDemosForRemoval(extraAllowance);
 
-            foreach (var demo in expiredDemos)
+            foreach (var demo in demosToRemove)
             {
-                DateTime removalDate = await _matchInfoGetter.CalculateDemoRemovalDateAsync(demo);
-                var outdated = removalDate + removalExtraAllowance < DateTime.UtcNow;
+                var subscription = await _matchInfoGetter.GetMaxUserSubscriptionInMatchAsync(demo.MatchId);
+                
+                var storageTime = TimeSpan.FromDays(
+                    _subscriptionConfigProvider.Config.SettingsFromSubscriptionType(subscription).MatchAccessDurationInDays);
 
-                if (outdated)
+                var expiryDate = demo.MatchDate + storageTime;
+                _demoTable.SetExpiryDate(demo, expiryDate);
+
+                if (expiryDate < DateTime.UtcNow)
+                {
                     RemoveDemo(demo);
+                }
             }
         }
 

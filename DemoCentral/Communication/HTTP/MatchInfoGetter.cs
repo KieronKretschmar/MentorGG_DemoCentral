@@ -15,7 +15,6 @@ namespace DemoCentral.Communication.HTTP
     {
         Task<List<long>> GetParticipatingPlayersAsync(long matchId);
         Task<SubscriptionType> GetMaxUserSubscriptionInMatchAsync(long matchId);
-        Task<DateTime> CalculateDemoRemovalDateAsync(Demo demo);
     }
 
     public class MatchInfoGetter : IMatchInfoGetter
@@ -23,21 +22,17 @@ namespace DemoCentral.Communication.HTTP
         private readonly IHttpClientFactory _clientFactory;
         private readonly IUserIdentityRetriever _userIdentityRetriever;
         private readonly IDemoTableInterface _dBInterface;
-
-        private readonly SubscriptionConfig _subscriptionConfig;
         private readonly ILogger<MatchInfoGetter> _logger;
 
         public MatchInfoGetter(
             IHttpClientFactory clientFactory,
             IUserIdentityRetriever userIdentityRetriever,
             IDemoTableInterface dBInterface,
-            ISubscriptionConfigProvider subscriptionConfigProvider,
             ILogger<MatchInfoGetter> logger)
         {
             _clientFactory = clientFactory;
             _userIdentityRetriever = userIdentityRetriever;
             _dBInterface = dBInterface;
-            _subscriptionConfig = subscriptionConfigProvider.Config;
             _logger = logger;
         }
 
@@ -70,17 +65,6 @@ namespace DemoCentral.Communication.HTTP
 
             _logger.LogInformation($"Highest subscription for match [ {matchId} ] is [ {Enum.GetName(typeof(SubscriptionType), maxUserSubscription)} ]");
             return maxUserSubscription;
-        }
-
-        public async Task<DateTime> CalculateDemoRemovalDateAsync(Demo demo)
-        {
-            var subscription = await GetMaxUserSubscriptionInMatchAsync(demo.MatchId);
-            
-            var storageTime = TimeSpan.FromDays(
-                _subscriptionConfig.SettingsFromSubscriptionType(subscription).MatchAccessDurationInDays);
-
-            var removalDate = demo.MatchDate + storageTime;
-            return removalDate;
         }
 
         public class PlayerInMatchModel
