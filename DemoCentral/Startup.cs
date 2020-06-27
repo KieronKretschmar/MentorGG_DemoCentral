@@ -320,6 +320,7 @@ namespace DemoCentral
             services.AddTransient<ManualDownloadInsertInstructionProcessor>();
             services.AddTransient<MatchDatabaseInsertionReportProcessor>();
             services.AddTransient<SituationExtractionReportProcessor>();
+            services.AddTransient<MatchWriterRemovalReportProcessor>();
             #endregion
 
             #region Subscription Configuration
