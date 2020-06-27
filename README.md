@@ -37,7 +37,7 @@ Set all the required environment variables, see `Startup.cs`
 
 **Demo Removal**
 - `DEMO_REMOVAL_INTERVAL` : How often, in minutes to check for Demos to remove and set their expiry Date.
-- `DEMO_REMOVAL_ALLOWANCE` : Extra allowance to apply to expiry date.
+- `DEMO_REMOVAL_ALLOWANCE` : Extra allowance, in minutes to apply to expiry date.
 
 ## Loading the Subscription Config
 

@@ -24,6 +24,7 @@ using System.Net.Http;
 using DemoCentral.Communication.MessageProcessors;
 using DemoCentral.Communication.RabbitConsumers;
 using StackExchange.Redis;
+using DemoCentral.Helpers.SubscriptionConfig;
 
 namespace DemoCentral
 {
@@ -175,8 +176,9 @@ namespace DemoCentral
             var DEMO_REMOVAL_INTERVAL = GetRequiredEnvironmentVariable<int>(Configuration, "DEMO_REMOVAL_INTERVAL");
             services.AddHostedService<TimedDemoRemovalCaller>(services =>
             {
-                return new TimedDemoRemovalCaller(TimeSpan.FromMinutes(DEMO_REMOVAL_INTERVAL),
-                    TimeSpan.FromDays(DEMO_REMOVAL_ALLOWANCE), 
+                return new TimedDemoRemovalCaller(
+                    TimeSpan.FromMinutes(DEMO_REMOVAL_INTERVAL),
+                    TimeSpan.FromMinutes(DEMO_REMOVAL_ALLOWANCE), 
                     services.GetRequiredService<IDemoRemover>(), 
                     services.GetRequiredService<ILogger<TimedDemoRemovalCaller>>());
             });
@@ -314,6 +316,21 @@ namespace DemoCentral
             services.AddTransient<ManualDownloadInsertInstructionProcessor>();
             services.AddTransient<MatchDatabaseInsertionReportProcessor>();
             services.AddTransient<SituationExtractionReportProcessor>();
+            #endregion
+
+            #region Subscription Configuration
+
+            if (!GetOptionalEnvironmentVariable<bool>(Configuration, "MOCK_SUBSCRIPTION_LOADER", false))
+            {
+                services.AddSingleton<ISubscriptionConfigProvider, SubscriptionConfigLoader>();
+            }
+            else
+            {
+                Console.WriteLine(
+                    "WARNING: SubscriptionConfigLoader is mocked and will return mocked values!");
+                services.AddSingleton<ISubscriptionConfigProvider, MockedSubscriptionConfigLoader>();
+            }
+
             #endregion
         }
 

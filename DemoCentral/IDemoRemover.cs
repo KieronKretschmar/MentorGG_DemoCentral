@@ -15,7 +15,7 @@ namespace DemoCentral
     public interface IDemoRemover
     {
         DemoRemover.DemoRemovalResult RemoveDemo(long matchId);
-        Task RemoveExpiredDemos(TimeSpan allowedTimeAfterExpiration);
+        Task RemoveExpiredDemos(TimeSpan allowance);
     }
 
     public class DemoRemover : IDemoRemover
@@ -73,14 +73,15 @@ namespace DemoCentral
             return DemoRemovalResult.Successful;
         }
 
-        public async Task RemoveExpiredDemos(TimeSpan extraAllowance)
+        public async Task RemoveExpiredDemos(TimeSpan allowance)
         {
             _logger.LogInformation("Removing expired demos.");
 
-            List<Demo> demosToRemove = _demoTable.GetDemosForRemoval(extraAllowance);
+            List<Demo> demosToRemove = _demoTable.GetDemosForRemoval(allowance);
 
             foreach (var demo in demosToRemove)
             {
+                _logger.LogInformation($"Evaluating Demo [ {demo.MatchId} ] ");
                 var subscription = await _matchInfoGetter.GetMaxUserSubscriptionInMatchAsync(demo.MatchId);
                 
                 var storageTime = TimeSpan.FromDays(
@@ -90,7 +91,8 @@ namespace DemoCentral
                 _demoTable.SetExpiryDate(demo, expiryDate);
 
                 if (expiryDate < DateTime.UtcNow)
-                {
+                {   
+                    _logger.LogInformation($"Removing Demo [ {demo.MatchId} ] ");
                     RemoveDemo(demo);
                 }
             }

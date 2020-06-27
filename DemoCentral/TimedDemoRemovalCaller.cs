@@ -11,26 +11,26 @@ namespace DemoCentral
     public class TimedDemoRemovalCaller : IHostedService, IDisposable
     {
         private readonly TimeSpan _interval;
-        private readonly TimeSpan _allowedTimeAfterExpiration;
+        private readonly TimeSpan _allowance;
         private readonly IDemoRemover _demoRemover;
         private readonly ILogger<TimedDemoRemovalCaller> _logger;
         private Timer _timer;
 
         public TimedDemoRemovalCaller(
             TimeSpan interval,
-            TimeSpan allowedTimeAfterRemoval,
+            TimeSpan allowance,
             IDemoRemover demoRemover,
             ILogger<TimedDemoRemovalCaller> logger)
         {
             _interval = interval;
-            _allowedTimeAfterExpiration = allowedTimeAfterRemoval;
+            _allowance = allowance;
             _demoRemover = demoRemover;
             _logger = logger;
         }
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
-            _logger.LogInformation($"Starting {GetType().Name} ...  - Interval {_interval.Days} days");
+            _logger.LogInformation($"Starting {GetType().Name}. Interval:  [ {_interval} ]");
             _timer = new Timer(CallDemoRemoverAsync, null, TimeSpan.Zero, _interval);
 
             return Task.CompletedTask;
@@ -38,8 +38,7 @@ namespace DemoCentral
 
         private void CallDemoRemoverAsync(object state)
         {
-            _logger.LogInformation("Periodic user refresh");
-            _demoRemover.RemoveExpiredDemos(_allowedTimeAfterExpiration);
+            _demoRemover.RemoveExpiredDemos(_allowance);
         }
 
         public Task StopAsync(CancellationToken cancellationToken)
