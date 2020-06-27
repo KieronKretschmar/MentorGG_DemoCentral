@@ -31,8 +31,13 @@ Set all the required environment variables, see `Startup.cs`
 
 
 **HTTP**
-- `MENTORINTERFACE_BASE_ADDRESS` : URI for MentorInterface. Specify "mock" to create an endpoint that always returns the lowest subscription
+- `MENTORINTERFACE_BASE_ADDRESS` : URI for MentorInterface. Specify "mock" to create an endpoint that always returns the lowest subscription [\*]
 - `MATCHRETRIEVER_BASE_ADDRESS` : URI for MatchRetriever [\*]
+
+
+**Demo Removal**
+- `DEMO_REMOVAL_INTERVAL` : How often, in minutes to check for Demos to remove and set their expiry Date.
+- `DEMO_REMOVAL_ALLOWANCE` : Extra allowance to apply to expiry date.
 
 ## Loading the Subscription Config
 

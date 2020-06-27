@@ -171,12 +171,12 @@ namespace DemoCentral
             }
             #endregion
 
-            var ALLOWED_TIME_AFTER_EXPIRATION_DAYS = GetRequiredEnvironmentVariable<int>(Configuration, "ALLOWED_TIME_AFTER_EXPIRATION_DAYS");
-            var FREQUENCY_FOR_EXPIRED_DEMO_REMOVAL_HOURS = GetRequiredEnvironmentVariable<int>(Configuration, "FREQUENCY_FOR_EXPIRED_DEMO_REMOVAL_HOURS");
+            var DEMO_REMOVAL_ALLOWANCE = GetRequiredEnvironmentVariable<int>(Configuration, "DEMO_REMOVAL_ALLOWANCE");
+            var DEMO_REMOVAL_INTERVAL = GetRequiredEnvironmentVariable<int>(Configuration, "DEMO_REMOVAL_INTERVAL");
             services.AddHostedService<TimedDemoRemovalCaller>(services =>
             {
-                return new TimedDemoRemovalCaller(TimeSpan.FromHours(FREQUENCY_FOR_EXPIRED_DEMO_REMOVAL_HOURS),
-                    TimeSpan.FromDays(ALLOWED_TIME_AFTER_EXPIRATION_DAYS), 
+                return new TimedDemoRemovalCaller(TimeSpan.FromMinutes(DEMO_REMOVAL_INTERVAL),
+                    TimeSpan.FromDays(DEMO_REMOVAL_ALLOWANCE), 
                     services.GetRequiredService<IDemoRemover>(), 
                     services.GetRequiredService<ILogger<TimedDemoRemovalCaller>>());
             });
