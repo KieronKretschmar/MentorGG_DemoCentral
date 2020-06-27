@@ -327,8 +327,9 @@ namespace DemoCentral
         /// <returns></returns>
         public List<Demo> GetDemosForRemoval(TimeSpan extraAllowance)
         {
+            DateTime nowWithAllowance = DateTime.UtcNow + extraAllowance;
             return _context.Demo
-                .Where(x => x.ExpiryDate + extraAllowance < DateTime.UtcNow)
+                .Where(x => x.ExpiryDate < nowWithAllowance)
                 .ToList();
         }
 
