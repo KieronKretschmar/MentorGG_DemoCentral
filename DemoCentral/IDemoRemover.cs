@@ -99,7 +99,6 @@ namespace DemoCentral
 
                 if (expiryDate < DateTime.UtcNow)
                 {   
-                    _logger.LogInformation($"Removing Demo [ {demo.MatchId} ] ");
                     RemoveDemo(demo);
                 }
             }
