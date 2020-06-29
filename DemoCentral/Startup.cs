@@ -337,6 +337,7 @@ namespace DemoCentral
             }
 
             #endregion
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -366,14 +367,6 @@ namespace DemoCentral
             {
                 endpoints.MapControllers();
             });
-
-            #region Run Migrations
-            // migrate if this is not an inmemory database
-            if (services.GetRequiredService<DemoCentralContext>().Database.ProviderName != "Microsoft.EntityFrameworkCore.InMemory")
-            {
-                services.GetRequiredService<DemoCentralContext>().Database.Migrate();
-            }
-            #endregion
         }
 
         /// <summary>
