@@ -40,7 +40,7 @@ namespace DemoCentral.Communication.HTTP
         {
             _logger.LogInformation($"Requesting participating players for match [ {matchId} ]");
 
-            var response = await _clientFactory.CreateClient("match-retriever").GetAsync($"match/{matchId}/players");
+            var response = await _clientFactory.CreateClient("match-retriever").GetAsync($"v1/public/match/{matchId}/players");
 
             if (!response.IsSuccessStatusCode)
             {
