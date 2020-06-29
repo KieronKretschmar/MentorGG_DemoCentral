@@ -322,6 +322,7 @@ namespace DemoCentral
 
         /// <summary>
         /// Return Demos where their ExpiryDate plus an allowance is before the current time.
+        /// AND BlobUrl is NOT Empty
         /// </summary>
         /// <param name="extraAllowance"></param>
         /// <returns></returns>
@@ -330,6 +331,7 @@ namespace DemoCentral
             DateTime nowWithAllowance = DateTime.UtcNow + extraAllowance;
             return _context.Demo
                 .Where(x => x.ExpiryDate < nowWithAllowance)
+                .Where(x => !string.IsNullOrEmpty(x.BlobUrl))
                 .ToList();
         }
 
