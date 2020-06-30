@@ -52,19 +52,22 @@ namespace DemoCentral.Communication.MessageProcessors
 
             if (model.Success)
             {
-                try
+                if(!string.IsNullOrEmpty(demo.BlobUrl))
                 {
-                    await _blobStorage.DeleteBlobAsync(demo.BlobUrl);
-                    _demoTableInterface.SetBlobUrl(demo, null);
-                }
-                catch (IndexOutOfRangeException)
-                {
-                     _logger.LogError($"Blob [ {demo.BlobUrl} ] was already removed from storage");
-                    _demoTableInterface.SetBlobUrl(demo, null);
-                }
-                catch  (Exception e)
-                {
-                    _logger.LogError(e, $"Blob [ {demo.BlobUrl} ] failed to be removed");
+                    try
+                    {
+                        await _blobStorage.DeleteBlobAsync(demo.BlobUrl);
+                        _demoTableInterface.SetBlobUrl(demo, null);
+                    }
+                    catch (IndexOutOfRangeException)
+                    {
+                        _logger.LogError($"Blob [ {demo.BlobUrl} ] was already removed from storage");
+                        _demoTableInterface.SetBlobUrl(demo, null);
+                    }
+                    catch  (Exception e)
+                    {
+                        _logger.LogError(e, $"Blob [ {demo.BlobUrl} ] failed to be removed");
+                    }
                 }
 
                 _demoTableInterface.SetMatchDataRemoved(demo);
