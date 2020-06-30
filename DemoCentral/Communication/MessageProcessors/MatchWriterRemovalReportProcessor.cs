@@ -54,6 +54,7 @@ namespace DemoCentral.Communication.MessageProcessors
             {
                 await _blobStorage.DeleteBlobAsync(demo.BlobUrl);
                 _demoTableInterface.SetBlobUrl(demo, null);
+                _demoTableInterface.SetMatchDataRemoved(demo);
             }
             else
             {
