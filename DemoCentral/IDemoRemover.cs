@@ -9,6 +9,7 @@ using RabbitCommunicationLib.Interfaces;
 using RabbitCommunicationLib.TransferModels;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace DemoCentral
@@ -92,6 +93,9 @@ namespace DemoCentral
                 {   
                     SendRemovalInstructions(demo.MatchId);
                 }
+
+                //TODO Remove this
+                Thread.Sleep(2000);
             }
         }
 
