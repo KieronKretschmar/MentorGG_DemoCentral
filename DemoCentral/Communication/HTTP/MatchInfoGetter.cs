@@ -6,6 +6,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -37,7 +38,23 @@ namespace DemoCentral.Communication.HTTP
             _logger.LogInformation($"Requesting participating players for match [ {matchId} ]");
 
             var response = await _clientFactory.CreateClient("match-retriever").GetAsync($"v1/public/match/{matchId}/players");
-            response.EnsureSuccessStatusCode();
+            if (!response.IsSuccessStatusCode)
+            {
+                if(response.StatusCode == HttpStatusCode.NotFound)
+                {
+                    // Yes, yes you're right - This is gross
+                    string content = await response.Content.ReadAsStringAsync();
+                    if(content.Contains($"Match [ {matchId} ] not found"))
+                    {
+                        _logger.LogInformation("Match was not found In MatchRetreiver - Returning empty list of participating Players.");
+                        return new List<long>();
+                    }
+                }
+                else
+                {
+                    response.EnsureSuccessStatusCode();
+                }
+            }
 
             var res = JsonConvert.DeserializeObject<PlayerInMatchModel>(await response.Content.ReadAsStringAsync());
 

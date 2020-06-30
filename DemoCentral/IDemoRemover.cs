@@ -108,6 +108,10 @@ namespace DemoCentral
         private async Task<int> CalculateMaximumAccessPeriodAsync(long matchId)
         {
             var steamIds = await _matchInfoGetter.GetParticipatingPlayersAsync(matchId);
+            if(steamIds.Count == 0)
+            {
+                return 0;
+            }
 
             // Get Maximum Access Period in Days
             int? maximumAccessPeriodDays = null;
