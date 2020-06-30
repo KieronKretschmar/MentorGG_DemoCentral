@@ -49,6 +49,7 @@ namespace DemoCentral.Communication.HTTP
             switch (userIdentity.SubscriptionType)
             {
                 case SubscriptionType.Free:
+                case SubscriptionType.Influencer:
                     return AnalyzerQuality.Low;
                 case SubscriptionType.Premium:
                     return AnalyzerQuality.Medium;

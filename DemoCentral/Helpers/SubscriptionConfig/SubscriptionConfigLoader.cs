@@ -78,6 +78,12 @@ namespace DemoCentral.Helpers.SubscriptionConfig
                 DailyMatchesLimit = 3,
                 FirstAndLastRoundsForSituations = 1,
             },
+            Influencer = new SubscriptionSettings
+            {
+                MatchAccessDurationInDays = 14,
+                DailyMatchesLimit = 3,
+                FirstAndLastRoundsForSituations = 1,
+            },
             Premium = new SubscriptionSettings
             {
                 MatchAccessDurationInDays = 82,
