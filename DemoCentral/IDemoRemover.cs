@@ -72,26 +72,7 @@ namespace DemoCentral
             {
                 _logger.LogInformation($"Evaluating Demo [ {demo.MatchId} ] ");
 
-                var steamIds = await _matchInfoGetter.GetParticipatingPlayersAsync(demo.MatchId);
-
-                // Get Maximum Access Period in Days
-                int maximumAccessPeriodDays = 0;
-                foreach (long steamId in steamIds)
-                {
-                    // Skip Bots
-                    if (steamId < 0)
-                    {
-                        continue;
-                    }
-
-                    var userIdentity = await _userIdentityRetriever.GetUserIdentityAsync(steamId);
-                    var userSettings = _subscriptionConfigProvider.Config.SettingsFromSubscriptionType(userIdentity.SubscriptionType);
-
-                    if(userSettings.MatchAccessDurationInDays > maximumAccessPeriodDays || userSettings.MatchAccessDurationInDays == -1)
-                    {
-                        maximumAccessPeriodDays = userSettings.MatchAccessDurationInDays;
-                    }
-                }
+                int maximumAccessPeriodDays = await CalculateMaximumAccessPeriodAsync(demo.MatchId);
 
                 // Calculate Expiry Date
                 DateTime expiryDate;
@@ -111,6 +92,53 @@ namespace DemoCentral
                 {   
                     SendRemovalInstructions(demo.MatchId);
                 }
+            }
+        }
+
+        /// <summary>
+        /// Retrieve Participating Players in a match,
+        /// Iterate over each non-bot player, obtaining their Subscription information and determine the maximum MatchAccessDuration;
+        /// </summary>
+        /// <param name="matchId"></param>
+        /// <returns></returns>
+        private async Task<int> CalculateMaximumAccessPeriodAsync(long matchId)
+        {
+            var steamIds = await _matchInfoGetter.GetParticipatingPlayersAsync(matchId);
+
+            // Get Maximum Access Period in Days
+            int? maximumAccessPeriodDays = null;
+            foreach (long steamId in steamIds)
+            {
+                // Skip Bots
+                if (steamId < 0)
+                {
+                    continue;
+                }
+
+                var userIdentity = await _userIdentityRetriever.GetUserIdentityAsync(steamId);
+                var userSettings = _subscriptionConfigProvider.Config.SettingsFromSubscriptionType(userIdentity.SubscriptionType);
+
+                var currentAccessDuration = userSettings.MatchAccessDurationInDays;
+
+                if (currentAccessDuration == -1)
+                {
+                    maximumAccessPeriodDays = currentAccessDuration;
+                    break;
+                }
+
+                if(currentAccessDuration > maximumAccessPeriodDays)
+                {
+                    maximumAccessPeriodDays = currentAccessDuration;
+                }
+            }
+
+            if(maximumAccessPeriodDays == null)
+            {
+                throw new ArgumentException($"Failed to calculate MaximumAccessPeriod for [ {matchId} ]!");
+            }
+            else
+            {
+                return (int)maximumAccessPeriodDays;
             }
         }
     }
