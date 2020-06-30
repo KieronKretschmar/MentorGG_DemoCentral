@@ -8,6 +8,7 @@ using DemoCentral.Models;
 using DemoCentral.Enumerals;
 using System.Collections.Generic;
 using System;
+using System.Net;
 
 namespace DemoCentral.Communication.HTTP
 {
@@ -64,7 +65,27 @@ namespace DemoCentral.Communication.HTTP
         public async Task<UserIdentity> GetUserIdentityAsync(long steamId)
         {
             var response = await _clientFactory.CreateClient("mentor-interface").GetAsync($"/identity/{steamId}");
-            response.EnsureSuccessStatusCode();
+            if (!response.IsSuccessStatusCode)
+            {
+                if(response.StatusCode == HttpStatusCode.NotFound)
+                {
+                    // Yes, yes you're right - This is gross
+                    string content = await response.Content.ReadAsStringAsync();
+                    if(content.Contains($"User [ {steamId} ] not found"))
+                    {
+                        _logger.LogInformation($"User [ {steamId} was not found in MentorInterface]");
+                        return new UserIdentity
+                        {
+                            SteamId = steamId,
+                            SubscriptionType = SubscriptionType.Free,
+                        };
+                    }
+                }
+                else
+                {
+                    response.EnsureSuccessStatusCode();
+                }
+            }
 
             var reponseContent = await response.Content.ReadAsStringAsync();
             var userIdentity = JsonConvert.DeserializeObject<UserIdentity>(reponseContent);

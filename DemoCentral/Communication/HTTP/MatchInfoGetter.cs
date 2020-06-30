@@ -46,7 +46,8 @@ namespace DemoCentral.Communication.HTTP
                     string content = await response.Content.ReadAsStringAsync();
                     if(content.Contains($"Match [ {matchId} ] not found"))
                     {
-                        _logger.LogInformation("Match was not found In MatchRetreiver - Returning empty list of participating Players.");
+                        _logger.LogInformation(
+                            "Match was not found In MatchRetreiver, Assuming match was already removed.");
                         return new List<long>();
                     }
                 }
