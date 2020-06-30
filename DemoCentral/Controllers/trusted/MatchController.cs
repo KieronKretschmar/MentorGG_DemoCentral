@@ -34,21 +34,9 @@ namespace DemoCentral.Controllers.trusted
         {
             _logger.LogInformation($"Received request for removal from storage of match [ {matchId} ]");
 
-            var removalResult = _demoRemover.RemoveDemo(matchId);
+            _demoRemover.SendRemovalInstructions(matchId);
 
-            switch (removalResult)
-            {
-                case DemoRemover.DemoRemovalResult.Successful:
-                    return Ok();
-                case DemoRemover.DemoRemovalResult.NotInStorage:
-                    return BadRequest();
-                case DemoRemover.DemoRemovalResult.NotFound:
-                    return NotFound();
-            }
-
-            //If you get here, there has to be an internal error,
-            //as the above enum should catch all possible outcomes
-            return StatusCode(500);
+            return Ok();
         }
     }
 }

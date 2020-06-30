@@ -15,7 +15,7 @@ namespace DemoCentral
 {
     public interface IDemoRemover
     {
-        DemoRemover.DemoRemovalResult RemoveDemo(long matchId);
+        void SendRemovalInstructions(long matchId);
         Task RemoveExpiredDemos(TimeSpan allowance);
     }
 
@@ -44,39 +44,15 @@ namespace DemoCentral
             _userIdentityRetriever = userIdentityRetriever;
         }
 
-
-
-        public DemoRemovalResult RemoveDemo(long matchId)
-        {
-            Demo demo;
-            try
-            {
-                demo = _demoTable.GetDemoById(matchId);
-            }
-            catch (Exception e) when (e is ArgumentException)
-            {
-                _logger.LogInformation(e, $"Demo [ {matchId} ] was not removed from blob storage");
-                return DemoRemovalResult.NotInStorage;
-            }
-            catch (Exception e) when (e is InvalidOperationException)
-            {
-                _logger.LogInformation(e, $"Demo [ {matchId} ] does not exist, Removal request cancelled");
-                return DemoRemovalResult.NotFound;
-            }
-            
-            return RemoveDemo(demo);
-        }
-
-        public DemoRemovalResult RemoveDemo(Demo demo)
+        public void SendRemovalInstructions(long matchId)
         {
             var instruction = new DemoRemovalInstruction
             {
-                MatchId = demo.MatchId,
+                MatchId = matchId,
             };
 
             _matchWriterProducer.PublishMessage(instruction);
-            _logger.LogTrace($"Forwarded request of demo [ {demo.MatchId} ] to MatchWriter for removal from database");
-            return DemoRemovalResult.Successful;
+            _logger.LogTrace($"Forwarded request of demo [ {matchId} ] to MatchWriter for removal from database");
         }
 
         public async Task RemoveExpiredDemos(TimeSpan allowance)
@@ -133,18 +109,9 @@ namespace DemoCentral
                 // If the ExpiryDate has passed the current time, remove the Demo.
                 if (expiryDate < DateTime.UtcNow)
                 {   
-                    RemoveDemo(demo);
+                    SendRemovalInstructions(demo.MatchId);
                 }
             }
-        }
-
-
-
-        public enum DemoRemovalResult
-        {
-            Successful = 200,
-            NotInStorage = 400,
-            NotFound = 404,
         }
     }
 }

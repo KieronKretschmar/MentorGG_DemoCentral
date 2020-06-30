@@ -48,33 +48,10 @@ namespace DemoCentralTests
             var test = new MatchController(mockILogger.Object, mockDemoRemover.Object);
             var res = test.RemoveFromStorage(testId);
 
-            mockDemoRemover.Verify(x => x.RemoveDemo(testId), Times.Once);
+            mockDemoRemover.Verify(x => x.SendRemovalInstructions(testId), Times.Once);
         }
 
 
-        [TestMethod]
-        public void RemoverChecksIfDemoExists()
-        {
-            var mockMatchWriter = new Mock<IProducer<DemoRemovalInstruction>>();
-            var mockILogger = new Mock<ILogger<DemoRemover>>();
-            var mockDBInterface = new Mock<IDemoTableInterface>();
-            var mockDemoRemover = new Mock<IDemoRemover>();
-            var mockMatchInfoGetter = new Mock<IMatchInfoGetter>();
-            var mockUserInfoRetriever = new Mock<IUserIdentityRetriever>();
-            var testId = 123456789;
-            mockDBInterface.Setup(x => x.GetDemoById(testId)).Throws<InvalidOperationException>();
-
-            var test = new DemoRemover(
-                mockDBInterface.Object,
-                mockILogger.Object,
-                mockMatchWriter.Object,
-                new MockedSubscriptionConfigLoader(),
-                mockMatchInfoGetter.Object,
-                mockUserInfoRetriever.Object);
-
-            var res = test.RemoveDemo(testId);
-            Assert.AreEqual(res, DemoRemover.DemoRemovalResult.NotFound);
-        }
 
         //Currently ignored as mocking an `IRPCQueueConnection` is not possible
         //Using a correct connection just seems unclean and overkill
