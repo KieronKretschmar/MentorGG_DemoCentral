@@ -77,12 +77,13 @@ namespace DemoCentral
 
                 // Calculate Expiry Date
                 DateTime expiryDate;
-                if( maximumAccessPeriodDays > 0)
+                if(maximumAccessPeriodDays >= 0)
                 {
                     expiryDate = demo.MatchDate + TimeSpan.FromDays(maximumAccessPeriodDays);
                 }
                 else
                 {
+                    // We do this to check again in future.
                     expiryDate = DateTime.UtcNow + TimeSpan.FromDays(14);
                 }
 
@@ -91,8 +92,12 @@ namespace DemoCentral
                 // If the ExpiryDate has passed the current time, remove the Demo.
                 if (expiryDate < DateTime.UtcNow)
                 {   
+                    _logger.LogInformation($"Sending Removal Instructions for Demo [ {demo.MatchId} ] ");
                     SendRemovalInstructions(demo.MatchId);
                 }
+
+
+                _logger.LogWarning($"DEBUG: Demo [ {demo.MatchId} ] - Expiry [ {demo.ExpiryDate} ]");
 
                 //TODO Remove this
                 Thread.Sleep(2000);
