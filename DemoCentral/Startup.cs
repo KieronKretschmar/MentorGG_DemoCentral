@@ -213,7 +213,7 @@ namespace DemoCentral
             services.AddTransient<IUserIdentityRetriever>(services =>
             {
                 if (MENTORINTERFACE_BASE_ADDRESS == "mock")
-                    return new MockUserInfoGetter(services.GetRequiredService<ILogger<MockUserInfoGetter>>());
+                    return new MockUserIdentityRetriever(services.GetRequiredService<ILogger<MockUserIdentityRetriever>>());
 
                 return new UserIdentityRetriever(services.GetRequiredService<IHttpClientFactory>(), services.GetRequiredService<ILogger<UserIdentityRetriever>>());
             });

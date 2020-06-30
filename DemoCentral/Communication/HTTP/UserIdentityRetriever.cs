@@ -15,7 +15,6 @@ namespace DemoCentral.Communication.HTTP
     {
         public Task<AnalyzerQuality> GetAnalyzerQualityAsync(long steamId);
         public Task<UserIdentity> GetUserIdentityAsync(long player);
-        public Task<SubscriptionType> GetHighestUserSubscription(List<long> playerIds);
     }
 
     /// <summary>
@@ -71,27 +70,6 @@ namespace DemoCentral.Communication.HTTP
             var userIdentity = JsonConvert.DeserializeObject<UserIdentity>(reponseContent);
 
             return userIdentity;
-        }
-
-        public async Task<SubscriptionType> GetHighestUserSubscription(List<long> steamIds)
-        {
-            var maxSubscription = SubscriptionType.Free;
-            _logger.LogInformation($"Requesting highest subscription from players [ {string.Join(",", steamIds)} ]");
-
-            foreach (var steamId in steamIds)
-            {
-                // Skip Bots
-                if(steamId < 0)
-                {
-                    continue;
-                }
-                var identity = await GetUserIdentityAsync(steamId);
-                maxSubscription = identity.SubscriptionType > maxSubscription ? identity.SubscriptionType : maxSubscription;
-            }
-
-            _logger.LogInformation($"Highest subscription from players [ {string.Join(",", steamIds)} ] is [ {Enum.GetName(typeof(SubscriptionType), maxSubscription)} ]");
-
-            return maxSubscription;
         }
     }
 

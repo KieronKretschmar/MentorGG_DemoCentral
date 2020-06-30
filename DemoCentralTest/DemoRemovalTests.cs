@@ -6,6 +6,7 @@ using DemoCentral.Communication.HTTP;
 using DemoCentral.Communication.Rabbit;
 using DemoCentral.Communication.RabbitConsumers;
 using DemoCentral.Controllers.trusted;
+using DemoCentral.Helpers.SubscriptionConfig;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -59,10 +60,18 @@ namespace DemoCentralTests
             var mockDBInterface = new Mock<IDemoTableInterface>();
             var mockDemoRemover = new Mock<IDemoRemover>();
             var mockMatchInfoGetter = new Mock<IMatchInfoGetter>();
+            var mockUserInfoRetriever = new Mock<IUserIdentityRetriever>();
             var testId = 123456789;
             mockDBInterface.Setup(x => x.GetDemoById(testId)).Throws<InvalidOperationException>();
 
-            var test = new DemoRemover(mockDBInterface.Object, mockILogger.Object, mockMatchWriter.Object,mockMatchInfoGetter.Object);
+            var test = new DemoRemover(
+                mockDBInterface.Object,
+                mockILogger.Object,
+                mockMatchWriter.Object,
+                new MockedSubscriptionConfigLoader(),
+                mockMatchInfoGetter.Object,
+                mockUserInfoRetriever.Object);
+
             var res = test.RemoveDemo(testId);
             Assert.AreEqual(res, DemoRemover.DemoRemovalResult.NotFound);
         }
@@ -114,52 +123,6 @@ namespace DemoCentralTests
             mockDemoRemover.Verify(x => x.RemoveExpiredDemos(testTimeSpan), Times.AtLeastOnce);
         }
 
-        [TestMethod]
-        public void DemoRemoverRemovesFoundDemo()
-        {
-            var testId = 123456789;
-            var testDemo = new Demo
-            {
-                MatchId = testId,
-            };
-
-            var mockDbInterface = new Mock<IDemoTableInterface>();
-
-            mockDbInterface.Setup(x => x.GetDemoById(testId)).Returns(testDemo);
-            var mockLogger = new Mock<ILogger<DemoRemover>>();
-            var mockMatchWriter = new Mock<IProducer<DemoRemovalInstruction>>();
-            var mockMatchInfoGetter = new Mock<IMatchInfoGetter>();
-
-
-            var test = new DemoRemover(mockDbInterface.Object, mockLogger.Object, mockMatchWriter.Object, mockMatchInfoGetter.Object);
-
-            var res = test.RemoveDemo(testId);
-
-            Assert.AreEqual(DemoRemover.DemoRemovalResult.Successful, res);
-            mockMatchWriter.Verify(x => x.PublishMessage(It.IsAny<DemoRemovalInstruction>(),null), Times.Once);
-  
-        }
-
-
-        [TestMethod]
-        public async Task DemoRemoverChecksRemovalDateAsync()
-        {
-            var testId = 123456789;
-            var mockDbInterface = new Mock<IDemoTableInterface>();
-            var mockLogger = new Mock<ILogger<DemoRemover>>();
-            var mockMatchWriter = new Mock<IProducer<DemoRemovalInstruction>>();
-            var mockMatchInfoGetter = new Mock<IMatchInfoGetter>();
-
-            mockDbInterface.Setup(x => x.GetExpiredDemos()).Returns(new List<Demo> { new Demo { MatchId = testId} });
-            mockDbInterface.Setup(x => x.GetDemoById(testId)).Throws<InvalidOperationException>();
-            int hasCalled = 0;
-            mockMatchInfoGetter.Setup(x => x.CalculateDemoRemovalDateAsync(It.IsAny<Demo>())).Callback(() => hasCalled += 1);
-
-            var test = new DemoRemover(mockDbInterface.Object, mockLogger.Object, mockMatchWriter.Object, mockMatchInfoGetter.Object);
-            await test.RemoveExpiredDemos(TimeSpan.Zero);
-
-            Assert.AreEqual(1, hasCalled);
-        }
 
         #region BlobStorage related tests
         [TestMethod]

@@ -3,6 +3,7 @@ using DemoCentral.Communication.HTTP;
 using DemoCentral.Communication.Rabbit;
 using DemoCentral.Enumerals;
 using DemoCentral.Helpers.SubscriptionConfig;
+using DemoCentral.Models;
 using Microsoft.Extensions.Logging;
 using RabbitCommunicationLib.Interfaces;
 using RabbitCommunicationLib.TransferModels;
@@ -25,20 +26,25 @@ namespace DemoCentral
         private readonly IProducer<DemoRemovalInstruction> _matchWriterProducer;
         private readonly ISubscriptionConfigProvider _subscriptionConfigProvider;
         private readonly IMatchInfoGetter _matchInfoGetter;
+        private readonly IUserIdentityRetriever _userIdentityRetriever;
 
         public DemoRemover(
             IDemoTableInterface demoTable,
             ILogger<DemoRemover> logger,
             IProducer<DemoRemovalInstruction> matchWriterProducer,
             ISubscriptionConfigProvider subscriptionConfigProvider,
-            IMatchInfoGetter matchInfoGetter)
+            IMatchInfoGetter matchInfoGetter,
+            IUserIdentityRetriever userIdentityRetriever)
         {
             _demoTable = demoTable;
             _logger = logger;
             _matchWriterProducer = matchWriterProducer;
             _subscriptionConfigProvider = subscriptionConfigProvider;
             _matchInfoGetter = matchInfoGetter;
+            _userIdentityRetriever = userIdentityRetriever;
         }
+
+
 
         public DemoRemovalResult RemoveDemo(long matchId)
         {
@@ -89,14 +95,42 @@ namespace DemoCentral
             foreach (var demo in demosToRemove)
             {
                 _logger.LogInformation($"Evaluating Demo [ {demo.MatchId} ] ");
-                var subscription = await _matchInfoGetter.GetMaxUserSubscriptionInMatchAsync(demo.MatchId);
-                
-                var storageTime = TimeSpan.FromDays(
-                    _subscriptionConfigProvider.Config.SettingsFromSubscriptionType(subscription).MatchAccessDurationInDays);
 
-                var expiryDate = demo.MatchDate + storageTime;
+                var steamIds = await _matchInfoGetter.GetParticipatingPlayersAsync(demo.MatchId);
+
+                // Get Maximum Access Period in Days
+                int maximumAccessPeriodDays = 0;
+                foreach (long steamId in steamIds)
+                {
+                    // Skip Bots
+                    if (steamId < 0)
+                    {
+                        continue;
+                    }
+
+                    var userIdentity = await _userIdentityRetriever.GetUserIdentityAsync(steamId);
+                    var userSettings = _subscriptionConfigProvider.Config.SettingsFromSubscriptionType(userIdentity.SubscriptionType);
+
+                    if(userSettings.MatchAccessDurationInDays > maximumAccessPeriodDays || userSettings.MatchAccessDurationInDays == -1)
+                    {
+                        maximumAccessPeriodDays = userSettings.MatchAccessDurationInDays;
+                    }
+                }
+
+                // Calculate Expiry Date
+                DateTime expiryDate;
+                if( maximumAccessPeriodDays > 0)
+                {
+                    expiryDate = demo.MatchDate + TimeSpan.FromDays(maximumAccessPeriodDays);
+                }
+                else
+                {
+                    expiryDate = DateTime.UtcNow + TimeSpan.FromDays(14);
+                }
+
                 _demoTable.SetExpiryDate(demo, expiryDate);
 
+                // If the ExpiryDate has passed the current time, remove the Demo.
                 if (expiryDate < DateTime.UtcNow)
                 {   
                     RemoveDemo(demo);
