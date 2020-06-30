@@ -52,9 +52,19 @@ namespace DemoCentral.Communication.MessageProcessors
 
             if (model.Success)
             {
-                await _blobStorage.DeleteBlobAsync(demo.BlobUrl);
-                _demoTableInterface.SetBlobUrl(demo, null);
+                try
+                {
+                    await _blobStorage.DeleteBlobAsync(demo.BlobUrl);
+                    _demoTableInterface.SetBlobUrl(demo, null);
+                }
+                catch  (Exception e)
+                {
+                    _logger.LogError(e, "Blob failed to be removed.");
+                }
+
                 _demoTableInterface.SetMatchDataRemoved(demo);
+
+
             }
             else
             {
