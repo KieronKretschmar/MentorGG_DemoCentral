@@ -186,8 +186,6 @@ namespace DemoCentral
             });
             
             services.AddTransient<IDemoRemover, DemoRemover>();
-            services.AddTransient<IMatchInfoGetter, MatchInfoGetter>();
-
             #endregion
 
             #region Http related services
@@ -205,6 +203,8 @@ namespace DemoCentral
                 c.BaseAddress = new Uri(MATCHRETRIEVER_BASE_ADDRESS);
             });
 
+            services.AddTransient<IMatchInfoGetter, MatchInfoGetter>();
+
             services.AddTransient<IBlobStorage>(services => 
             {
                 return new BlobStorage(BLOBSTORAGE_CONNECTION_STRING, services.GetRequiredService<ILogger<BlobStorage>>());
@@ -217,6 +217,8 @@ namespace DemoCentral
 
                 return new UserIdentityRetriever(services.GetRequiredService<IHttpClientFactory>(), services.GetRequiredService<ILogger<UserIdentityRetriever>>());
             });
+
+            
             #endregion
 
             #region Rabbit - General
