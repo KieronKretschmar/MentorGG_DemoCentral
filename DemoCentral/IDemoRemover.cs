@@ -73,13 +73,24 @@ namespace DemoCentral
             {
                 _logger.LogInformation($"Evaluating Demo [ {demo.MatchId} ] ");
 
-                int maximumAccessPeriodDays = await CalculateMaximumAccessPeriodAsync(demo.MatchId);
+                List<long> steamIds = await _matchInfoGetter.GetParticipatingPlayersAsync(demo.MatchId);
+
+                int accessPeriodDays;
+                if(steamIds.Count > 0)
+                {
+                    accessPeriodDays = await CalculateMaximumAccessPeriodAsync(steamIds);
+                }
+                else
+                {
+                    // If there were no players, this indicates the Match was not found my MR.
+                    accessPeriodDays = 0;
+                }
 
                 // Calculate Expiry Date
                 DateTime expiryDate;
-                if(maximumAccessPeriodDays >= 0)
+                if(accessPeriodDays >= 0)
                 {
-                    expiryDate = demo.MatchDate + TimeSpan.FromDays(maximumAccessPeriodDays);
+                    expiryDate = demo.MatchDate + TimeSpan.FromDays(accessPeriodDays);
                 }
                 else
                 {
@@ -99,27 +110,18 @@ namespace DemoCentral
 
                 _logger.LogWarning($"DEBUG: Demo [ {demo.MatchId} ] - Expiry [ {demo.ExpiryDate} ]");
 
-                //TODO Remove this
-                Thread.Sleep(2000);
             }
         }
 
         /// <summary>
-        /// Retrieve Participating Players in a match,
         /// Iterate over each non-bot player, obtaining their Subscription information and determine the maximum MatchAccessDuration;
         /// </summary>
         /// <param name="matchId"></param>
         /// <returns></returns>
-        private async Task<int> CalculateMaximumAccessPeriodAsync(long matchId)
+        private async Task<int> CalculateMaximumAccessPeriodAsync(List<long> steamIds)
         {
-            var steamIds = await _matchInfoGetter.GetParticipatingPlayersAsync(matchId);
-            if(steamIds.Count == 0)
-            {
-                return 0;
-            }
-
             // Get Maximum Access Period in Days
-            int? maximumAccessPeriodDays = null;
+            int maximumAccessPeriodDays = 0;
             foreach (long steamId in steamIds)
             {
                 // Skip Bots
@@ -145,9 +147,9 @@ namespace DemoCentral
                 }
             }
 
-            if(maximumAccessPeriodDays == null)
+            if(maximumAccessPeriodDays == 0)
             {
-                throw new ArgumentException($"Failed to calculate MaximumAccessPeriod for [ {matchId} ]!");
+                throw new ArgumentException($"Failed to calculate MaximumAccessPeriod!");
             }
             else
             {
