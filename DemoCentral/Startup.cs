@@ -327,15 +327,17 @@ namespace DemoCentral
 
             #region Subscription Configuration
 
-            if (!GetOptionalEnvironmentVariable<bool>(Configuration, "MOCK_SUBSCRIPTION_LOADER", false))
-            {
-                services.AddSingleton<ISubscriptionConfigProvider, SubscriptionConfigLoader>();
-            }
-            else
+            if (GetOptionalEnvironmentVariable<bool>(Configuration, "MOCK_SUBSCRIPTION_LOADER", false))
             {
                 Console.WriteLine(
                     "WARNING: SubscriptionConfigLoader is mocked and will return mocked values!");
                 services.AddSingleton<ISubscriptionConfigProvider, MockedSubscriptionConfigLoader>();
+
+                services.AddSingleton<ISubscriptionConfigProvider, SubscriptionConfigLoader>();
+            }
+            else
+            {
+                services.AddSingleton<ISubscriptionConfigProvider, SubscriptionConfigLoader>();
             }
 
             #endregion
