@@ -64,12 +64,7 @@ namespace DemoCentral.Communication.HTTP
         public async Task<UserIdentity> GetUserIdentityAsync(long steamId)
         {
             var response = await _clientFactory.CreateClient("mentor-interface").GetAsync($"/identity/{steamId}");
-
-            if (!response.IsSuccessStatusCode)
-            {
-                _logger.LogWarning(
-                    $"Getting UserIdentity for SteamId [ {steamId} ]. Response: [ {response} ]. Returning AnalyzerQuality.Low");
-            }
+            response.EnsureSuccessStatusCode();
 
             var reponseContent = await response.Content.ReadAsStringAsync();
             var userIdentity = JsonConvert.DeserializeObject<UserIdentity>(reponseContent);
