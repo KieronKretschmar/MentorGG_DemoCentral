@@ -6,6 +6,7 @@ using System.Linq;
 using Microsoft.Extensions.Logging;
 using DemoCentral.Enumerals;
 using RabbitCommunicationLib.Enums;
+using Microsoft.EntityFrameworkCore;
 
 namespace DemoCentral
 {
@@ -331,8 +332,10 @@ namespace DemoCentral
         {
             DateTime nowWithAllowance = DateTime.UtcNow + extraAllowance;
             return _context.Demo
+                .Include(x => x.InQueueDemo)
                 .Where(x => x.ExpiryDate < nowWithAllowance)
                 .Where(x => !x.MatchDataRemoved)
+                .Where(x => x.InQueueDemo == null)
                 .ToList();
         }
 
