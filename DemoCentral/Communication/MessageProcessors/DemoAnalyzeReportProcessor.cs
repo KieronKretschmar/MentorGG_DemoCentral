@@ -88,7 +88,6 @@ namespace DemoCentral.Communication.MessageProcessors
             InQueueDemo queueDemo = _inQueueTableInterface.GetDemoById(response.MatchId);
             _inQueueTableInterface.ResetRetry(queueDemo);
 
-            _inQueueTableInterface.UpdateCurrentQueue(queueDemo, Queue.MatchWriter);
             PublishRedisInstruction(response);
             _inQueueTableInterface.UpdateCurrentQueue(queueDemo, Queue.MatchWriter);
 
