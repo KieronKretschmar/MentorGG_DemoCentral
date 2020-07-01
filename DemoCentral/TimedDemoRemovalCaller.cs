@@ -16,6 +16,11 @@ namespace DemoCentral
         private readonly ILogger<TimedDemoRemovalCaller> _logger;
         private Timer _timer;
 
+        /// <summary>
+        /// Initial Timer Delay, in seconds.
+        /// </summary>
+        private const int INITIAL_DELAY = 10;
+
         public TimedDemoRemovalCaller(
             TimeSpan interval,
             TimeSpan allowance,
@@ -31,7 +36,7 @@ namespace DemoCentral
         public Task StartAsync(CancellationToken cancellationToken)
         {
             _logger.LogInformation($"Starting {GetType().Name}. Interval:  [ {_interval} ]");
-            _timer = new Timer(CallDemoRemoverAsync, null, TimeSpan.Zero, _interval);
+            _timer = new Timer(CallDemoRemoverAsync, null, TimeSpan.FromSeconds(INITIAL_DELAY), _interval);
 
             return Task.CompletedTask;
         }
