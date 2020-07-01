@@ -65,26 +65,24 @@ namespace DemoCentral.Communication.HTTP
         public async Task<UserIdentity> GetUserIdentityAsync(long steamId)
         {
             var response = await _clientFactory.CreateClient("mentor-interface").GetAsync($"/identity/{steamId}");
-            if (!response.IsSuccessStatusCode)
+            
+            if(response.StatusCode == HttpStatusCode.NotFound)
             {
-                if(response.StatusCode == HttpStatusCode.NotFound)
+                // Yes, yes you're right - This is gross
+                string content = await response.Content.ReadAsStringAsync();
+                if(content.Contains($"User [ {steamId} ] not found"))
                 {
-                    // Yes, yes you're right - This is gross
-                    string content = await response.Content.ReadAsStringAsync();
-                    if(content.Contains($"User [ {steamId} ] not found"))
+                    _logger.LogInformation($"User [ {steamId} was not found in MentorInterface]");
+                    return new UserIdentity
                     {
-                        _logger.LogInformation($"User [ {steamId} was not found in MentorInterface]");
-                        return new UserIdentity
-                        {
-                            SteamId = steamId,
-                            SubscriptionType = SubscriptionType.Free,
-                        };
-                    }
+                        SteamId = steamId,
+                        SubscriptionType = SubscriptionType.Free,
+                    };
                 }
-                else
-                {
-                    response.EnsureSuccessStatusCode();
-                }
+            }
+            else
+            {
+                response.EnsureSuccessStatusCode();
             }
 
             var reponseContent = await response.Content.ReadAsStringAsync();
