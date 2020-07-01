@@ -43,7 +43,14 @@ namespace DemoCentral
 
         private async void CallDemoRemoverAsync(object state)
         {
-            await _demoRemover.RemoveExpiredDemos(_allowance);
+            try
+            {
+                await _demoRemover.RemoveExpiredDemos(_allowance);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "Uncaught Exception when removing expired Demos");
+            }
         }
 
         public Task StopAsync(CancellationToken cancellationToken)
