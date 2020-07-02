@@ -107,9 +107,6 @@ namespace DemoCentral
                     SendRemovalInstructions(demo.MatchId);
                 }
 
-
-                _logger.LogWarning($"DEBUG: Demo [ {demo.MatchId} ] - Expiry [ {demo.ExpiryDate} ]");
-
             }
         }
 
