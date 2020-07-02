@@ -28,7 +28,7 @@ namespace DemoCentral.Communication.HTTP
             IDemoTableInterface dBInterface,
             ILogger<MatchInfoGetter> logger)
         {
-            _clientFactory = clientFactory;;
+            _clientFactory = clientFactory;
             _dBInterface = dBInterface;
             _logger = logger;
         }
