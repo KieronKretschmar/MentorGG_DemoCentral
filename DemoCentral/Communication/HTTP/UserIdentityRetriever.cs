@@ -9,13 +9,17 @@ using DemoCentral.Enumerals;
 using System.Collections.Generic;
 using System;
 using System.Net;
+using System.Linq;
 
 namespace DemoCentral.Communication.HTTP
 {
     public interface IUserIdentityRetriever
     {
-        public Task<AnalyzerQuality> GetAnalyzerQualityAsync(long steamId);
-        public Task<UserIdentity> GetUserIdentityAsync(long player);
+        Task<AnalyzerQuality> GetAnalyzerQualityAsync(long steamId);
+        Task<UserIdentity> GetUserIdentityAsync(long steamId);
+
+        Task<List<UserIdentity>> GetUserIdentitiesAsync(List<long> steamIds);
+
     }
 
     /// <summary>
@@ -46,6 +50,11 @@ namespace DemoCentral.Communication.HTTP
         {
             var userIdentity = await GetUserIdentityAsync(steamId);
 
+            if(userIdentity == null)
+            {
+                return AnalyzerQuality.Low;
+            }
+
             switch (userIdentity.SubscriptionType)
             {
                 case SubscriptionType.Free:
@@ -66,19 +75,11 @@ namespace DemoCentral.Communication.HTTP
         {
             var response = await _clientFactory.CreateClient("mentor-interface").GetAsync($"/identity/{steamId}");
             
-            if(response.StatusCode == HttpStatusCode.NotFound)
+            string content = await response.Content.ReadAsStringAsync();
+            if (response.StatusCode == HttpStatusCode.NotFound && content.Contains($"User [ {steamId} ] not found"))
             {
-                // Yes, yes you're right - This is gross
-                string content = await response.Content.ReadAsStringAsync();
-                if(content.Contains($"User [ {steamId} ] not found"))
-                {
-                    _logger.LogInformation($"User [ {steamId} was not found in MentorInterface]");
-                    return new UserIdentity
-                    {
-                        SteamId = steamId,
-                        SubscriptionType = SubscriptionType.Free,
-                    };
-                }
+                _logger.LogInformation($"User [ {steamId} ] not found in MentorInterface.");
+                return null;
             }
             else
             {
@@ -89,6 +90,29 @@ namespace DemoCentral.Communication.HTTP
             var userIdentity = JsonConvert.DeserializeObject<UserIdentity>(reponseContent);
 
             return userIdentity;
+        }
+
+        public async Task<List<UserIdentity>> GetUserIdentitiesAsync(List<long> steamIds)
+        {
+            var idsString = string.Join(",", steamIds);
+            var response = await _clientFactory.CreateClient("mentor-interface").GetAsync($"/identity/multiple/{idsString}");
+
+            string content = await response.Content.ReadAsStringAsync();
+            if (response.StatusCode == HttpStatusCode.NotFound && content.Contains($"Users not found"))
+            {
+                _logger.LogInformation($"No Users found in MentorInterface.");
+                return new List<UserIdentity>();
+            }
+            else
+            {
+                response.EnsureSuccessStatusCode();
+            }
+
+            var reponseContent = await response.Content.ReadAsStringAsync();
+            var userIdentities = JsonConvert.DeserializeObject<List<UserIdentity>>(reponseContent);
+
+            return userIdentities;
+
         }
     }
 

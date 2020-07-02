@@ -117,19 +117,13 @@ namespace DemoCentral
         /// <returns></returns>
         private async Task<int> CalculateMaximumAccessPeriodAsync(List<long> steamIds)
         {
-            // Get Maximum Access Period in Days
+
+            var identities = await _userIdentityRetriever.GetUserIdentitiesAsync(steamIds);
+
             int maximumAccessPeriodDays = 0;
-            foreach (long steamId in steamIds)
+            foreach (UserIdentity identity in identities)
             {
-                // Skip Bots
-                if (steamId < 0)
-                {
-                    continue;
-                }
-
-                var userIdentity = await _userIdentityRetriever.GetUserIdentityAsync(steamId);
-                var userSettings = _subscriptionConfigProvider.Config.SettingsFromSubscriptionType(userIdentity.SubscriptionType);
-
+                var userSettings = _subscriptionConfigProvider.Config.SettingsFromSubscriptionType(identity.SubscriptionType);
                 var currentAccessDuration = userSettings.MatchAccessDurationInDays;
 
                 if (currentAccessDuration == -1)
@@ -142,16 +136,10 @@ namespace DemoCentral
                 {
                     maximumAccessPeriodDays = currentAccessDuration;
                 }
+
             }
 
-            if(maximumAccessPeriodDays == 0)
-            {
-                throw new ArgumentException($"Failed to calculate MaximumAccessPeriod!");
-            }
-            else
-            {
-                return (int)maximumAccessPeriodDays;
-            }
+            return maximumAccessPeriodDays;
         }
     }
 }
