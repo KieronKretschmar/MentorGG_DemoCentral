@@ -219,17 +219,25 @@ namespace DemoCentral.Controllers.trusted
         /// <returns>Whether queueing was succesful.</returns>
         private bool TryAddToSituationOperatorQueue(Demo demo)
         {
-            // Abort if match does not seem to be in MatchDb
-            var isInMatchDb = demo.AnalysisSucceeded || (int)demo.AnalysisBlockReason >= (int)DemoAnalysisBlock.SituationOperator_Unknown;
-            if (!isInMatchDb)
+            try
             {
-                _logger.LogInformation($"Requeuing demo [ {demo.MatchId} ] to SituationOperator was not possible as match is not in MatchDb.");
+                // Abort if match does not seem to be in MatchDb
+                var isInMatchDb = demo.AnalysisSucceeded || demo.AnalysisBlockReason != null && (int)demo.AnalysisBlockReason >= (int)DemoAnalysisBlock.SituationOperator_Unknown;
+                if (!isInMatchDb)
+                {
+                    _logger.LogInformation($"Requeuing demo [ {demo.MatchId} ] to SituationOperator was not possible as match is not in MatchDb.");
+                    return false;
+                }
+
+                _situationOperator.PublishMessage(demo.ToSituationExtractionInstruction());
+                _inQueueTableInterface.Add(demo.MatchId, Queue.SituationOperator);
+                return true;
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, $"Failed to requeue demo [ {demo.MatchId} ] to SituationOperator.");
                 return false;
             }
-
-            _situationOperator.PublishMessage(demo.ToSituationExtractionInstruction());
-            _inQueueTableInterface.Add(demo.MatchId, Queue.SituationOperator);
-            return true;
         }
     }
 }

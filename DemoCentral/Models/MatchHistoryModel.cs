@@ -11,7 +11,7 @@ namespace DemoCentral.Models
 
         public static MatchHistoryModel FromRecentFailedMatches(long playerId, int recentMatches, int offset, IDemoTableInterface demoTableInterface)
         {
-            var failedMatches = demoTableInterface.GetRecentFailedMatches(playerId, recentMatches, offset);
+            var failedMatches = demoTableInterface.GetRecentFailedMatchesBeforeSO(playerId, recentMatches, offset);
             var entries = failedMatches
                 .Select(match => new MatchHistoryEntry
                 {

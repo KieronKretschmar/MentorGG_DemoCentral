@@ -6,6 +6,7 @@ using System.Linq;
 using Microsoft.Extensions.Logging;
 using DemoCentral.Enumerals;
 using RabbitCommunicationLib.Enums;
+using Microsoft.EntityFrameworkCore;
 
 namespace DemoCentral
 {
@@ -51,7 +52,10 @@ namespace DemoCentral
         void SetAnalyzeState(Demo demo, bool analysisFinishedSuccessfully, DemoAnalysisBlock? block = null);
 
         void SetHash(Demo demo, string hash);
-        
+        void SetHash(long matchId, string hash);
+
+        List<Demo> GetDemosForRemoval(TimeSpan extraAllowance);
+
         /// <summary>
         /// try to create a new entry in the demo table. Returns false and the matchId of the match, if the downloadUrl is already known, return true otherwise
         /// </summary>
@@ -64,8 +68,12 @@ namespace DemoCentral
         /// </summary>
         /// <returns>MatchId of the newly created match</returns>
         long CreateNewDemoEntryFromManualUpload(ManualDownloadInsertInstruction model, AnalyzerQuality requestedQuality);
-        List<Demo> GetRecentFailedMatches(long playerId, int recentMatches, int offset = 0);
+        List<Demo> GetRecentFailedMatchesBeforeSO(long playerId, int recentMatches, int offset = 0);
         List<Demo> GetFailedDemos(DateTime minUploadDate);
+
+        void SetExpiryDate(Demo demo, DateTime expiryDate);
+
+        void SetMatchDataRemoved(Demo demo);
     }
 
     /// <summary>
@@ -135,11 +143,18 @@ namespace DemoCentral
             return recentMatchesId;
         }
 
-        public List<Demo> GetRecentFailedMatches(long playerId, int recentMatches, int offset = 0)
+        /// <summary>
+        /// Return recently failed matches that occured before SituationOperator
+        /// </summary>
+        /// <param name="playerId"></param>
+        /// <param name="recentMatches"></param>
+        /// <param name="offset"></param>
+        /// <returns></returns>
+        public List<Demo> GetRecentFailedMatchesBeforeSO(long playerId, int recentMatches, int offset = 0)
         {
             var recentMatchesId = _context.Demo
                 .Where(x => x.UploaderId == playerId)
-                .Where(x => x.AnalysisSucceeded == false)
+                .Where(x => x.AnalysisSucceeded == false && x.AnalysisBlockReason < DemoAnalysisBlock.SituationOperator_Unknown)
                 .Take(recentMatches + offset)
                 .ToList();
             recentMatchesId.RemoveRange(0, offset);
@@ -283,6 +298,7 @@ namespace DemoCentral
             _context.SaveChanges();
         }
 
+
         public IQueryable<Demo> GetDemos(int? minMatchId = null, int? maxMatchId = null, DateTime? minUploadDate = null, DateTime? maxUploadDate = null)
         {
             // make sure this method is not accidentally called without filters, making it resource hungry
@@ -304,6 +320,35 @@ namespace DemoCentral
                 demos = demos.Where(x => x.UploadDate <= maxUploadDate);
 
             return demos;
+
+        }
+
+        /// <summary>
+        /// Return Demos where their ExpiryDate plus an allowance is before the current time.
+        /// </summary>
+        /// <param name="extraAllowance"></param>
+        /// <returns></returns>
+        public List<Demo> GetDemosForRemoval(TimeSpan extraAllowance)
+        {
+            DateTime nowWithAllowance = DateTime.UtcNow + extraAllowance;
+            return _context.Demo
+                .Include(x => x.InQueueDemo)
+                .Where(x => x.ExpiryDate < nowWithAllowance)
+                .Where(x => !x.MatchDataRemoved)
+                .Where(x => x.InQueueDemo == null)
+                .ToList();
+        }
+
+        public void SetExpiryDate(Demo demo, DateTime expiryDate)
+        {
+            demo.ExpiryDate = expiryDate;
+            _context.SaveChanges();
+        }
+
+        public void SetMatchDataRemoved(Demo demo)
+        {
+            demo.MatchDataRemoved = true;
+            _context.SaveChanges();
         }
     }
 

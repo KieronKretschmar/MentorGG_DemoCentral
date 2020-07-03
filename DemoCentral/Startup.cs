@@ -24,6 +24,7 @@ using System.Net.Http;
 using DemoCentral.Communication.MessageProcessors;
 using DemoCentral.Communication.RabbitConsumers;
 using StackExchange.Redis;
+using DemoCentral.Helpers.SubscriptionConfig;
 
 namespace DemoCentral
 {
@@ -171,20 +172,53 @@ namespace DemoCentral
             }
             #endregion
 
+            #region Demo Removal
+
+            var DEMO_REMOVAL_ALLOWANCE = GetRequiredEnvironmentVariable<int>(Configuration, "DEMO_REMOVAL_ALLOWANCE");
+            var DEMO_REMOVAL_INTERVAL = GetRequiredEnvironmentVariable<int>(Configuration, "DEMO_REMOVAL_INTERVAL");
+            services.AddHostedService<TimedDemoRemovalCaller>(services =>
+            {
+                return new TimedDemoRemovalCaller(
+                    TimeSpan.FromMinutes(DEMO_REMOVAL_INTERVAL),
+                    TimeSpan.FromMinutes(DEMO_REMOVAL_ALLOWANCE), 
+                    services.GetRequiredService<IDemoRemover>(), 
+                    services.GetRequiredService<ILogger<TimedDemoRemovalCaller>>());
+            });
+            
+            services.AddTransient<IDemoRemover, DemoRemover>();
+            #endregion
+
             #region Http related services
+
             var MENTORINTERFACE_BASE_ADDRESS = GetRequiredEnvironmentVariable<string>(Configuration, "MENTORINTERFACE_BASE_ADDRESS");
             services.AddHttpClient("mentor-interface", c =>
             {
                 c.BaseAddress = new Uri(MENTORINTERFACE_BASE_ADDRESS);
             });
 
+
+            var MATCHRETRIEVER_BASE_ADDRESS = GetRequiredEnvironmentVariable<string>(Configuration, "MATCHRETRIEVER_BASE_ADDRESS");
+            services.AddHttpClient("match-retriever", c => 
+            {
+                c.BaseAddress = new Uri(MATCHRETRIEVER_BASE_ADDRESS);
+            });
+
+            services.AddTransient<IMatchInfoGetter, MatchInfoGetter>();
+
+            services.AddTransient<IBlobStorage>(services => 
+            {
+                return new BlobStorage(BLOBSTORAGE_CONNECTION_STRING, services.GetRequiredService<ILogger<BlobStorage>>());
+            });
+
             services.AddTransient<IUserIdentityRetriever>(services =>
             {
                 if (MENTORINTERFACE_BASE_ADDRESS == "mock")
-                    return new MockUserInfoGetter(services.GetRequiredService<ILogger<MockUserInfoGetter>>());
+                    return new MockUserIdentityRetriever(services.GetRequiredService<ILogger<MockUserIdentityRetriever>>());
 
                 return new UserIdentityRetriever(services.GetRequiredService<IHttpClientFactory>(), services.GetRequiredService<ILogger<UserIdentityRetriever>>());
             });
+
+            
             #endregion
 
             #region Rabbit - General
@@ -288,7 +322,26 @@ namespace DemoCentral
             services.AddTransient<ManualDownloadInsertInstructionProcessor>();
             services.AddTransient<MatchDatabaseInsertionReportProcessor>();
             services.AddTransient<SituationExtractionReportProcessor>();
+            services.AddTransient<MatchWriterRemovalReportProcessor>();
             #endregion
+
+            #region Subscription Configuration
+
+            if (GetOptionalEnvironmentVariable<bool>(Configuration, "MOCK_SUBSCRIPTION_LOADER", false))
+            {
+                Console.WriteLine(
+                    "WARNING: SubscriptionConfigLoader is mocked and will return mocked values!");
+                services.AddSingleton<ISubscriptionConfigProvider, MockedSubscriptionConfigLoader>();
+
+                services.AddSingleton<ISubscriptionConfigProvider, SubscriptionConfigLoader>();
+            }
+            else
+            {
+                services.AddSingleton<ISubscriptionConfigProvider, SubscriptionConfigLoader>();
+            }
+
+            #endregion
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -318,14 +371,6 @@ namespace DemoCentral
             {
                 endpoints.MapControllers();
             });
-
-            #region Run Migrations
-            // migrate if this is not an inmemory database
-            if (services.GetRequiredService<DemoCentralContext>().Database.ProviderName != "Microsoft.EntityFrameworkCore.InMemory")
-            {
-                services.GetRequiredService<DemoCentralContext>().Database.Migrate();
-            }
-            #endregion
         }
 
         /// <summary>
