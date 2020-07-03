@@ -39,6 +39,19 @@ namespace DemoCentral.Communication.MessageProcessors
             _inQueueTableInterface = inQueueTableInterface;
         }
 
+        /// Remove the Demo from the Queue.
+        /// Set the DemoAnalysisBlock to Unknown for the respective service.
+        /// </summary>
+        /// <param name="e"></param>
+        /// <param name="matchId"></param>
+        private void ActOnUnknownFailure(Exception e, long matchId)
+        {
+            _logger.LogError(e, $"Failed to process Demo [ {matchId} ]. Unknown Failure. Removed from Queue.");
+            Demo demo = _demoTableInterface.GetDemoById(matchId);
+            InQueueDemo queueDemo = _inQueueTableInterface.GetDemoById(matchId);
+            _inQueueTableInterface.Remove(queueDemo);
+            _demoTableInterface.SetAnalyzeState(demo, false, DemoAnalysisBlock.DemoDownloader_Unknown);
+        }
 
         /// <summary>
         /// Determine Analyze Quality, Update Queue Status and Send message to DemoDownloader for Demo Retrieval.
@@ -53,9 +66,7 @@ namespace DemoCentral.Communication.MessageProcessors
             }
             catch (Exception e)
             {
-                _logger.LogError(e, $"Failed to update demo [ {model.MatchId} ] in database. Removed from Queue.");
-                InQueueDemo queueDemo = _inQueueTableInterface.GetDemoById(model.MatchId);
-                _inQueueTableInterface.Remove(queueDemo);
+                ActOnUnknownFailure(e, model.MatchId);
             }
         }
 
