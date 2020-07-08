@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Database.DatabaseClasses;
 using DemoCentral.Communication.HTTP;
@@ -22,7 +24,10 @@ namespace DemoCentral.Communication.MessageProcessors
         private readonly IProducer<DemoAnalyzeInstruction> _demoFileWorkerProducer;
         private IInQueueTableInterface _inQueueTableInterface;
 
-        private const int MAX_RETRIES = 2;
+        /// <summary>
+        /// Time waited before retrying after each failed attempt in seconds.
+        /// </summary>
+        private readonly int[] RETRY_INTERVALS = new int[] { 0, 30, 120, 300, 900 };
 
         public DemoDownloadReportProcessor(
             ILogger<DemoDownloadReportProcessor> logger,
@@ -85,16 +90,19 @@ namespace DemoCentral.Communication.MessageProcessors
             }
             else
             {
-                int attempts = _inQueueTableInterface.IncrementRetry(queuedDemo);
+                int failedAttempts = _inQueueTableInterface.IncrementRetry(queuedDemo);
 
-                if (attempts > MAX_RETRIES)
+                if (failedAttempts > RETRY_INTERVALS.Length)
                 {
                     _inQueueTableInterface.Remove(queuedDemo);
                     _demoTableInterface.SetAnalyzeState(demo, false, DemoAnalysisBlock.DemoDownloader_Unknown);
-                    _logger.LogError($"Demo [ {matchId} ] failed download more than {MAX_RETRIES} times, no further analyzing");
+                    _logger.LogError($"Demo [ {matchId} ] failed download more than {RETRY_INTERVALS.Length} times, no further analyzing");
                 }
                 else
                 {
+                    var delayMilliSeconds = RETRY_INTERVALS[failedAttempts - 1] * 1000;
+                    _logger.LogInformation($"Waiting [ {delayMilliSeconds} ] seconds before starting retry number [ {failedAttempts} ] of downloading demo [ {matchId} ].");
+                    Thread.Sleep(delayMilliSeconds);
 
                     _logger.LogInformation($"Sent demo [ {matchId} ] to DemoDownloadInstruction queue");
 
