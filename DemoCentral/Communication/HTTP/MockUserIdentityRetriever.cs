@@ -30,6 +30,11 @@ namespace DemoCentral.Communication.HTTP
             return Task.FromResult(SubscriptionType.Free);
         }
 
+        public Task<List<UserIdentity>> GetUserIdentitiesAsync(List<long> steamIds)
+        {
+            throw new NotImplementedException();
+        }
+
         public Task<UserIdentity> GetUserIdentityAsync(long player)
         {
             var mockIdentity = new UserIdentity();
