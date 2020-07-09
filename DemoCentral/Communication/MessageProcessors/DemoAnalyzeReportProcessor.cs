@@ -49,8 +49,7 @@ namespace DemoCentral.Communication.MessageProcessors
         {
             _logger.LogError(e, $"Failed to process Demo [ {matchId} ]. Unknown Failure. Removed from Queue.");
             Demo demo = _demoTableInterface.GetDemoById(matchId);
-            InQueueDemo queueDemo = _inQueueTableInterface.GetDemoById(matchId);
-            _inQueueTableInterface.Remove(queueDemo);
+            _inQueueTableInterface.TryRemove(matchId);
             _demoTableInterface.SetAnalyzeState(demo, false, DemoAnalysisBlock.DemoFileWorker_Unknown);
         }
 
@@ -116,13 +115,30 @@ namespace DemoCentral.Communication.MessageProcessors
         /// <param name="block"></param>
         private void ActOnAnalyzeFailure(long matchId, DemoAnalysisBlock block)
         {
-            InQueueDemo inQueueDemo = _inQueueTableInterface.GetDemoById(matchId);
             Demo dbDemo = _demoTableInterface.GetDemoById(matchId);
 
             if(dbDemo.AnalysisSucceeded)
             {
                 throw new ArgumentException(
                     $"Demo [ {matchId} ] has succeeded Analysis, Therefore ActOnFailure is the Incorrect usage.");
+            }
+
+
+            // Store the Analyze state with the current failure
+            _demoTableInterface.SetAnalyzeState(dbDemo, analysisFinishedSuccessfully: false, block);
+
+            InQueueDemo inQueueDemo;
+            try
+            {
+                inQueueDemo = _inQueueTableInterface.GetDemoById(matchId);
+
+            }
+            catch (InvalidOperationException)
+            {
+                _blobStorage.DeleteBlobAsync(dbDemo.BlobUrl);
+                _inQueueTableInterface.TryRemove(matchId);
+                _logger.LogWarning($"InQueueDemo [ {matchId} ] not found. Not trying again.");
+                return;
             }
 
             // If what is currently stored in DemoAnalysisBlock does not match the current failure
@@ -139,15 +155,12 @@ namespace DemoCentral.Communication.MessageProcessors
                 retryAttempts = _inQueueTableInterface.IncrementRetry(inQueueDemo);
             }
 
-            // Store the Analyze state with the current failure
-            _demoTableInterface.SetAnalyzeState(dbDemo, analysisFinishedSuccessfully: false, block);
-
-            // If the amount of retries exceeds the maximum allowed - stop retrying this demo.
+            // If the amount of retries exceeds the maximum allowed - stop retrying this demo
             // OR if the demo is a duplicate.
             if (retryAttempts > MAX_RETRIES)
             {
                 _blobStorage.DeleteBlobAsync(dbDemo.BlobUrl);
-                _inQueueTableInterface.Remove(inQueueDemo);
+                _inQueueTableInterface.TryRemove(matchId);
                 _logger.LogInformation($"Demo [ {matchId} ]. Exceeded the maximum retry limit of [ {MAX_RETRIES} ].  Removed");
                 return;
             }
@@ -155,7 +168,7 @@ namespace DemoCentral.Communication.MessageProcessors
             if (block == DemoAnalysisBlock.DemoFileWorker_Duplicate)
             {
                 _blobStorage.DeleteBlobAsync(dbDemo.BlobUrl);
-                _inQueueTableInterface.Remove(inQueueDemo);
+                _inQueueTableInterface.TryRemove(matchId);
                 _logger.LogInformation($"Demo [ {matchId} ]. Duplicate, determinted by the MD5Hash");
                 return;
             }
