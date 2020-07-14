@@ -42,6 +42,20 @@ namespace DemoCentral.Communication.MessageProcessors
             _blobStorage = blobStorage;
         }
 
+        /// <summary>
+        /// Remove the Demo from the Queue.
+        /// Set the DemoAnalysisBlock to Unknown for the respective service.
+        /// </summary>
+        /// <param name="e"></param>
+        /// <param name="matchId"></param>
+        private void ActOnUnknownFailure(Exception e, long matchId)
+        {
+            _logger.LogError(e, $"Failed to process Demo [ {matchId} ]. Unknown Failure. Removed from Queue.");
+            Demo demo = _demoTableInterface.GetDemoById(matchId);
+            InQueueDemo queueDemo = _inQueueTableInterface.GetDemoById(matchId);
+            _inQueueTableInterface.Remove(queueDemo);
+            _demoTableInterface.SetAnalyzeState(demo, false, DemoAnalysisBlock.MatchWriter_Unknown);
+        }
 
         /// <summary>
         /// </summary>
@@ -55,9 +69,7 @@ namespace DemoCentral.Communication.MessageProcessors
             }
             catch (Exception e)
             {
-                _logger.LogError(e, $"Failed to update demo [ {model.MatchId} ] in database. Removed from Queue.");
-                InQueueDemo queueDemo = _inQueueTableInterface.GetDemoById(model.MatchId);
-                _inQueueTableInterface.Remove(queueDemo);
+                ActOnUnknownFailure(e, model.MatchId);
             }
         }
         private void UpdateDBFromResponse(MatchDatabaseInsertionReport model)
@@ -84,6 +96,11 @@ namespace DemoCentral.Communication.MessageProcessors
             }
             else
             {
+                if (model.Block == null)
+                {
+                    throw new ArgumentException("Cannot Act on Analyze Failure if DemoAnalysisBlock is null!");
+                }
+                
                 _logger.LogError($"Demo [ {matchId} ]. MatchWriter failed with DemoAnalysisBlock [ { model.Block} ].");
 
                 // If what is currently stored in DemoAnalysisBlock does not match the current failure
@@ -114,8 +131,8 @@ namespace DemoCentral.Communication.MessageProcessors
                     case DemoAnalysisBlock.MatchWriter_RedisConnectionFailed:
                     case DemoAnalysisBlock.MatchWriter_Timeout:
                         // Retry this step (MatchDatabaseInsertion) up to 3 times, then stop analysis.
-                        maxRetries = 3;
-                        if (retryAttempts >= maxRetries)
+                        maxRetries = 2;
+                        if (retryAttempts > maxRetries)
                         {
                             _blobStorage.DeleteBlobAsync(dbDemo.BlobUrl);
                             _inQueueTableInterface.Remove(queuedDemo);
@@ -125,8 +142,8 @@ namespace DemoCentral.Communication.MessageProcessors
                         
                     case DemoAnalysisBlock.MatchWriter_DatabaseUpload:
                     case DemoAnalysisBlock.MatchWriter_Unknown:
-                        maxRetries = 1;
-                        if (retryAttempts >= maxRetries)
+                        maxRetries = 2;
+                        if (retryAttempts > maxRetries)
                         {
                             _blobStorage.DeleteBlobAsync(dbDemo.BlobUrl);
                             _inQueueTableInterface.Remove(queuedDemo);

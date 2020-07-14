@@ -172,7 +172,7 @@ namespace DemoCentral
             matchId = null;
 
             //Check the Demo table if an entry contains the MD5Hash `hash`.
-            var demo = _context.Demo.Where(x => x.MD5Hash.Equals(hash)).SingleOrDefault();
+            var demo = _context.Demo.Where(x => x.MD5Hash.Equals(hash)).FirstOrDefault();
 
             // If a match was found.
             if (demo != null)
