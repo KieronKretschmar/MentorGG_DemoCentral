@@ -278,8 +278,10 @@ namespace DemoCentral
         public List<Demo> GetFailedDemos(DateTime minUploadDate)
         {  
             return _context.Demo
+                .Include(x=>x.InQueueDemo)
                 .Where(x => x.UploadDate >= minUploadDate)
                 .Where(x=>x.AnalysisSucceeded == false)
+                .Where(x=>x.InQueueDemo == null)
                 .ToList();
         }
 
