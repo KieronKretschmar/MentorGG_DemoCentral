@@ -42,7 +42,7 @@ namespace DemoCentral.Communication.MessageProcessors
             _blobStorage = blobStorage;
         }
 
-
+        /// <summary>
         /// Remove the Demo from the Queue.
         /// Set the DemoAnalysisBlock to Unknown for the respective service.
         /// </summary>
@@ -131,8 +131,8 @@ namespace DemoCentral.Communication.MessageProcessors
                     case DemoAnalysisBlock.MatchWriter_RedisConnectionFailed:
                     case DemoAnalysisBlock.MatchWriter_Timeout:
                         // Retry this step (MatchDatabaseInsertion) up to 3 times, then stop analysis.
-                        maxRetries = 3;
-                        if (retryAttempts >= maxRetries)
+                        maxRetries = 2;
+                        if (retryAttempts > maxRetries)
                         {
                             _blobStorage.DeleteBlobAsync(dbDemo.BlobUrl);
                             _inQueueTableInterface.Remove(queuedDemo);
@@ -142,8 +142,8 @@ namespace DemoCentral.Communication.MessageProcessors
                         
                     case DemoAnalysisBlock.MatchWriter_DatabaseUpload:
                     case DemoAnalysisBlock.MatchWriter_Unknown:
-                        maxRetries = 1;
-                        if (retryAttempts >= maxRetries)
+                        maxRetries = 2;
+                        if (retryAttempts > maxRetries)
                         {
                             _blobStorage.DeleteBlobAsync(dbDemo.BlobUrl);
                             _inQueueTableInterface.Remove(queuedDemo);
