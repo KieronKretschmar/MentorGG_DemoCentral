@@ -3,7 +3,7 @@ using System.Linq;
 using RabbitCommunicationLib.Enums;
 using Database.DatabaseClasses;
 using System.Collections.Generic;
-
+using Microsoft.EntityFrameworkCore;
 
 namespace DemoCentral
 {
@@ -78,7 +78,9 @@ namespace DemoCentral
 
         public List<InQueueDemo> GetPlayerMatchesInQueue(long uploaderId)
         {
-            return _context.InQueueDemo.Where(x => x.Demo.UploaderId == uploaderId).ToList();
+            return _context.InQueueDemo
+                .Include(x=>x.Demo)
+                .Where(x => x.Demo.UploaderId == uploaderId).ToList();
         }
 
         public int GetTotalQueueLength()

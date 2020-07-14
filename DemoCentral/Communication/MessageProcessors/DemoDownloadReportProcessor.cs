@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Database.DatabaseClasses;
 using DemoCentral.Communication.HTTP;
@@ -22,7 +24,10 @@ namespace DemoCentral.Communication.MessageProcessors
         private readonly IProducer<DemoAnalyzeInstruction> _demoFileWorkerProducer;
         private IInQueueTableInterface _inQueueTableInterface;
 
-        private const int MAX_RETRIES = 2;
+        /// <summary>
+        /// Time waited before retrying after each failed attempt in seconds.
+        /// </summary>
+        private readonly int[] RETRY_INTERVALS = new int[] { 0, 30, 120, 300, 900 };
 
         public DemoDownloadReportProcessor(
             ILogger<DemoDownloadReportProcessor> logger,
@@ -39,6 +44,19 @@ namespace DemoCentral.Communication.MessageProcessors
             _inQueueTableInterface = inQueueTableInterface;
         }
 
+        /// Remove the Demo from the Queue.
+        /// Set the DemoAnalysisBlock to Unknown for the respective service.
+        /// </summary>
+        /// <param name="e"></param>
+        /// <param name="matchId"></param>
+        private void ActOnUnknownFailure(Exception e, long matchId)
+        {
+            _logger.LogError(e, $"Failed to process Demo [ {matchId} ]. Unknown Failure. Removed from Queue.");
+            Demo demo = _demoTableInterface.GetDemoById(matchId);
+            InQueueDemo queueDemo = _inQueueTableInterface.GetDemoById(matchId);
+            _inQueueTableInterface.Remove(queueDemo);
+            _demoTableInterface.SetAnalyzeState(demo, false, DemoAnalysisBlock.DemoDownloader_Unknown);
+        }
 
         /// <summary>
         /// Determine Analyze Quality, Update Queue Status and Send message to DemoDownloader for Demo Retrieval.
@@ -53,9 +71,7 @@ namespace DemoCentral.Communication.MessageProcessors
             }
             catch (Exception e)
             {
-                _logger.LogError(e, $"Failed to update demo [ {model.MatchId} ] in database. Removed from Queue.");
-                InQueueDemo queueDemo = _inQueueTableInterface.GetDemoById(model.MatchId);
-                _inQueueTableInterface.Remove(queueDemo);
+                ActOnUnknownFailure(e, model.MatchId);
             }
         }
 
@@ -74,16 +90,19 @@ namespace DemoCentral.Communication.MessageProcessors
             }
             else
             {
-                int attempts = _inQueueTableInterface.IncrementRetry(queuedDemo);
+                int failedAttempts = _inQueueTableInterface.IncrementRetry(queuedDemo);
 
-                if (attempts > MAX_RETRIES)
+                if (failedAttempts > RETRY_INTERVALS.Length)
                 {
                     _inQueueTableInterface.Remove(queuedDemo);
                     _demoTableInterface.SetAnalyzeState(demo, false, DemoAnalysisBlock.DemoDownloader_Unknown);
-                    _logger.LogError($"Demo [ {matchId} ] failed download more than {MAX_RETRIES} times, no further analyzing");
+                    _logger.LogError($"Demo [ {matchId} ] failed download more than {RETRY_INTERVALS.Length} times, no further analyzing");
                 }
                 else
                 {
+                    var delayMilliSeconds = RETRY_INTERVALS[failedAttempts - 1] * 1000;
+                    _logger.LogInformation($"Waiting [ {delayMilliSeconds} ] seconds before starting retry number [ {failedAttempts} ] of downloading demo [ {matchId} ].");
+                    Thread.Sleep(delayMilliSeconds);
 
                     _logger.LogInformation($"Sent demo [ {matchId} ] to DemoDownloadInstruction queue");
 

@@ -83,6 +83,18 @@ namespace Database.DatabaseClasses
         /// <value></value>
         public DateTime UploadDate { get; set; }
 
+        /// <summary>
+        /// When the Demo is set to expire.
+        /// </summary>
+        /// <value></value>
+        public DateTime ExpiryDate { get; set; }
+
+        /// <summary>
+        /// Indicates whether MatchData has been removed due to the Expiry Date passing.
+        /// </summary>
+        /// <value></value>
+        public bool MatchDataRemoved { get; set; } = false;
+
 
         public static Demo FromGatherTransferModel(DemoInsertInstruction model)
         {
