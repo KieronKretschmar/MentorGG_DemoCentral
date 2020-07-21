@@ -135,6 +135,7 @@ namespace DemoCentral.Communication.MessageProcessors
                         if (retryAttempts > maxRetries)
                         {
                             _blobStorage.DeleteBlobAsync(dbDemo.BlobUrl);
+                            _demoTableInterface.SetBlobUrl(dbDemo, null);
                             _inQueueTableInterface.Remove(queuedDemo);
                             return;
                         }
@@ -154,6 +155,7 @@ namespace DemoCentral.Communication.MessageProcessors
                     default:
                         _logger.LogWarning($"Demo [ {matchId} ]. MatchWriter failed with unhandled DemoAnalysisBlock [ { model.Block} ]! Removed");
                         _blobStorage.DeleteBlobAsync(dbDemo.BlobUrl);
+                            _demoTableInterface.SetBlobUrl(dbDemo, null);
                         _inQueueTableInterface.Remove(queuedDemo);
                         break;
                 }
