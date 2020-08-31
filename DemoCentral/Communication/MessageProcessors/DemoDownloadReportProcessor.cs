@@ -92,7 +92,7 @@ namespace DemoCentral.Communication.MessageProcessors
             {
                 int failedAttempts = _inQueueTableInterface.IncrementRetry(queuedDemo);
 
-                if (failedAttempts > RETRY_INTERVALS.Length)
+                if (failedAttempts >= RETRY_INTERVALS.Length)
                 {
                     _inQueueTableInterface.Remove(queuedDemo);
                     _demoTableInterface.SetAnalyzeState(demo, false, DemoAnalysisBlock.DemoDownloader_Unknown);
@@ -101,6 +101,7 @@ namespace DemoCentral.Communication.MessageProcessors
                 else
                 {
                     var delayMilliSeconds = RETRY_INTERVALS[failedAttempts - 1] * 1000;
+
                     _logger.LogInformation($"Waiting [ {delayMilliSeconds} ] seconds before starting retry number [ {failedAttempts} ] of downloading demo [ {matchId} ].");
                     Thread.Sleep(delayMilliSeconds);
 
