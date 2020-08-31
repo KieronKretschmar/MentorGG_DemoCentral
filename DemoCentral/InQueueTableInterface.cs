@@ -101,7 +101,7 @@ namespace DemoCentral
             var attempts = demo.RetryAttemptsOnCurrentFailure++;
 
             _context.SaveChanges();
-            return attempts;
+            return demo.RetryAttemptsOnCurrentFailure;
         }
 
         public void ResetRetry(InQueueDemo demo)
