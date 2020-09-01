@@ -52,8 +52,7 @@ namespace DemoCentral.Communication.MessageProcessors
         {
             _logger.LogError(e, $"Failed to process Demo [ {matchId} ]. Unknown Failure. Removed from Queue.");
             Demo demo = _demoTableInterface.GetDemoById(matchId);
-            InQueueDemo queueDemo = _inQueueTableInterface.GetDemoById(matchId);
-            _inQueueTableInterface.Remove(queueDemo);
+            _inQueueTableInterface.TryRemove(matchId);
             _demoTableInterface.SetAnalyzeState(demo, false, DemoAnalysisBlock.MatchWriter_Unknown);
         }
 

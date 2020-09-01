@@ -78,11 +78,12 @@ namespace DemoCentral.Communication.MessageProcessors
         private void UpdateDemoStatusFromObtainReport(DemoDownloadReport consumeModel)
         {
             long matchId = consumeModel.MatchId;
-            var queuedDemo = _inQueueTableInterface.GetDemoById(matchId);
             var demo = _demoTableInterface.GetDemoById(matchId);
 
             if (consumeModel.Success)
             {
+                var queuedDemo = _inQueueTableInterface.GetDemoById(matchId);
+
                 _inQueueTableInterface.ResetRetry(queuedDemo);
                 _demoTableInterface.SetBlobUrl(demo, consumeModel.BlobUrl);
                 _demoFileWorkerProducer.PublishMessage(demo.ToAnalyzeInstruction());
@@ -90,11 +91,23 @@ namespace DemoCentral.Communication.MessageProcessors
             }
             else
             {
-                int failedAttempts = _inQueueTableInterface.IncrementRetry(queuedDemo);
+                InQueueDemo queuedDemo;
+                try
+                {
+                    queuedDemo = _inQueueTableInterface.GetDemoById(matchId);
+                }
+                catch (InvalidOperationException)
+                {
+                    _logger.LogWarning($"No InQueueDemo entry found for match [ {matchId} ] when trying to act on it. Setting it as failed.");
+                    _demoTableInterface.SetAnalyzeState(demo, false, DemoAnalysisBlock.DemoDownloader_Unknown);
+                    return;
+                }
 
+                int failedAttempts = _inQueueTableInterface.IncrementRetry(queuedDemo);
                 if (failedAttempts >= RETRY_INTERVALS.Length)
                 {
                     _inQueueTableInterface.Remove(queuedDemo);
+
                     _demoTableInterface.SetAnalyzeState(demo, false, DemoAnalysisBlock.DemoDownloader_Unknown);
                     _logger.LogError($"Demo [ {matchId} ] failed download more than {RETRY_INTERVALS.Length} times, no further analyzing");
                 }
@@ -109,8 +122,9 @@ namespace DemoCentral.Communication.MessageProcessors
 
                     _demoDownloaderProducer.PublishMessage(demo.ToDownloadInstruction());
 
-                    _logger.LogWarning($"Demo [ {matchId} ] failed download, retrying");
+                    _logger.LogWarning($"Demo [ {matchId} ] failed download, retrying");                    
                 }
+
             }
         }
     }
