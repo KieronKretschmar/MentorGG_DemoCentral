@@ -26,7 +26,7 @@ namespace DemoCentral.Communication.RabbitConsumers
             IServiceProvider serviceProvider,
             ILogger<DemoDownloadReportConsumer> logger,
             IQueueConnection queueConnection
-            ) : base(queueConnection, 20)
+            ) : base(queueConnection, 40)
         {
             _serviceProvider = serviceProvider;
             _logger = logger;

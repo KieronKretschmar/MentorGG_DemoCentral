@@ -27,7 +27,7 @@ namespace DemoCentral.Communication.MessageProcessors
         /// <summary>
         /// Time waited before retrying after each failed attempt in seconds.
         /// </summary>
-        private readonly int[] RETRY_INTERVALS = new int[] { 30 };
+        private readonly int[] RETRY_INTERVALS = new int[] { 30, 600 };
 
         public DemoDownloadReportProcessor(
             ILogger<DemoDownloadReportProcessor> logger,
