@@ -22,6 +22,11 @@ namespace DemoCentral.Communication.MessageProcessors
         private readonly IUserIdentityRetriever _userIdentityRetriever;
         private IInQueueTableInterface _inQueueTableInterface;
 
+        /// <summary>
+        /// Number of days demos are stored on valve's servers.
+        /// </summary>
+        private const int _valveStorageDays = 14;
+
         public DemoInsertInstructionProcessor(
             ILogger<DemoInsertInstructionProcessor> logger,
             IDemoTableInterface demoTableInterface,
@@ -52,6 +57,13 @@ namespace DemoCentral.Communication.MessageProcessors
 
                 var demo = _demoTableInterface.GetDemoById(matchId);
                 
+                if(model.Source == Source.Valve && (DateTime.Now - model.MatchDate).TotalDays > _valveStorageDays)
+                {
+                    _demoTableInterface.SetAnalyzeState(demo, false, DemoAnalysisBlock.DemoDownloader_TooOld);
+                    _logger.LogInformation($"Prevented download of demo [ {matchId} ] because it is from Valve servers and older than {_valveStorageDays} days.");
+                    return;
+                }
+
                 _demoDownloaderProducer.PublishMessage(demo.ToDownloadInstruction());
                 
                 _inQueueTableInterface.Add(matchId, Queue.DemoDownloader);
